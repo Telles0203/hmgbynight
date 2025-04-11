@@ -3,11 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Página Principal</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <title>By Night - Gerenciamento de jogos</title>
 </head>
 <body>
-  <h1>Esta é a Main.html</h1>
-  <p>Você pode usar esta página como base para uma dashboard ou área de login no futuro.</p>
-  <a href="/">Voltar para o início</a>
+
+  
+  <div class="container-fluid p-0">
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+      <div class="container d-flex justify-content-between align-items-center">
+        <div style="width: 80px;"></div>
+        
+        <div class="text-center">
+          <a class="navbar-brand text-danger mb-0" href="#">By Night</a>
+          <div class="text-white small-title">Gerenciamentos de jogos para Teatro da Mente</div>
+        </div>
+        
+        <a href="index.html" class="btn btn-outline-light">Logout</a>
+      </div>
+    </nav>
+  </div>
+
+ 
+  <div class="container main-content main-translucid-card">
+    <div class="card shadow translucid-card p-4" style="max-width: 900px; width: 100%;">
+      <h1 class="mb-1 h1">Bem vindo,</h1>
+      
+      
+      <div class="card shadow translucid-card p-4 mb-2" style="max-width: 900px; width: 100%;">        
+        <div class="alert alert-danger text-center mb-3">
+          <h2 class="h2 m-0">Avisos</h2>
+        </div>
+      
+        <ul class="list-unstyled mb-0">
+          <li class="alert alert-warning text-center mb-2">
+            Colocar validação de e-mail
+          </li>
+          <li class="alert alert-warning text-center mb-0">
+            Colocar checkbox para não aparecer mais o aviso
+          </li>
+        </ul>
+      </div>
+      
+      
+      <div class="card shadow translucid-card p-4" style="max-width: 900px; width: 100%;">
+        <h2>Escolha seu perfil:</h2>
+        <div class="justify-content-between">
+          <button type="submit" class="btn btn-outline-light">Narrador</button>
+          <button type="submit" class="btn btn-outline-light">Jogador</button>
+        </div>
+      </div>
+      
+      
+    </div>
+    <div class="card shadow translucid-card p-4" style="max-width: 900px; width: 100%;">
+      <div class="card shadow translucid-card p-4" style="max-width: 900px; width: 100%;">
+        <h1 class="mb-1 h1">Escolha sua house</h1>
+        <p>Elencar as houses que faz parte na escolha narrador/jogador - Vai abrir lista pelo js</p>
+        <div class="d-inline-flex flex-column gap-2">
+          <button type="submit" class="btn btn-outline-light w-auto align-self-start">House 1</button>
+          <button type="submit" class="btn btn-outline-light w-auto align-self-start">House 2</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

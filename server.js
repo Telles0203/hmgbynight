@@ -7,6 +7,8 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const PORT = 8080;
+app.use(express.static(path.join(__dirname, "public")));
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -42,6 +44,8 @@ app.get("/check-email", async (req, res) => {
     await disconnectDB();
   }
 });
+
+
 
 (async () => {
   await testConnectDB();

@@ -1,7 +1,7 @@
 {
     "name": "hmgsite",
     "version": "1.0.0",
-    "description": "Site exemplo rodando na Discloud",
+    "description": "Site HMG do bynight.com.br",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"

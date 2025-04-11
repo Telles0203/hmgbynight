@@ -140,3 +140,8 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     alert("Erro de rede ao tentar login.");
   }
 });
+
+function gerarToken() {
+  return Math.random().toString(36).substring(2, 12);
+}
+

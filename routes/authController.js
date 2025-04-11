@@ -4,6 +4,11 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const { connectDB, disconnectDB } = require("../utils/db");
 
+function gerarToken() {
+    return Math.random().toString(36).substring(2, 12);
+  }
+  
+
 // REGISTRO
 router.post("/register", async (req, res) => {
   const { name, email, password, repeatPassword } = req.body;
@@ -21,14 +26,25 @@ router.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ nome: name, email, senha: hashedPassword });
+    const newUser = new User({
+        nome: name,
+        email,
+        senha: hashedPassword,
+        criadoEm: new Date(),
+        statusEmail: "pendente",
+        businessPlan: "Free",
+        tokenValidacao: gerarToken(),
+        isStoryteller: false,
+        isPlayer: false,
+        houses: [],
+        characters: [],
+      });
     await newUser.save();
-
     res.status(201).json({ message: "Usuário criado com sucesso" });
 
   } catch (err) {
+    console.error("Erro ao registrar usuário:", err);
     res.status(500).json({ error: "Erro no servidor" });
-
   } finally {
     await disconnectDB();
   }

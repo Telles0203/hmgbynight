@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   nome: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  senha: { type: String, required: true }
+  senha: { type: String, required: true },
+  isStoryteller: { type: Boolean, default: false },
+  isPlayer: { type: Boolean, default: false },
+  houses: [{ type: mongoose.Schema.Types.ObjectId, ref: "House" }],
+  characters: [{ type: mongoose.Schema.Types.ObjectId, ref: "Character" }],
 });
 
 module.exports = mongoose.model('User', userSchema);
