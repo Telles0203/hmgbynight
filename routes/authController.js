@@ -38,6 +38,11 @@ router.post("/register", async (req, res) => {
         isPlayer: false,
         houses: [],
         characters: [],
+        warning: true,
+        warningList: {
+          emailCheck: false,
+          introTip: false,
+        }
       });
     await newUser.save();
     res.status(201).json({ message: "Usuário criado com sucesso" });
