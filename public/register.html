@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <title>Cadastrar - By Night</title>
+</head>
+<body>
+
+  <div class="container-fluid p-0">
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+      <div class="container d-flex justify-content-between align-items-center">
+        <div style="width: 80px;"></div>
+        <div class="text-center">
+          <a class="navbar-brand text-danger mb-0" href="#">By Night</a>
+          <div class="text-white small-title">Gerenciamentos de jogos para Teatro da Mente</div>
+        </div>
+        <a href="login.html" class="btn btn-outline-light">Login</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container main-content main-translucid-card d-flex justify-content-center" style="margin-top: 90px;">
+    <div class="card shadow translucid-card p-4" style="min-width: 320px; max-width: 400px; width: 100%;">
+      <h2 class="text-center mb-2 fs-5">Cadastrar</h2>
+      <form id="register-form">
+        <div class="mb-2 small">
+          <label for="name" class="form-label">Nome</label>
+          <input type="text" class="form-control input-sm" id="name" name="name" placeholder="Seu nome aqui" required>
+        </div>
+
+        <div class="mb-2 small has-validation">
+          <label for="email" class="form-label">E-mail</label>
+          <input type="email" class="form-control input-sm" id="email" name="email" placeholder="Seu e-mail aqui" required>
+          <div id="email-feedback" class="invalid-feedback">E-mail inválido.</div>
+          <div class="valid-feedback">E-mail válido.</div>
+        </div>
+
+        <div class="mb-2 small">
+          <label for="password" class="form-label">Senha</label>
+          <div class="input-group password-input-group input-sm-group">
+            <input type="password" class="form-control border-end-0" id="password" name="password" placeholder="Digite sua senha" required>
+            <span class="input-group-text bg-white password-toggle" onclick="togglePassword('password')">
+              <i class="bi bi-eye" id="icon-password"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="mb-2 small position-relative">
+          <label for="repeat-password" class="form-label">Repita a senha</label>
+          <input type="password" class="form-control input-sm" id="repeat-password" name="repeatPassword" placeholder="Repita sua senha" required>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="login.html" class="btn btn-outline-light">Voltar para login</a>
+          <a href="login.html" class="btn btn-outline-light">Esqueci a senha</a>
+          <button type="submit" class="btn btn-outline-light">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
