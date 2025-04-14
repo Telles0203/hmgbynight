@@ -11,10 +11,6 @@ dotenv.config();
 const PORT = 8080;
 
 
-app.use((req, res, next) => {
-  console.log("🌐 Requisição recebida:", req.method, req.originalUrl);
-  next();
-});
 
 app.use((req, res, next) => {
   if (req.path === "/main.html") return next();

@@ -1,8 +1,14 @@
 const password = document.getElementById('password');
 const repeatPassword = document.getElementById('repeat-password');
 const emailInput = document.getElementById('email');
+const feedback = document.getElementById("email-feedback");
+const logoutBtn = document.getElementById("logout-btn");
+const registerForm = document.getElementById("register-form");
+const loginForm = document.getElementById("login-form");
+const publicPaths = ["/login.html", "/register.html"];
 
-// Validação de repetir senha
+let emailTimer;
+
 repeatPassword?.addEventListener('input', () => {
   const value = repeatPassword.value;
 
@@ -20,7 +26,6 @@ repeatPassword?.addEventListener('input', () => {
   }
 });
 
-// Toggle senha
 function togglePassword(fieldId) {
   const input = document.getElementById(fieldId);
   const icon = document.getElementById(`icon-${fieldId}`);
@@ -32,10 +37,6 @@ function togglePassword(fieldId) {
   icon.classList.toggle('bi-eye');
   icon.classList.toggle('bi-eye-slash');
 }
-
-// Validação de e-mail
-let emailTimer;
-const feedback = document.getElementById("email-feedback");
 
 emailInput?.addEventListener("input", () => {
   const value = emailInput.value.trim();
@@ -78,8 +79,7 @@ emailInput?.addEventListener("input", () => {
   }, 500);
 });
 
-// Registro
-document.getElementById("register-form")?.addEventListener("submit", async (e) => {
+registerForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const name = document.getElementById("name")?.value.trim();
@@ -113,20 +113,19 @@ document.getElementById("register-form")?.addEventListener("submit", async (e) =
   }
 });
 
-// Login
-document.getElementById("login-form")?.addEventListener("submit", async (e) => {
+loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+  const email = emailInput.value.trim();
+  const passwordVal = password.value;
 
-  if (!email || !password) return;
+  if (!email || !passwordVal) return;
 
   try {
     const res = await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password: passwordVal })
     });
 
     const data = await res.json();
@@ -141,7 +140,6 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
   }
 });
 
-
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("📜 script.js carregado");
 
@@ -151,9 +149,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("🧭 URL atual:", window.location.href);
   console.log("🔎 Parâmetros:", window.location.search);
 
-  // 🔸 BLOCO 1 — Trata ?auth=required só no login.html
+
+
   if (path === "/login.html" && params.get("auth") === "required") {
-    console.log("🔥 Entrou no BLOCO 1 com auth=required");
+    if (!path.includes("login.html")) {
+      window.location.href = "/login.html?auth=required";
+      return;
+    }
     const modal = document.getElementById("force-modal");
     window.history.replaceState({}, document.title, path);
     if (modal) {
@@ -165,16 +167,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       modal.style.inset = "0";
       document.getElementById("modal-ok-btn")?.addEventListener("click", () => {
         modal.remove();
-        
       }, { once: true });
     }
-  
+
     return;
   }
-  
-  
 
-  // 🔸 BLOCO 2 — Verificação geral de login
   try {
     const res = await fetch("/check-token", {
       method: "GET",
@@ -183,12 +181,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const data = await res.json();
 
-    // Já está logado mas está na página de login → redireciona
     if (data.loggedIn && path === "/login.html") {
       window.location.href = "/main.html";
     }
 
-    if (!data.loggedIn && path !== "/login.html") {
+    if (!data.loggedIn && !publicPaths.includes(path)) {
       window.location.href = "/login.html?auth=required";
     }
 
@@ -198,16 +195,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-document.getElementById("logout-btn")?.addEventListener("click", async (e) => {
+logoutBtn?.addEventListener("click", async (e) => {
   e.preventDefault();
 
   try {
@@ -221,13 +209,3 @@ document.getElementById("logout-btn")?.addEventListener("click", async (e) => {
     alert("Erro ao fazer logout.");
   }
 });
-
-
-
-
-
-
-
-
-
-
