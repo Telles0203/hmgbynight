@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Avisos = require("../models/Avisos");
 const { connectDB, disconnectDB } = require("../utils/db");
+const enviarEmail = require("../utils/sendEmail");
 
 function gerarToken() {
   return Math.random().toString(36).substring(2, 12);
@@ -27,6 +28,7 @@ router.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    
     const newUser = new User({
       nome: name,
       email,
@@ -49,12 +51,20 @@ router.post("/register", async (req, res) => {
     await newUser.save();
     res.status(201).json({ message: "Usuário criado com sucesso" });
 
+    await enviarEmail(
+        newUser.email,
+        "Confirme seu cadastro no By Night",
+        `<p>Olá ${newUser.nome},</p><p>Obrigado por se registrar!</p><p>Seu token de verificação: <strong>${newUser.tokenValidacao}</strong></p>`
+      );
+
   } catch (err) {
     console.error("Erro ao registrar usuário:", err);
     res.status(500).json({ error: "Erro no servidor" });
   } finally {
     await disconnectDB();
   }
+
+  
 });
 
 // LOGIN
@@ -168,6 +178,60 @@ router.get("/check-token", (req, res) => {
     } catch (err) {
       console.error("❌ Erro ao buscar avisos:", err);
       res.status(500).json({ error: "Erro ao buscar avisos" });
+    } finally {
+      await disconnectDB();
+    }
+  });
+  
+
+  router.get("/validar-token", async (req, res) => {
+    try {
+      await connectDB();
+  
+      const token = req.query.token;
+      const jwtToken = req.cookies.token;
+  
+      if (!jwtToken || !token) return res.status(401).json({ valid: false });
+  
+      const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+  
+      if (!user) return res.status(404).json({ valid: false });
+  
+      const isValid = token === user.tokenValidacao;
+  
+      res.json({ valid: isValid });
+    } catch (err) {
+      console.error("❌ Erro ao validar token:", err);
+      res.status(500).json({ valid: false });
+    } finally {
+      await disconnectDB();
+    }
+  });
+  
+  router.post("/confirmar-email", async (req, res) => {
+    try {
+      await connectDB();
+  
+      const jwtToken = req.cookies.token;
+      const { token } = req.body;
+  
+      if (!jwtToken || !token) return res.status(400).json({ success: false });
+  
+      const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+  
+      if (!user || user.tokenValidacao !== token) {
+        return res.status(403).json({ success: false });
+      }
+  
+      user.warningList.isEmailCheck = true;
+      await user.save();
+  
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Erro ao confirmar e-mail:", err);
+      res.status(500).json({ success: false });
     } finally {
       await disconnectDB();
     }

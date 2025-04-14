@@ -5,6 +5,8 @@ const feedback = document.getElementById("email-feedback");
 const logoutBtn = document.getElementById("logout-btn");
 const registerForm = document.getElementById("register-form");
 const loginForm = document.getElementById("login-form");
+const tokenInput = document.getElementById("tokenInput");
+const confirmarTokenBtn = document.getElementById("confirmarTokenBtn");
 const publicPaths = ["/login.html", "/register.html"];
 
 let emailTimer;
@@ -235,6 +237,71 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Erro ao buscar status do usuário ou avisos", err);
   }
 });
+
+
+
+tokenInput?.addEventListener("input", async () => {
+  const value = tokenInput.value.trim();
+
+  if (value.length === 10) {
+    try {
+      const res = await fetch(`/validar-token?token=${encodeURIComponent(value)}`, {
+        method: "GET",
+        credentials: "include"
+      });
+
+      const data = await res.json();
+
+      if (data.valid) {
+        tokenInput.classList.add("is-valid");
+        tokenInput.classList.remove("is-invalid");
+        confirmarTokenBtn?.classList.remove("d-none");
+      } else {
+        tokenInput.classList.add("is-invalid");
+        tokenInput.classList.remove("is-valid");
+        confirmarTokenBtn?.classList.add("d-none");
+      }
+    } catch {
+      tokenInput.classList.add("is-invalid");
+      tokenInput.classList.remove("is-valid");
+      confirmarTokenBtn?.classList.add("d-none");
+    }
+  } else {
+    tokenInput.classList.remove("is-valid", "is-invalid");
+    confirmarTokenBtn?.classList.add("d-none");
+  }
+});
+
+confirmarTokenBtn?.addEventListener("click", async () => {
+  const token = tokenInput?.value.trim();
+  if (!token) return;
+
+  console.log("🟢 Botão Confirmar E-mail clicado com token:", token);
+
+  try {
+    const res = await fetch("/confirmar-email", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+
+    const data = await res.json();
+    console.log("📥 Resposta do servidor:", data);
+
+    if (data.success) {
+      alert("E-mail confirmado!");
+      document.querySelector(".avisos-bloco")?.classList.add("d-none");
+    } else {
+      alert("Token inválido ou sessão expirada.");
+    }
+  } catch (err) {
+    console.error("❌ Erro na requisição:", err);
+    alert("Erro ao confirmar token.");
+  }
+});
+
+
 
 
 
