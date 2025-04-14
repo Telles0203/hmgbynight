@@ -6,13 +6,28 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+
+
 const PORT = 8080;
-app.use(express.static(path.join(__dirname, "public")));
+
+
+app.use((req, res, next) => {
+  console.log("🌐 Requisição recebida:", req.method, req.originalUrl);
+  next();
+});
+
+app.use((req, res, next) => {
+  if (req.path === "/main.html") return next();
+  express.static(path.join(__dirname, "public"))(req, res, next);
+});
+
 
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 // Usa o controller com /register e /login
 const authController = require("./routes/authController");
@@ -47,9 +62,22 @@ app.get("/check-email", async (req, res) => {
 
 
 
+
+
+const auth = require("./middlewares/auth");
+app.get("/main.html", auth, (req, res) => {
+  res.sendFile(__dirname + "/public/main.html");
+});
+
+
+
+
+
+
 (async () => {
   await testConnectDB();
   app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
   });
 })();
+

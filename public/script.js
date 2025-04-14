@@ -142,3 +142,92 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 });
 
 
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("📜 script.js carregado");
+
+  const path = window.location.pathname;
+  const params = new URLSearchParams(window.location.search);
+
+  console.log("🧭 URL atual:", window.location.href);
+  console.log("🔎 Parâmetros:", window.location.search);
+
+  // 🔸 BLOCO 1 — Trata ?auth=required só no login.html
+  if (path === "/login.html" && params.get("auth") === "required") {
+    console.log("🔥 Entrou no BLOCO 1 com auth=required");
+    const modal = document.getElementById("force-modal");
+    window.history.replaceState({}, document.title, path);
+    if (modal) {
+      modal.style.display = "block";
+      modal.style.opacity = "1";
+      modal.style.pointerEvents = "auto";
+      modal.style.zIndex = "9999";
+      modal.style.position = "fixed";
+      modal.style.inset = "0";
+      document.getElementById("modal-ok-btn")?.addEventListener("click", () => {
+        modal.remove();
+        
+      }, { once: true });
+    }
+  
+    return;
+  }
+  
+  
+
+  // 🔸 BLOCO 2 — Verificação geral de login
+  try {
+    const res = await fetch("/check-token", {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    // Já está logado mas está na página de login → redireciona
+    if (data.loggedIn && path === "/login.html") {
+      window.location.href = "/main.html";
+    }
+
+    if (!data.loggedIn && path !== "/login.html") {
+      window.location.href = "/login.html?auth=required";
+    }
+
+  } catch (err) {
+    console.log("Erro ao verificar login", err);
+    alert("Erro ao verificar o login. Tente novamente.");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+document.getElementById("logout-btn")?.addEventListener("click", async (e) => {
+  e.preventDefault();
+
+  try {
+    await fetch("/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+
+    window.location.href = "login.html";
+  } catch (err) {
+    alert("Erro ao fazer logout.");
+  }
+});
+
+
+
+
+
+
+
+
+
+
