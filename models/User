@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   senha: { type: String, required: true },
   criadoEm: { type: Date, default: Date.now },
-  statusEmail: { type: String, default: "pendente" },
   businessPlan: { type: String, default: "Free" },
   tokenValidacao: { type: String },
   isStoryteller: { type: Boolean, default: false },
@@ -14,7 +13,7 @@ const userSchema = new mongoose.Schema({
   characters: [{ type: mongoose.Schema.Types.ObjectId, ref: "Character" }],
   warning: { type: Boolean, default: true },
   warningList: {
-    emailCheck: { type: Boolean, default: false },
+    isEmailCheck: { type: Boolean, default: false },
     introTip: { type: Boolean, default: false },
   }
 });

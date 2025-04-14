@@ -209,3 +209,34 @@ logoutBtn?.addEventListener("click", async (e) => {
     alert("Erro ao fazer logout.");
   }
 });
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const res = await fetch("/get-user-status", {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (data.warning === true && data.emailCheck === false) {
+      document.querySelector(".avisos-bloco")?.classList.remove("d-none");
+
+      const aviso = document.getElementById("email-status-aviso");
+
+      if (aviso) {
+        const avisoRes = await fetch("/get-avisos");
+        const avisoData = await avisoRes.json();
+
+        aviso.innerHTML = avisoData.statusEmailMessage || `Status do e-mail: ${data.statusEmail}`;
+      }
+    }
+  } catch (err) {
+    console.error("Erro ao buscar status do usuário ou avisos", err);
+  }
+});
+
+
+
+
+
