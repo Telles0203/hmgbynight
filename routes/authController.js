@@ -43,7 +43,7 @@ router.post("/register", async (req, res) => {
       characters: [],
       warning: true,
       warningList: {
-        emailCheck: false,
+        isEmailCheck: false,
         introTip: false,
       }
     });
@@ -149,9 +149,8 @@ router.get("/check-token", (req, res) => {
   
       res.json({
         email: user.email,
-        statusEmail: user.statusEmail,
         warning: user.warning,
-        emailCheck: user.warningList?.emailCheck || false
+        warningList: user.warningList || {}
       });
     } catch (err) {
       res.status(500).json({ error: "Erro interno" });

@@ -220,19 +220,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const data = await res.json();
-
-    if (data.warning === true && data.emailCheck === false) {
-      document.querySelector(".avisos-bloco")?.classList.remove("d-none");
-
-      const aviso = document.getElementById("email-status-aviso");
-
-      if (aviso) {
-        const avisoRes = await fetch("/get-avisos");
-        const avisoData = await avisoRes.json();
-
-        aviso.innerHTML = avisoData.statusEmailMessage || `Status do e-mail: ${data.statusEmail}`;
+    if (data.warning === true) {
+      console.log("⚠️ Usuário com avisos pendentes");
+      for (const [key, value] of Object.entries(data.warningList)) {
+        console.log(`🔸 ${key}: ${value}`);
       }
     }
+    
   } catch (err) {
     console.error("Erro ao buscar status do usuário ou avisos", err);
   }
