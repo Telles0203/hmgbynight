@@ -212,100 +212,106 @@ logoutBtn?.addEventListener("click", async (e) => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const res = await fetch("/get-user-status", {
-      method: "GET",
-      credentials: "include"
-    });
+    const data = await getUserStatus();
+    if (!data?.warning) return;
 
-    const data = await res.json();
+    document.querySelector(".avisos-bloco")?.classList.remove("d-none");
 
-    if (data.warning === true) {
-      document.querySelector(".avisos-bloco")?.classList.remove("d-none");
+    const avisoData = await getUserWarnings();
+    console.log("📌 avisoData:", avisoData);
 
-      const resAvisos = await fetch("/get-user-warnings", {
-        method: "GET",
-        credentials: "include"
-      });
+    const htmlAvisos = await getAvisoHtml(avisoData);
+    console.log("📋 Conteúdo final dos avisos:", htmlAvisos);
 
-      const avisoData = await resAvisos.json();
-      console.log("📌 avisoData:", avisoData);
-
-      const resHtmls = await fetch("/get-avisos", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(avisoData)
-      });
-
-      const htmlAvisos = await resHtmls.json();
-      console.log("📋 Conteúdo final dos avisos:", htmlAvisos);
-
-      const lista = document.querySelector("#lista-avisos");
-
-      htmlAvisos.forEach(({ key, html }) => {
-        if (!html) return;
-
-        if (key === "isEmailCheck") {
-          lista.innerHTML += `
-            <li class="alert alert-warning text-center mb-2">
-              ${html}
-              <p></p>
-              <label for="tokenInput" class="form-label mb-2">Digite seu TOKEN:</label><br>
-              <input
-                type="text"
-                id="tokenInput"
-                maxlength="10"
-                class="form-control text-center"
-                style="letter-spacing: 2px; max-width: 250px; margin: 0 auto;"
-                placeholder="••••••••••"
-              >
-              <button id="confirmarTokenBtn" class="btn btn-success d-none mt-2">Confirmar E-mail</button>
-            </li>
-          `;
-          setTimeout(ativarEventosDoToken, 0);
-        } else {
-          lista.innerHTML += `
-            <li class="alert alert-warning text-center mb-2">
-              ${html}
-              <div class="d-flex justify-content-center align-items-center gap-3 mt-2">
-                <input class="form-check-input" type="checkbox" id="check-${key}">
-                <button id="btn-${key}" class="btn btn-danger btn-sm" disabled>Não mostrar mais</button>
-              </div>
-            </li>
-          `;
-
-          setTimeout(() => {
-            const checkbox = document.getElementById(`check-${key}`);
-            const btn = document.getElementById(`btn-${key}`);
-          
-            checkbox?.addEventListener("change", () => {
-              btn.disabled = !checkbox.checked;
-              btn.classList.toggle("btn-danger", checkbox.checked);
-              btn.classList.toggle("btn-outline-secondary", !checkbox.checked);
-            });
-          
-            btn?.addEventListener("click", async () => {
-              await fetch("/ocultar-aviso", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ key })
-              });
-          
-              location.reload();
-            });
-          }, 0);
-            
-          
-          
-        }
-      });
-    }
-
+    renderAvisos(htmlAvisos);
   } catch (err) {
     console.error("Erro ao buscar status do usuário ou avisos", err);
   }
 });
+async function getUserStatus() {
+  const res = await fetch("/get-user-status", {
+    method: "GET",
+    credentials: "include"
+  });
+  return await res.json();
+}
+
+async function getUserWarnings() {
+  const res = await fetch("/get-user-warnings", {
+    method: "GET",
+    credentials: "include"
+  });
+  return await res.json();
+}
+
+async function getAvisoHtml(avisoData) {
+  const res = await fetch("/get-avisos", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(avisoData)
+  });
+  return await res.json();
+}
+
+function renderAvisos(htmlAvisos) {
+  const lista = document.querySelector("#lista-avisos");
+
+  htmlAvisos.forEach(({ key, html }) => {
+    if (!html) return;
+
+    if (key === "isEmailCheck") {
+      lista.innerHTML += `
+        <li class="alert alert-warning text-center mb-2">
+          ${html}
+          <p></p>
+          <label for="tokenInput" class="form-label mb-2">Digite seu TOKEN:</label><br>
+          <input
+            type="text"
+            id="tokenInput"
+            maxlength="10"
+            class="form-control text-center"
+            style="letter-spacing: 2px; max-width: 250px; margin: 0 auto;"
+            placeholder="••••••••••"
+          >
+          <button id="confirmarTokenBtn" class="btn btn-success d-none mt-2">Confirmar E-mail</button>
+        </li>
+      `;
+      setTimeout(ativarEventosDoToken, 0);
+    } else {
+      lista.innerHTML += `
+        <li class="alert alert-warning text-center mb-2">
+          ${html}
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-2">
+            <input class="form-check-input" type="checkbox" id="check-${key}">
+            <button id="btn-${key}" class="btn btn-danger btn-sm" disabled>Não mostrar mais</button>
+          </div>
+        </li>
+      `;
+
+      setTimeout(() => {
+        const checkbox = document.getElementById(`check-${key}`);
+        const btn = document.getElementById(`btn-${key}`);
+
+        checkbox?.addEventListener("change", () => {
+          btn.disabled = !checkbox.checked;
+          btn.classList.toggle("btn-danger", checkbox.checked);
+          btn.classList.toggle("btn-outline-secondary", !checkbox.checked);
+        });
+
+        btn?.addEventListener("click", async () => {
+          await fetch("/ocultar-aviso", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key })
+          });
+          location.reload();
+        });
+      }, 0);
+    }
+  });
+}
 
 
 
