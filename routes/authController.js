@@ -6,6 +6,8 @@ const User = require("../models/User");
 const Avisos = require("../models/Avisos");
 const { connectDB, disconnectDB } = require("../utils/db");
 const enviarEmail = require("../utils/sendEmail");
+const UserWarning = require("../models/UserWarnings");
+
 
 function gerarToken() {
   return Math.random().toString(36).substring(2, 12);
@@ -161,19 +163,30 @@ router.get("/check-token", (req, res) => {
   
 
 
-  router.get("/get-avisos", async (req, res) => {
+  router.post("/get-avisos", async (req, res) => {
     try {
       await connectDB();
   
-      const avisos = await Avisos.findOne();
-      if (!avisos) {
-        console.log("⚠️ Nenhum aviso encontrado no banco.");
+      const avisoData = req.body;
+      if (!Array.isArray(avisoData)) {
+        return res.status(400).json({ error: "Dados inválidos" });
+      }
+  
+      const avisosDocs = await Avisos.find({}, { _id: 0, __v: 0 });
+      if (!avisosDocs || avisosDocs.length === 0) {
         return res.status(404).json({ error: "Nenhum aviso encontrado" });
       }
   
-      console.log(`📢 Aviso carregado: ${avisos.statusEmailMessage}`);
+      const avisosCombinados = {};
+      avisosDocs.forEach(doc => Object.assign(avisosCombinados, doc));
   
-      res.json({ statusEmailMessage: avisos.statusEmailMessage });
+      const resultado = avisoData.map(aviso => ({
+        key: aviso.key,
+        htmlKey: aviso.htmlKey,
+        html: avisosCombinados[aviso.htmlKey] || null
+      }));
+  
+      res.json(resultado);
     } catch (err) {
       console.error("❌ Erro ao buscar avisos:", err);
       res.status(500).json({ error: "Erro ao buscar avisos" });
@@ -181,6 +194,11 @@ router.get("/check-token", (req, res) => {
       await disconnectDB();
     }
   });
+  
+  
+  
+
+  
   
 
   router.get("/validar-token", async (req, res) => {
@@ -236,6 +254,46 @@ router.get("/check-token", (req, res) => {
     }
   });
   
+
+
+
+  router.get("/get-user-warnings", async (req, res) => {
+    try {
+      await connectDB();
+  
+      const token = req.cookies.token;
+      if (!token) return res.status(401).json({ error: "Não autenticado" });
+  
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      if (!user || !user.warningList) return res.json([]);
+  
+      const warningDefs = await UserWarning.find({}, { _id: 0, __v: 0 });
+  
+      const ativos = [];
+  
+      for (const [key, value] of Object.entries(user.warningList)) {
+        if (value === false) {
+          const match = warningDefs.find(obj => obj[key]);
+          if (match) {
+            ativos.push({ key, htmlKey: match[key] });
+          }
+        }
+      }
+  
+      res.json(ativos);
+    } catch (err) {
+      console.error("Erro ao buscar avisos pendentes:", err);
+      res.status(500).json({ error: "Erro interno" });
+    } finally {
+      await disconnectDB();
+    }
+  });
+  
+  
+  
+  
+
 
   
 module.exports = router;

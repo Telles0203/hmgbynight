@@ -5,8 +5,6 @@ const feedback = document.getElementById("email-feedback");
 const logoutBtn = document.getElementById("logout-btn");
 const registerForm = document.getElementById("register-form");
 const loginForm = document.getElementById("login-form");
-const tokenInput = document.getElementById("tokenInput");
-const confirmarTokenBtn = document.getElementById("confirmarTokenBtn");
 const publicPaths = ["/login.html", "/register.html"];
 
 let emailTimer;
@@ -220,17 +218,69 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const data = await res.json();
+
     if (data.warning === true) {
-      console.log("⚠️ Usuário com avisos pendentes");
-      for (const [key, value] of Object.entries(data.warningList)) {
-        console.log(`🔸 ${key}: ${value}`);
-      }
+      document.querySelector(".avisos-bloco")?.classList.remove("d-none");
+
+
+      const resAvisos = await fetch("/get-user-warnings", {
+        method: "GET",
+        credentials: "include"
+      });
+
+      const avisoData = await resAvisos.json();
+      console.log("📌 avisoData:", avisoData);
+
+      const resHtmls = await fetch("/get-avisos", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(avisoData)
+      });
+
+      const htmlAvisos = await resHtmls.json();
+      console.log("📋 Conteúdo final dos avisos:", htmlAvisos);
+
+      const lista = document.querySelector("#lista-avisos");
+
+      htmlAvisos.forEach(({ key, html }) => {
+        if (!html) return;
+
+        if (key === "isEmailCheck") {
+          lista.innerHTML += `
+            <li class="alert alert-warning text-center mb-2">
+              ${html}
+              <p></p>
+              <label for="tokenInput" class="form-label mb-2">Digite seu TOKEN:</label><br>
+              <input
+                type="text"
+                id="tokenInput"
+                maxlength="10"
+                class="form-control text-center"
+                style="letter-spacing: 2px; max-width: 250px; margin: 0 auto;"
+                placeholder="••••••••••"
+              >
+              <button id="confirmarTokenBtn" class="btn btn-success d-none mt-2">Confirmar E-mail</button>
+            </li>
+          `;
+          setTimeout(ativarEventosDoToken, 0);
+        } else {
+          lista.innerHTML += `
+            <li class="alert alert-warning text-center mb-2">
+              ${html}
+            </li>
+          `;
+        }
+      });
     }
-    
+
   } catch (err) {
     console.error("Erro ao buscar status do usuário ou avisos", err);
   }
 });
+
+
+
 
 
 
@@ -296,6 +346,77 @@ confirmarTokenBtn?.addEventListener("click", async () => {
 });
 
 
+function ativarEventosDoToken() {
+  console.log("✅ ativarEventosDoToken executado");
+  const tokenInput = document.getElementById("tokenInput");
+  const confirmarTokenBtn = document.getElementById("confirmarTokenBtn");
+
+  if (!tokenInput || !confirmarTokenBtn){
+    console.warn("⚠️ Elementos tokenInput ou confirmarTokenBtn não encontrados"); 
+    return
+  };
+
+  console.log(tokenInput);
+  console.log(confirmarTokenBtn);
+
+  tokenInput.addEventListener("input", async () => {
+    const value = tokenInput.value.trim();
+
+    if (value.length === 10) {
+      try {
+        const res = await fetch(`/validar-token?token=${encodeURIComponent(value)}`, {
+          method: "GET",
+          credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (data.valid) {
+          tokenInput.classList.add("is-valid");
+          tokenInput.classList.remove("is-invalid");
+          confirmarTokenBtn.classList.remove("d-none");
+        } else {
+          tokenInput.classList.add("is-invalid");
+          tokenInput.classList.remove("is-valid");
+          confirmarTokenBtn.classList.add("d-none");
+        }
+      } catch {
+        tokenInput.classList.add("is-invalid");
+        tokenInput.classList.remove("is-valid");
+        confirmarTokenBtn.classList.add("d-none");
+      }
+    } else {
+      tokenInput.classList.remove("is-valid", "is-invalid");
+      confirmarTokenBtn.classList.add("d-none");
+    }
+  });
+
+  confirmarTokenBtn.addEventListener("click", async () => {
+    const token = tokenInput.value.trim();
+    if (!token) return;
+
+    try {
+      const res = await fetch("/confirmar-email", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("E-mail confirmado!");
+        document.querySelector(".avisos-bloco")?.classList.add("d-none");
+      } else {
+        alert("Token inválido ou sessão expirada.");
+      }
+    } catch (err) {
+      console.error("❌ Erro na requisição:", err);
+      alert("Erro ao confirmar token.");
+    }
+  });
+}
 
 
 
