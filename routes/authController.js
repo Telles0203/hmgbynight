@@ -147,7 +147,7 @@ router.get("/check-token", (req, res) => {
   
       if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
   
-      console.log(`📧 Usuário: ${user.email} | | emailCheck: ${user.warningList?.isEmailCheck} | warning: ${user.warning}`);
+      console.log(`📧 Usuário: ${user.email} | | warningList: ${user.warningList} | warning: ${user.warning}`);
   
       res.json({
         email: user.email,
@@ -195,6 +195,34 @@ router.get("/check-token", (req, res) => {
     }
   });
   
+  
+  router.post("/ocultar-aviso", async (req, res) => {
+    try {
+      await connectDB();
+  
+      const token = req.cookies.token;
+      if (!token) return res.status(401).json({ error: "Não autenticado" });
+  
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+  
+      const { key } = req.body;
+      if (!key || typeof key !== "string") {
+        return res.status(400).json({ error: "Key inválida" });
+      }
+  
+      user.warningList[key] = true;
+      await user.save();
+  
+      res.json({ success: true });
+    } catch (err) {
+      console.error("❌ Erro ao ocultar aviso:", err);
+      res.status(500).json({ error: "Erro interno" });
+    } finally {
+      await disconnectDB();
+    }
+  });
   
   
 
@@ -267,19 +295,26 @@ router.get("/check-token", (req, res) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(decoded.id);
       if (!user || !user.warningList) return res.json([]);
-  
+      user.warningList = JSON.parse(JSON.stringify(user.warningList));
       const warningDefs = await UserWarning.find({}, { _id: 0, __v: 0 });
   
       const ativos = [];
-  
-      for (const [key, value] of Object.entries(user.warningList)) {
+
+      
+
+      Object.getOwnPropertyNames(user.warningList).forEach(key => {
+        const value = user.warningList[key];
+        
         if (value === false) {
           const match = warningDefs.find(obj => obj[key]);
           if (match) {
+            console.log(`✅ Key "${key}" encontrada com htmlKey: "${match[key]}"`);
             ativos.push({ key, htmlKey: match[key] });
+          } else {
+            console.warn(`⚠️ Key "${key}" não encontrada`);
           }
         }
-      }
+      });
   
       res.json(ativos);
     } catch (err) {

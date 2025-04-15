@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   warningList: {
     isEmailCheck: { type: Boolean, default: false },
     introTip: { type: Boolean, default: false },
+    isTestMessage: {type: Boolean, default: false},
   }
 });
 

@@ -137,6 +137,15 @@ html, body {
   height: 38px;
 }
 
+.form-check-input {
+  background-color: #f8d7da; /* rosa claro (perigo) */
+  border-color: red;
+}
+.form-check-input:checked {
+  background-color: var(--bs-danger);
+  border-color: var(--bs-danger);
+}
+
 button.btn,
 a.btn {
   font-size: 0.85rem;

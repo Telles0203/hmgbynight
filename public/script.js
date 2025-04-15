@@ -222,7 +222,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (data.warning === true) {
       document.querySelector(".avisos-bloco")?.classList.remove("d-none");
 
-
       const resAvisos = await fetch("/get-user-warnings", {
         method: "GET",
         credentials: "include"
@@ -268,8 +267,37 @@ document.addEventListener("DOMContentLoaded", async () => {
           lista.innerHTML += `
             <li class="alert alert-warning text-center mb-2">
               ${html}
+              <div class="d-flex justify-content-center align-items-center gap-3 mt-2">
+                <input class="form-check-input" type="checkbox" id="check-${key}">
+                <button id="btn-${key}" class="btn btn-danger btn-sm" disabled>Não mostrar mais</button>
+              </div>
             </li>
           `;
+
+          setTimeout(() => {
+            const checkbox = document.getElementById(`check-${key}`);
+            const btn = document.getElementById(`btn-${key}`);
+          
+            checkbox?.addEventListener("change", () => {
+              btn.disabled = !checkbox.checked;
+              btn.classList.toggle("btn-danger", checkbox.checked);
+              btn.classList.toggle("btn-outline-secondary", !checkbox.checked);
+            });
+          
+            btn?.addEventListener("click", async () => {
+              await fetch("/ocultar-aviso", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key })
+              });
+          
+              location.reload();
+            });
+          }, 0);
+            
+          
+          
         }
       });
     }
@@ -278,6 +306,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Erro ao buscar status do usuário ou avisos", err);
   }
 });
+
 
 
 
@@ -351,8 +380,8 @@ function ativarEventosDoToken() {
   const tokenInput = document.getElementById("tokenInput");
   const confirmarTokenBtn = document.getElementById("confirmarTokenBtn");
 
-  if (!tokenInput || !confirmarTokenBtn){
-    console.warn("⚠️ Elementos tokenInput ou confirmarTokenBtn não encontrados"); 
+  if (!tokenInput || !confirmarTokenBtn) {
+    console.warn("⚠️ Elementos tokenInput ou confirmarTokenBtn não encontrados");
     return
   };
 
