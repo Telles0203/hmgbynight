@@ -2,7 +2,7 @@ async function loadMainUser() {
     const greeting = document.getElementById("mainGreeting");
     if (!greeting) return;
 
-    greeting.innerText = "Carregando usuário...";
+    greeting.innerText = "";
 
     try {
         const token = localStorage.getItem("token");
@@ -35,7 +35,7 @@ async function loadMainUser() {
                 const html = await modalRes.text();
                 container.innerHTML = html;
 
-                // ✅ IMPORTANTE: liga os botões depois de injetar o HTML
+
                 await setupEmailValidationHandlers();
             }
         } else {
