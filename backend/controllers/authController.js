@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const generateEmailToken = require("../utils/generateToken");
+const { sendEmailVerificationTokenMail } = require("../utils/zohoMail");
+const { withMongo } = require("../utils/mongo");
+const { ObjectId } = require("mongodb");
 
 function cookieName() {
   return process.env.COOKIE_NAME || "hmg_auth";
@@ -27,43 +31,84 @@ function signToken(user) {
 
 
 async function register(req, res) {
+  console.log("[REGISTER] START");
+
   try {
     const { name, email, password } = req.body;
 
+    console.log("[REGISTER] BODY:", { name, email, passLen: password?.length });
+
     if (!name || !email || !password) {
+      console.log("[REGISTER] Missing fields");
       return res.status(400).json({ ok: false, error: "name, email e password são obrigatórios" });
     }
 
     if (password.length < 6) {
+      console.log("[REGISTER] Password too short");
       return res.status(400).json({ ok: false, error: "password deve ter pelo menos 6 caracteres" });
     }
 
-    const exists = await User.findOne({ email: String(email).toLowerCase().trim() });
+    const cleanEmail = String(email).toLowerCase().trim();
+
+    const exists = await User.findOne({ email: cleanEmail });
     if (exists) {
+      console.log("[REGISTER] Email already exists:", cleanEmail);
       return res.status(409).json({ ok: false, error: "E-mail já cadastrado" });
     }
 
+    console.log("[REGISTER] Hashing password...");
     const passwordHash = await bcrypt.hash(password, 10);
 
+    console.log("[REGISTER] Creating user...");
     const user = await User.create({
       name: String(name).trim(),
-      email: String(email).toLowerCase().trim(),
+      email: cleanEmail,
       passwordHash,
+      isEmailValid: false, // se você já adicionou no schema
     });
 
-    console.log("✅ USER CREATED:", user._id.toString(), user.email);
+    console.log("✅ [REGISTER] USER CREATED:", user._id.toString(), user.email);
 
+    // 1) gerar token
+    console.log("[REGISTER] Generating email token...");
+    const emailToken = generateEmailToken(24);
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    console.log("✅ [REGISTER] TOKEN GENERATED:", emailToken, "EXPIRES:", expires.toISOString());
+
+    // 2) salvar token no Mongo (ABRE > USA > FECHA)
+    console.log("[REGISTER] Saving token in Mongo...");
+    await withMongo(async (db) => {
+      const users = db.collection("users");
+      await users.updateOne(
+        { _id: new ObjectId(user._id.toString()) },
+        { $set: { emailVerificationToken: emailToken, emailVerificationExpires: expires } }
+      );
+    });
+    console.log("✅ [REGISTER] TOKEN SAVED IN DB");
+
+    // 3) enviar e-mail
+    console.log("[REGISTER] Sending email...");
+    try {
+      await sendEmailVerificationTokenMail(user.email, emailToken);
+      console.log("✅ [REGISTER] EMAIL SENT to:", user.email);
+    } catch (mailErr) {
+      console.error("❌ [REGISTER] EMAIL FAILED:", mailErr?.message || mailErr);
+      // opcional: você pode decidir se quer bloquear o registro quando email falhar
+      // return res.status(500).json({ ok: false, error: "Falha ao enviar e-mail de verificação." });
+    }
+
+    // 4) logar com JWT como já faz
     const token = signToken(user);
     res.cookie(cookieName(), token, cookieOptions());
 
-    console.log("✅ REGISTER OK - sending response");
-
-
+    console.log("✅ [REGISTER] REGISTER OK - sending response");
     return res.json({
       ok: true,
       user: { id: user._id, name: user.name, email: user.email },
+      emailVerification: { sent: true }, // só pra debug
     });
   } catch (err) {
+    console.error("❌ [REGISTER] ERROR:", err?.message || err);
     return res.status(500).json({ ok: false, error: err.message });
   }
 }
@@ -118,6 +163,85 @@ function logout(req, res) {
   return res.json({ ok: true });
 }
 
+async function sendEmailVerificationToken(req, res) {
+  try {
+    const userId = req.user.sub;
+
+    const token = generateEmailToken(24);
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+    const user = await withMongo(async (db) => {
+      const users = db.collection("users");
+
+      const found = await users.findOne({ _id: new ObjectId(userId) });
+      if (!found) return null;
+
+      await users.updateOne(
+        { _id: found._id },
+        { $set: { emailVerificationToken: token, emailVerificationExpires: expires } }
+      );
+
+      return { email: found.email };
+    });
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "Usuário não encontrado." });
+    }
+
+    await sendEmailVerificationTokenMail(user.email, token);
+
+    return res.json({
+      ok: true,
+      message: "Token de verificação gerado e enviado por e-mail.",
+    });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: "Erro ao enviar token." });
+  }
+}
+
+async function verifyEmailToken(req, res) {
+  try {
+    const userId = req.user.sub;
+    const { token } = req.body;
+
+    if (!token || typeof token !== "string") {
+      return res.status(400).json({ ok: false, error: "Token é obrigatório." });
+    }
+
+    const now = new Date();
+
+    const result = await withMongo(async (db) => {
+      const users = db.collection("users");
+
+      const user = await users.findOne({
+        _id: new ObjectId(userId),
+        emailVerificationToken: token,
+        emailVerificationExpires: { $gt: now },
+      });
+
+      if (!user) return { ok: false };
+
+      await users.updateOne(
+        { _id: user._id },
+        {
+          $set: { isEmailValid: true },
+          $setOnInsert: {},
+          $unset: { emailVerificationToken: "", emailVerificationExpires: "" },
+        }
+      );
+
+      return { ok: true };
+    });
+
+    if (!result.ok) {
+      return res.status(400).json({ ok: false, error: "Token inválido ou expirado." });
+    }
+
+    return res.json({ ok: true, message: "E-mail verificado com sucesso." });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: "Erro ao validar token de e-mail." });
+  }
+}
 
 
-module.exports = { register, login, me, logout };
+module.exports = { register, login, me, logout, sendEmailVerificationToken, verifyEmailToken };
