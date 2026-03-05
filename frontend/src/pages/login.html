@@ -1,31 +1,49 @@
-<div class="d-flex justify-content-center mt-5 px-3">
-  <div class="card shadow card-transparent" style="min-width: 320px; max-width: 400px; width: 100%;">
-    <div class="card-header text-center bg-dark text-light">
-      <h5 class="mb-0 text-blood">Login</h5>
-    </div>
-    <div class="card-body">
-      <form>
-        <div class="mb-3">
-          <label for="email" class="form-label text-smoke">E-mail</label>
-          <input type="email" class="form-control" id="email" placeholder="seu@email.com">
-        </div>
-        <div class="mb-3">
-          <label for="password" class="form-label text-smoke">Senha</label>
-          <input type="password" class="form-control" id="password" placeholder="••••••••">
-        </div>
+<div class="container py-5" style="max-width: 520px;">
+    <div class="card bg-dark border border-danger shadow-sm">
+        <div class="card-body">
+            <h1 class="h4 text-light mb-3">Entrar</h1>
 
-        <div class="d-grid gap-2 mt-4">
-            <div>
-                <button type="submit" class="btn btn-blood text-smoke">Registrar</button>
-            </div>
-            <div>
-                <button type="submit" class="btn btn-blood text-smoke">Esqueci a senha</button>
-            </div>
-            <div>
-                <button type="submit" class="btn btn-blood text-smoke">Entrar</button>
-            </div>
+            <div id="loginAlert" class="alert d-none" role="alert"></div>
+
+            <form id="loginForm" autocomplete="on">
+                <div class="mb-3">
+                    <label class="form-label text-secondary">E-mail</label>
+                    <input
+                        id="email"
+                        class="form-control bg-black text-light border-secondary"
+                        type="email"
+                        required
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Senha</label>
+                    <input
+                        id="password"
+                        class="form-control bg-black text-light border-secondary"
+                        type="password"
+                        required
+                    />
+                </div>
+
+                <button
+                    id="btnLogin"
+                    class="btn btn-danger w-100"
+                    type="submit"
+                >
+                    Entrar
+                </button>
+
+                <div class="text-center mt-3">
+                    <a
+                        href="#"
+                        class="text-secondary"
+                        onclick="event.preventDefault(); loadPage('register')"
+                    >
+                        Criar conta
+                    </a>
+                </div>
+            </form>
         </div>
-      </form>
     </div>
-  </div>
 </div>

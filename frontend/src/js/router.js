@@ -12,6 +12,25 @@ function loadPage(route) {
 
       history.pushState({}, '', `/${route}`);
 
+      // ====== CHAMADAS PÓS-INJEÇÃO (AQUI É O PULO DO GATO) ======
+      // main
+      if (route === "main" && typeof window.loadMainUser === "function") {
+        window.loadMainUser();
+      }
+
+      // login (se você quiser rodar algo ao entrar na página login)
+      if (route === "login" && typeof window.onLoginPageLoaded === "function") {
+        console.log("Router: login injetado -> chamando onLoginPageLoaded()");
+        window.onLoginPageLoaded();
+      }
+
+      // register (se existir)
+      if (route === "register" && typeof window.onRegisterPageLoaded === "function") {
+        console.log("Router: register injetado -> chamando onRegisterPageLoaded()");
+        window.onRegisterPageLoaded();
+      }
+      // ===========================================================
+
       document.querySelectorAll('#navbar a.nav-link').forEach(link => {
         const onclick = link.getAttribute('onclick');
         const li = link.closest('li');
