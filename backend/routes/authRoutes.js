@@ -18,6 +18,5 @@ router.get("/me", requireAuth, me);
 router.post("/logout", logout);
 
 router.post("/email/send-token", requireAuth, sendEmailVerificationToken);
-router.post("/email/verify-token", requireAuth, verifyEmailToken);
-
+router.post("/email/verify-email-token", requireAuth, verifyEmailToken);
 module.exports = router;

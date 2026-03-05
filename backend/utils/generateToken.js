@@ -1,21 +1,13 @@
-const crypto = require('crypto');
+function generateEmailToken(length = 10) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let token = "";
 
-function generateEmailToken(length = 16) {
-  const charset =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-    'abcdefghijklmnopqrstuvwxyz' +
-    '0123456789' +
-    '!@#$%&*()-_=+{}[];:<>/?';
+    for (let i = 0; i < length; i++) {
+        const index = Math.floor(Math.random() * chars.length);
+        token += chars[index];
+    }
 
-  let token = '';
-  const bytes = crypto.randomBytes(length);
-
-  for (let i = 0; i < length; i++) {
-    const index = bytes[i] % charset.length;
-    token += charset[index];
-  }
-
-  return token;
+    return token;
 }
 
 module.exports = generateEmailToken;

@@ -71,7 +71,7 @@ async function register(req, res) {
 
     // 1) gerar token
     console.log("[REGISTER] Generating email token...");
-    const emailToken = generateEmailToken(24);
+    const emailToken = generateEmailToken(10);
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
     console.log("✅ [REGISTER] TOKEN GENERATED:", emailToken, "EXPIRES:", expires.toISOString());
 
@@ -167,7 +167,7 @@ async function sendEmailVerificationToken(req, res) {
   try {
     const userId = req.user.sub;
 
-    const token = generateEmailToken(24);
+    const token = generateEmailToken(10);
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
     const user = await withMongo(async (db) => {
@@ -208,24 +208,31 @@ async function verifyEmailToken(req, res) {
       return res.status(400).json({ ok: false, error: "Token é obrigatório." });
     }
 
+    const cleanToken = token.trim();
     const now = new Date();
 
     const result = await withMongo(async (db) => {
       const users = db.collection("users");
 
-      const user = await users.findOne({
-        _id: new ObjectId(userId),
-        emailVerificationToken: token,
-        emailVerificationExpires: { $gt: now },
-      });
+      // 1) pega o usuário pelo ID
+      const user = await users.findOne({ _id: new ObjectId(userId) });
+      if (!user) return { ok: false, reason: "user_not_found" };
 
-      if (!user) return { ok: false };
+      // 2) compara token
+      if (user.emailVerificationToken !== cleanToken) {
+        return { ok: false, reason: "token_mismatch" };
+      }
 
+      // 3) valida expiração (NOME CERTO DO CAMPO)
+      if (!user.emailVerificationExpires || new Date(user.emailVerificationExpires) <= now) {
+        return { ok: false, reason: "token_expired" };
+      }
+
+      // 4) atualiza (NOME CERTO DO CAMPO)
       await users.updateOne(
         { _id: user._id },
         {
           $set: { isEmailValid: true },
-          $setOnInsert: {},
           $unset: { emailVerificationToken: "", emailVerificationExpires: "" },
         }
       );
@@ -234,11 +241,16 @@ async function verifyEmailToken(req, res) {
     });
 
     if (!result.ok) {
-      return res.status(400).json({ ok: false, error: "Token inválido ou expirado." });
+      return res.status(400).json({
+        ok: false,
+        error: "Token inválido ou expirado.",
+        debug: result.reason,
+      });
     }
 
     return res.json({ ok: true, message: "E-mail verificado com sucesso." });
   } catch (err) {
+    console.error("verifyEmailToken error:", err);
     return res.status(500).json({ ok: false, error: "Erro ao validar token de e-mail." });
   }
 }
