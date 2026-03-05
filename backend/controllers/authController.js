@@ -148,7 +148,7 @@ async function login(req, res) {
 async function me(req, res) {
   try {
 
-    const user = await User.findById(req.user.sub).select("name email createdAt updatedAt");
+    const user = await User.findById(req.user.sub).select("name email isEmailValid createdAt updatedAt");
     if (!user) return res.status(404).json({ ok: false, error: "Usuário não encontrado" });
 
     return res.json({ ok: true, user });
