@@ -14,6 +14,12 @@ app.use((req, res, next) => {
   next();
 });
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
+
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI/MONGODB_URI não definido no backend/.env");
