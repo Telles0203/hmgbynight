@@ -1,0 +1,50 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm border-bottom border-danger fixed-top">
+  <div class="container-fluid content-conteiner">
+    <a class="navbar-brand d-flex flex-column text-blood lh-1" href="#"
+      onclick="event.preventDefault(); loadPage('home')">
+
+      <span class="fw-bold">BYNIGHT</span>
+      <small class="text-light opacity-75" style="font-size: 0.65rem;">
+        Gerenciamento de jogos LARP
+      </small>
+
+    </a>
+
+
+    <!-- Botão para abrir o menu flutuante -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuOffcanvas"
+      aria-controls="menuOffcanvas">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Menu colapsável padrão desktop (não será usado mais) -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link text-light" href="#"
+            onclick="event.preventDefault(); loadPage('home')">Home</a></li>
+        <li class="nav-item"><a class="nav-link text-light" href="#"
+            onclick="event.preventDefault(); loadPage('login')">Login</a></li>
+        <li class="nav-item"><a class="nav-link text-light" href="#"
+            onclick="event.preventDefault(); loadPage('register')">Register</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Menu suspenso flutuante (offcanvas) -->
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="menuOffcanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="navbar-nav">
+      <li><a class="nav-link text-light" href="#" onclick="event.preventDefault(); loadPage('home')"
+          data-bs-dismiss="offcanvas">Home</a></li>
+      <li><a class="nav-link text-light" href="#" onclick="event.preventDefault(); loadPage('login')"
+          data-bs-dismiss="offcanvas">Login</a></li>
+      <li><a class="nav-link text-light" href="#" onclick="event.preventDefault(); loadPage('register')"
+          data-bs-dismiss="offcanvas">Register</a></li>
+    </ul>
+  </div>
+</div>

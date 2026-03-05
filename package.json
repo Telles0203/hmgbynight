@@ -1,0 +1,24 @@
+{
+  "name": "022---hmgbynight",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Telles0203/bynighthmg.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Telles0203/bynighthmg/issues"
+  },
+  "homepage": "https://github.com/Telles0203/bynighthmg#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
