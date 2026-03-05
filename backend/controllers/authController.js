@@ -51,8 +51,13 @@ async function register(req, res) {
       passwordHash,
     });
 
+    console.log("✅ USER CREATED:", user._id.toString(), user.email);
+
     const token = signToken(user);
     res.cookie(cookieName(), token, cookieOptions());
+
+    console.log("✅ REGISTER OK - sending response");
+
 
     return res.json({
       ok: true,
@@ -112,5 +117,7 @@ function logout(req, res) {
   res.clearCookie(cookieName(), { path: "/" });
   return res.json({ ok: true });
 }
+
+
 
 module.exports = { register, login, me, logout };

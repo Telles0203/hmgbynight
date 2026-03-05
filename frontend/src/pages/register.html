@@ -1,2 +1,39 @@
-<h1>register</h1>
-<p>Welcome to ByNight.</p>
+<div class="container py-5" style="max-width: 520px;">
+    <div class="card bg-dark border border-danger shadow-sm">
+        <div class="card-body">
+            <h1 class="h4 text-light mb-3">Criar conta</h1>
+
+            <div id="registerAlert" class="alert d-none" role="alert"></div>
+
+            <form id="registerForm" autocomplete="on">
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Nome</label>
+                    <input id="name" class="form-control bg-black text-light border-secondary" type="text" required
+                        minlength="2" maxlength="40" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary">E-mail</label>
+                    <input id="email" class="form-control bg-black text-light border-secondary" type="email" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Senha</label>
+                    <input id="password" class="form-control bg-black text-light border-secondary" type="password"
+                        required minlength="6" />
+                    <div class="form-text text-secondary">Mínimo 6 caracteres.</div>
+                </div>
+
+                <button id="btnRegister" class="btn btn-danger w-100" type="submit">
+                    Criar conta
+                </button>
+
+                <div class="text-center mt-3">
+                    <a href="#" class="text-secondary" onclick="event.preventDefault(); loadPage('login')">Já tenho
+                        conta</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
