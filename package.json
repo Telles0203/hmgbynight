@@ -19,6 +19,12 @@
   },
   "homepage": "https://github.com/Telles0203/bynighthmg#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.3.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.4"
   }
 }
