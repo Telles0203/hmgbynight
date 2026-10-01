@@ -46,10 +46,6 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
-    // ==============================
-    // Password reset
-    // ==============================
-
     resetPasswordTokenHash: {
       type: String,
       default: null,
@@ -61,12 +57,29 @@ const UserSchema = new mongoose.Schema(
       default: null,
       select: false,
     },
+
+    // ==============================
+    // Account anonymization
+    // ==============================
+
+    isAnonymized: {
+      type: Boolean,
+      default: false,
+    },
+
+    anonymizedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
 
     toJSON: {
-      transform: (document, returnedObject) => {
+      transform: (
+        document,
+        returnedObject
+      ) => {
         delete returnedObject.passwordHash;
 
         delete returnedObject.emailVerificationToken;
@@ -74,13 +87,18 @@ const UserSchema = new mongoose.Schema(
 
         delete returnedObject.resetPasswordTokenHash;
         delete returnedObject.resetPasswordExpires;
+
+        delete returnedObject.authVersion;
 
         return returnedObject;
       },
     },
 
     toObject: {
-      transform: (document, returnedObject) => {
+      transform: (
+        document,
+        returnedObject
+      ) => {
         delete returnedObject.passwordHash;
 
         delete returnedObject.emailVerificationToken;
@@ -88,6 +106,8 @@ const UserSchema = new mongoose.Schema(
 
         delete returnedObject.resetPasswordTokenHash;
         delete returnedObject.resetPasswordExpires;
+
+        delete returnedObject.authVersion;
 
         return returnedObject;
       },

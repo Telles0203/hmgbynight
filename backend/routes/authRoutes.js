@@ -17,6 +17,7 @@ const {
 const {
   updateAccountName,
   updateAccountPassword,
+  anonymizeAccount,
 } = require("../controllers/accountController");
 
 const {
@@ -127,6 +128,20 @@ const accountPasswordLimiter = rateLimit({
   },
 });
 
+const accountDeleteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+
+  message: {
+    ok: false,
+    error:
+      "Muitas tentativas de exclusão de conta. Aguarde alguns minutos.",
+  },
+});
+
 // ==============================
 // Authentication
 // ==============================
@@ -176,6 +191,13 @@ router.patch(
   requireAuth,
   accountPasswordLimiter,
   updateAccountPassword
+);
+
+router.delete(
+  "/account",
+  requireAuth,
+  accountDeleteLimiter,
+  anonymizeAccount
 );
 
 // ==============================

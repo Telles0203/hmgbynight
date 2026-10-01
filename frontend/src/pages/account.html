@@ -19,7 +19,6 @@
                     Dados da conta
                 </h2>
 
-                <!-- Nome -->
                 <div class="mb-3">
 
                     <label
@@ -66,7 +65,6 @@
 
                 </div>
 
-                <!-- E-mail -->
                 <div class="mb-3">
 
                     <label
@@ -195,7 +193,7 @@
             <hr class="border-secondary">
 
             <!-- Sessão -->
-            <section>
+            <section class="mb-4">
 
                 <h2 class="h5 text-light mb-3">
                     Sessão
@@ -211,6 +209,125 @@
 
             </section>
 
+            <hr class="border-danger">
+
+            <!-- Exclusão da conta -->
+            <section>
+
+                <h2 class="h5 text-danger mb-3">
+                    Excluir conta
+                </h2>
+
+                <p class="text-secondary">
+                    A exclusão da conta é irreversível.
+                    Seus dados pessoais serão anonimizados
+                    e você perderá o acesso à conta.
+                </p>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteAccountModal"
+                >
+                    Excluir minha conta
+                </button>
+
+            </section>
+
         </div>
+    </div>
+</div>
+
+<!-- Modal de exclusão -->
+<div
+    class="modal fade"
+    id="deleteAccountModal"
+    tabindex="-1"
+    aria-labelledby="deleteAccountModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark border border-danger">
+
+            <div class="modal-header border-danger">
+
+                <h5
+                    class="modal-title text-danger"
+                    id="deleteAccountModalLabel"
+                >
+                    Excluir conta
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar"
+                ></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="alert alert-danger">
+                    Esta ação é irreversível.
+                </div>
+
+                <p class="text-light">
+                    Ao continuar, sua conta será desativada
+                    permanentemente e seus dados pessoais
+                    serão anonimizados.
+                </p>
+
+                <p class="text-secondary">
+                    Para confirmar, informe sua senha atual.
+                </p>
+
+                <label
+                    for="deleteAccountPassword"
+                    class="form-label text-secondary"
+                >
+                    Senha atual
+                </label>
+
+                <input
+                    id="deleteAccountPassword"
+                    type="password"
+                    class="form-control bg-black text-light border-secondary"
+                    autocomplete="current-password"
+                >
+
+                <div
+                    id="deleteAccountAlert"
+                    class="alert alert-danger d-none mt-3 mb-0"
+                    role="alert"
+                ></div>
+
+            </div>
+
+            <div class="modal-footer border-danger">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    id="confirmDeleteAccountButton"
+                    type="button"
+                    class="btn btn-danger"
+                >
+                    Excluir definitivamente
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
 </div>

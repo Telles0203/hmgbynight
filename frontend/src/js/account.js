@@ -36,7 +36,42 @@ function hideAccountAlert() {
   }
 
   alertBox.textContent = "";
-  alertBox.className = "alert d-none";
+  alertBox.className =
+    "alert d-none";
+}
+
+function showDeleteAccountAlert(
+  message
+) {
+  const alertBox =
+    document.getElementById(
+      "deleteAccountAlert"
+    );
+
+  if (!alertBox) {
+    return;
+  }
+
+  alertBox.textContent = message;
+  alertBox.classList.remove(
+    "d-none"
+  );
+}
+
+function hideDeleteAccountAlert() {
+  const alertBox =
+    document.getElementById(
+      "deleteAccountAlert"
+    );
+
+  if (!alertBox) {
+    return;
+  }
+
+  alertBox.textContent = "";
+  alertBox.classList.add(
+    "d-none"
+  );
 }
 
 function updateAccountEmailStatus(
@@ -52,7 +87,9 @@ function updateAccountEmailStatus(
   }
 
   if (isEmailValid) {
-    status.textContent = "Verificado";
+    status.textContent =
+      "Verificado";
+
     status.className =
       "badge bg-success";
 
@@ -66,7 +103,9 @@ function updateAccountEmailStatus(
     "badge bg-warning text-dark";
 }
 
-function setNameEditMode(editing) {
+function setNameEditMode(
+  editing
+) {
   const nameInput =
     document.getElementById(
       "accountName"
@@ -114,7 +153,9 @@ function setNameEditMode(editing) {
   }
 }
 
-function setPasswordEditMode(editing) {
+function setPasswordEditMode(
+  editing
+) {
   const changeButton =
     document.getElementById(
       "changePasswordButton"
@@ -175,6 +216,19 @@ function clearPasswordFields() {
   if (confirmPassword) {
     confirmPassword.value = "";
   }
+}
+
+function clearDeleteAccountFields() {
+  const passwordInput =
+    document.getElementById(
+      "deleteAccountPassword"
+    );
+
+  if (passwordInput) {
+    passwordInput.value = "";
+  }
+
+  hideDeleteAccountAlert();
 }
 
 async function loadAccountUser() {
@@ -293,7 +347,10 @@ async function saveAccountName() {
       .json()
       .catch(() => ({}));
 
-    if (!response.ok || !data?.ok) {
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
       showAccountAlert(
         data?.error ||
           "Não foi possível alterar o nome."
@@ -302,7 +359,8 @@ async function saveAccountName() {
       return;
     }
 
-    originalAccountName = name;
+    originalAccountName =
+      name;
 
     if (
       typeof window.setSessionUser ===
@@ -382,7 +440,9 @@ async function saveAccountPassword() {
     return;
   }
 
-  if (newPassword.length < 6) {
+  if (
+    newPassword.length < 6
+  ) {
     showAccountAlert(
       "A nova senha deve possuir pelo menos 6 caracteres."
     );
@@ -391,7 +451,8 @@ async function saveAccountPassword() {
   }
 
   if (
-    newPassword !== confirmPassword
+    newPassword !==
+    confirmPassword
   ) {
     showAccountAlert(
       "As novas senhas não coincidem."
@@ -430,7 +491,10 @@ async function saveAccountPassword() {
       .json()
       .catch(() => ({}));
 
-    if (!response.ok || !data?.ok) {
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
       showAccountAlert(
         data?.error ||
           "Não foi possível alterar a senha."
@@ -452,7 +516,9 @@ async function saveAccountPassword() {
       typeof window.updateNavbarAuth ===
       "function"
     ) {
-      window.updateNavbarAuth(null);
+      window.updateNavbarAuth(
+        null
+      );
     }
 
     await window.loadPage(
@@ -477,6 +543,149 @@ async function saveAccountPassword() {
       saveButton.disabled = false;
       saveButton.textContent =
         "Salvar nova senha";
+    }
+  }
+}
+
+async function deleteAccount() {
+  hideDeleteAccountAlert();
+
+  const passwordInput =
+    document.getElementById(
+      "deleteAccountPassword"
+    );
+
+  const deleteButton =
+    document.getElementById(
+      "confirmDeleteAccountButton"
+    );
+
+  const currentPassword =
+    passwordInput?.value || "";
+
+  if (!currentPassword) {
+    showDeleteAccountAlert(
+      "Informe sua senha atual."
+    );
+
+    return;
+  }
+
+  try {
+    if (deleteButton) {
+      deleteButton.disabled = true;
+      deleteButton.textContent =
+        "Excluindo...";
+    }
+
+    const response = await fetch(
+      "/api/auth/account",
+      {
+        method: "DELETE",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        credentials: "include",
+
+        body: JSON.stringify({
+          currentPassword,
+        }),
+      }
+    );
+
+    const data = await response
+      .json()
+      .catch(() => ({}));
+
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
+      showDeleteAccountAlert(
+        data?.error ||
+          "Não foi possível excluir a conta."
+      );
+
+      return;
+    }
+
+    if (
+      typeof window.clearSessionUser ===
+      "function"
+    ) {
+      window.clearSessionUser();
+    }
+
+    if (
+      typeof window.updateNavbarAuth ===
+      "function"
+    ) {
+      window.updateNavbarAuth(
+        null
+      );
+    }
+
+    const modalElement =
+      document.getElementById(
+        "deleteAccountModal"
+      );
+
+    if (
+      modalElement &&
+      window.bootstrap
+    ) {
+      const modal =
+        bootstrap.Modal.getOrCreateInstance(
+          modalElement
+        );
+
+      modalElement.addEventListener(
+        "hidden.bs.modal",
+        async () => {
+          await window.loadPage(
+            "home",
+            {
+              updateHistory: true,
+              replaceHistory: true,
+              checkAuth: false,
+            }
+          );
+        },
+        {
+          once: true,
+        }
+      );
+
+      modal.hide();
+
+      return;
+    }
+
+    await window.loadPage(
+      "home",
+      {
+        updateHistory: true,
+        replaceHistory: true,
+        checkAuth: false,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "[ACCOUNT] Erro ao excluir conta:",
+      error
+    );
+
+    showDeleteAccountAlert(
+      "Erro de conexão com o servidor."
+    );
+  } finally {
+    if (deleteButton) {
+      deleteButton.disabled = false;
+      deleteButton.textContent =
+        "Excluir definitivamente";
     }
   }
 }
@@ -517,6 +726,16 @@ async function onAccountPageLoaded() {
   const cancelPasswordButton =
     document.getElementById(
       "cancelPasswordButton"
+    );
+
+  const deleteButton =
+    document.getElementById(
+      "confirmDeleteAccountButton"
+    );
+
+  const deleteModal =
+    document.getElementById(
+      "deleteAccountModal"
     );
 
   editNameButton?.addEventListener(
@@ -569,6 +788,18 @@ async function onAccountPageLoaded() {
       hideAccountAlert();
       clearPasswordFields();
       setPasswordEditMode(false);
+    }
+  );
+
+  deleteButton?.addEventListener(
+    "click",
+    deleteAccount
+  );
+
+  deleteModal?.addEventListener(
+    "hidden.bs.modal",
+    () => {
+      clearDeleteAccountFields();
     }
   );
 }
