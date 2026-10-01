@@ -29,6 +29,11 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
 
+    authVersion: {
+      type: Number,
+      default: 0,
+    },
+
     emailVerificationToken: {
       type: String,
       default: null,

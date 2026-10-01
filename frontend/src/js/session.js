@@ -1,12 +1,20 @@
 let currentUser = undefined;
 let sessionRequest = null;
 
-async function sessionMe(forceRefresh = false) {
-  if (!forceRefresh && currentUser !== undefined) {
+async function sessionMe(
+  forceRefresh = false
+) {
+  if (
+    !forceRefresh &&
+    currentUser !== undefined
+  ) {
     return currentUser;
   }
 
-  if (!forceRefresh && sessionRequest) {
+  if (
+    !forceRefresh &&
+    sessionRequest
+  ) {
     return sessionRequest;
   }
 
@@ -25,7 +33,8 @@ async function sessionMe(forceRefresh = false) {
         return null;
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       currentUser =
         data?.user || null;
@@ -48,12 +57,27 @@ async function sessionMe(forceRefresh = false) {
   return sessionRequest;
 }
 
-async function requireAuth(currentPage) {
-  const user = await sessionMe();
+async function requireAuth(
+  currentPage
+) {
+  const user =
+    await sessionMe();
+
+  const protectedPages = [
+    "main",
+    "account",
+  ];
+
+  const guestPages = [
+    "login",
+    "register",
+  ];
 
   if (
     !user &&
-    currentPage === "main"
+    protectedPages.includes(
+      currentPage
+    )
   ) {
     return {
       allowed: false,
@@ -64,9 +88,8 @@ async function requireAuth(currentPage) {
 
   if (
     user &&
-    (
-      currentPage === "login" ||
-      currentPage === "register"
+    guestPages.includes(
+      currentPage
     )
   ) {
     return {
@@ -84,7 +107,8 @@ async function requireAuth(currentPage) {
 }
 
 function setSessionUser(user) {
-  currentUser = user || null;
+  currentUser =
+    user || null;
 }
 
 function clearSessionUser() {

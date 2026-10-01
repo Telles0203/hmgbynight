@@ -55,6 +55,7 @@ function updateAccountEmailStatus(
     status.textContent = "Verificado";
     status.className =
       "badge bg-success";
+
     return;
   }
 
@@ -252,9 +253,12 @@ async function saveAccountName() {
   const name =
     nameInput.value.trim();
 
-  if (name.length < 2) {
+  if (
+    name.length < 2 ||
+    name.length > 40
+  ) {
     showAccountAlert(
-      "Informe um nome válido."
+      "O nome deve possuir entre 2 e 40 caracteres."
     );
 
     return;
@@ -436,11 +440,28 @@ async function saveAccountPassword() {
     }
 
     clearPasswordFields();
-    setPasswordEditMode(false);
 
-    showAccountAlert(
-      "Senha alterada com sucesso.",
-      "success"
+    if (
+      typeof window.clearSessionUser ===
+      "function"
+    ) {
+      window.clearSessionUser();
+    }
+
+    if (
+      typeof window.updateNavbarAuth ===
+      "function"
+    ) {
+      window.updateNavbarAuth(null);
+    }
+
+    await window.loadPage(
+      "login",
+      {
+        updateHistory: true,
+        replaceHistory: true,
+        checkAuth: false,
+      }
     );
   } catch (error) {
     console.error(

@@ -54,9 +54,14 @@ function signToken(user) {
       sub: String(user._id),
       email: user.email,
       name: user.name,
+
+      authVersion: Number(
+        user.authVersion ?? 0
+      ),
     },
     process.env.JWT_SECRET,
     {
+      algorithm: "HS256",
       expiresIn: "7d",
     }
   );
@@ -190,6 +195,7 @@ async function register(req, res) {
       email: cleanEmail,
       passwordHash,
       isEmailValid: false,
+      authVersion: 0,
       emailVerificationToken,
       emailVerificationExpires,
     });
@@ -281,7 +287,9 @@ async function login(req, res) {
     const user =
       await User.findOne({
         email: cleanEmail,
-      }).select("+passwordHash");
+      }).select(
+        "+passwordHash authVersion"
+      );
 
     if (!user) {
       return res.status(401).json({
@@ -374,10 +382,6 @@ async function forgotPassword(
         email: cleanEmail,
       });
 
-    /*
-     * Não informamos se o usuário existe.
-     * Isso evita enumeração de contas.
-     */
     if (!user) {
       return res.json({
         ok: true,
@@ -418,10 +422,6 @@ async function forgotPassword(
         error.message
       );
 
-      /*
-       * Remove o token criado, já que
-       * o e-mail não foi enviado.
-       */
       user.resetPasswordTokenHash =
         null;
 
@@ -430,10 +430,6 @@ async function forgotPassword(
 
       await user.save();
 
-      /*
-       * Mantemos resposta genérica para
-       * não revelar se o e-mail existe.
-       */
       return res.json({
         ok: true,
         message:
@@ -515,7 +511,7 @@ async function resetPassword(
           $gt: new Date(),
         },
       }).select(
-        "+passwordHash +resetPasswordTokenHash +resetPasswordExpires"
+        "+passwordHash +resetPasswordTokenHash +resetPasswordExpires authVersion"
       );
 
     if (!user) {
@@ -541,7 +537,32 @@ async function resetPassword(
     user.resetPasswordExpires =
       null;
 
+    user.authVersion =
+      Number(
+        user.authVersion ?? 0
+      ) + 1;
+
     await user.save();
+
+    const cookieOptions =
+      getCookieOptions();
+
+    res.clearCookie(
+      getCookieName(),
+      {
+        httpOnly:
+          cookieOptions.httpOnly,
+
+        secure:
+          cookieOptions.secure,
+
+        sameSite:
+          cookieOptions.sameSite,
+
+        path:
+          cookieOptions.path,
+      }
+    );
 
     return res.json({
       ok: true,
