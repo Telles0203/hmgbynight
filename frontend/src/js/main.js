@@ -1,4 +1,4 @@
-async function loadMainUser() {
+async function loadMainUser(forceRefresh = false) {
   const greeting =
     document.getElementById("mainGreeting");
 
@@ -20,34 +20,38 @@ async function loadMainUser() {
   greeting.textContent = "";
 
   try {
-    const response = await fetch(
-      "/api/auth/me",
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
+    if (
+      typeof window.sessionMe !==
+      "function"
+    ) {
+      throw new Error(
+        "Gerenciador de sessão não disponível."
+      );
+    }
 
-    if (!response.ok) {
+    const user =
+      await window.sessionMe(
+        forceRefresh
+      );
+
+    if (!user) {
       if (
-        typeof window.loadPage === "function"
+        typeof window.loadPage ===
+        "function"
       ) {
-        await window.loadPage("login");
+        await window.loadPage(
+          "login",
+          {
+            checkAuth: false,
+            replaceHistory: true,
+          }
+        );
       } else {
-        window.location.href = "/login";
+        window.location.href =
+          "/login";
       }
 
       return;
-    }
-
-    const data = await response.json();
-
-    const user = data?.user;
-
-    if (!user) {
-      throw new Error(
-        "Usuário não retornado pela API."
-      );
     }
 
     // ==============================
@@ -55,10 +59,13 @@ async function loadMainUser() {
     // ==============================
 
     if (user.isEmailValid === false) {
-      if (emailValidationContainer) {
-        const modalResponse = await fetch(
-          "/src/pages/emailValidationModal.html"
-        );
+      if (
+        emailValidationContainer
+      ) {
+        const modalResponse =
+          await fetch(
+            "/src/pages/emailValidationModal.html"
+          );
 
         if (!modalResponse.ok) {
           throw new Error(
@@ -74,17 +81,21 @@ async function loadMainUser() {
 
         setupEmailValidationHandlers();
       }
-    } else if (emailValidationContainer) {
-      emailValidationContainer.innerHTML = "";
+    } else if (
+      emailValidationContainer
+    ) {
+      emailValidationContainer.innerHTML =
+        "";
     }
 
     // ==============================
     // Greeting
     // ==============================
 
-    greeting.textContent = user.name
-      ? `Olá ${user.name}.`
-      : "Olá.";
+    greeting.textContent =
+      user.name
+        ? `Olá ${user.name}.`
+        : "Olá.";
 
     // ==============================
     // Show main page
@@ -107,10 +118,8 @@ async function loadMainUser() {
       loading.style.display = "none";
     }
 
-    if (greeting) {
-      greeting.textContent =
-        "Não foi possível carregar seus dados.";
-    }
+    greeting.textContent =
+      "Não foi possível carregar seus dados.";
 
     if (main) {
       main.style.display = "block";
@@ -134,7 +143,10 @@ function setupEmailValidationHandlers() {
       "emailTokenInput"
     );
 
-  if (!validateButton || !tokenInput) {
+  if (
+    !validateButton ||
+    !tokenInput
+  ) {
     return;
   }
 
@@ -145,7 +157,8 @@ function setupEmailValidationHandlers() {
   validateButton.addEventListener(
     "click",
     async () => {
-      const token = tokenInput.value.trim();
+      const token =
+        tokenInput.value.trim();
 
       tokenInput.classList.remove(
         "border-danger",
@@ -168,33 +181,42 @@ function setupEmailValidationHandlers() {
       }
 
       try {
-        validateButton.disabled = true;
+        validateButton.disabled =
+          true;
+
         validateButton.textContent =
           "Validando...";
 
-        const response = await fetch(
-          "/api/auth/email/verify-email-token",
-          {
-            method: "POST",
+        const response =
+          await fetch(
+            "/api/auth/email/verify-email-token",
+            {
+              method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-            credentials: "include",
+              credentials:
+                "include",
 
-            body: JSON.stringify({
-              token,
-            }),
-          }
-        );
+              body:
+                JSON.stringify({
+                  token,
+                }),
+            }
+          );
 
-        const data = await response
-          .json()
-          .catch(() => ({}));
+        const data =
+          await response
+            .json()
+            .catch(() => ({}));
 
-        if (!response.ok || !data?.ok) {
+        if (
+          !response.ok ||
+          !data?.ok
+        ) {
           tokenInput.classList.add(
             "border-danger"
           );
@@ -210,10 +232,6 @@ function setupEmailValidationHandlers() {
           return;
         }
 
-        tokenInput.classList.remove(
-          "border-danger"
-        );
-
         tokenInput.classList.add(
           "border-success"
         );
@@ -225,7 +243,9 @@ function setupEmailValidationHandlers() {
 
         tokenInput.value = "";
 
-        await loadMainUser();
+        // Atualiza os dados da sessão
+        // porque isEmailValid mudou.
+        await loadMainUser(true);
       } catch (error) {
         console.error(
           "[EMAIL VALIDATION] Erro ao validar:",
@@ -241,7 +261,9 @@ function setupEmailValidationHandlers() {
           "danger"
         );
       } finally {
-        validateButton.disabled = false;
+        validateButton.disabled =
+          false;
+
         validateButton.textContent =
           "Validar e-mail";
       }
@@ -257,23 +279,31 @@ function setupEmailValidationHandlers() {
       "click",
       async () => {
         try {
-          resendButton.disabled = true;
+          resendButton.disabled =
+            true;
+
           resendButton.textContent =
             "Enviando...";
 
-          const response = await fetch(
-            "/api/auth/email/send-token",
-            {
-              method: "POST",
-              credentials: "include",
-            }
-          );
+          const response =
+            await fetch(
+              "/api/auth/email/send-token",
+              {
+                method: "POST",
+                credentials:
+                  "include",
+              }
+            );
 
-          const data = await response
-            .json()
-            .catch(() => ({}));
+          const data =
+            await response
+              .json()
+              .catch(() => ({}));
 
-          if (!response.ok || !data?.ok) {
+          if (
+            !response.ok ||
+            !data?.ok
+          ) {
             showEmailValidationAlert(
               data?.error ||
                 "Não foi possível enviar um novo código.",
@@ -306,7 +336,9 @@ function setupEmailValidationHandlers() {
             "danger"
           );
         } finally {
-          resendButton.disabled = false;
+          resendButton.disabled =
+            false;
+
           resendButton.textContent =
             "Enviar novo token";
         }
@@ -334,10 +366,17 @@ function showEmailValidationAlert(
     );
 
   if (!alert) {
-    alert = document.createElement("div");
+    alert =
+      document.createElement(
+        "div"
+      );
 
-    alert.id = "emailValidationAlert";
-    alert.className = "alert mt-3";
+    alert.id =
+      "emailValidationAlert";
+
+    alert.className =
+      "alert mt-3";
+
     alert.role = "alert";
 
     warningBox
@@ -359,4 +398,5 @@ function showEmailValidationAlert(
   alert.textContent = message;
 }
 
-window.loadMainUser = loadMainUser;
+window.loadMainUser =
+  loadMainUser;

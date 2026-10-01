@@ -11,6 +11,13 @@
 
     <title>ByNight</title>
 
+    <!-- Favicon -->
+    <link
+        rel="icon"
+        type="image/png"
+        href="/favicon.png"
+    >
+
     <!-- Bootstrap -->
     <link
         rel="stylesheet"
@@ -30,9 +37,18 @@
     >
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500&display=swap"
         rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500&display=swap"
+        media="print"
+        onload="this.media='all'"
     >
+
+    <noscript>
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500&display=swap"
+        >
+    </noscript>
 
     <!-- CSS do projeto -->
     <link
@@ -51,20 +67,51 @@
         <small>© 2025 - 2026 ByNight</small>
     </footer>
 
+    <!-- Bootstrap -->
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        defer
     ></script>
 
-    <script src="/src/js/loadLayout.js" defer></script>
+    <!-- Layout -->
+    <script
+        src="/src/js/loadLayout.js"
+        defer
+    ></script>
 
-    <script src="/src/js/session.js" defer></script>
-    <script src="/src/js/logout.js" defer></script>
+    <!-- Sessão -->
+    <script
+        src="/src/js/session.js"
+        defer
+    ></script>
 
-    <script src="/src/js/router.js" defer></script>
+    <!-- Logout -->
+    <script
+        src="/src/js/logout.js"
+        defer
+    ></script>
 
-    <script src="/src/js/register.js" defer></script>
-    <script src="/src/js/login.js" defer></script>
-    <script src="/src/js/main.js" defer></script>
+    <!-- Router -->
+    <script
+        src="/src/js/router.js"
+        defer
+    ></script>
+
+    <!-- Páginas -->
+    <script
+        src="/src/js/register.js"
+        defer
+    ></script>
+
+    <script
+        src="/src/js/login.js"
+        defer
+    ></script>
+
+    <script
+        src="/src/js/main.js"
+        defer
+    ></script>
 
 </body>
 

@@ -21,7 +21,27 @@ async function logoutUser() {
       return false;
     }
 
-    if (typeof window.loadPage === "function") {
+    // Limpa cache da sessão
+    if (
+      typeof window.clearSessionUser ===
+      "function"
+    ) {
+      window.clearSessionUser();
+    }
+
+    // Atualiza navbar para visitante
+    if (
+      typeof window.updateNavbarAuth ===
+      "function"
+    ) {
+      window.updateNavbarAuth(null);
+    }
+
+    // Volta para home
+    if (
+      typeof window.loadPage ===
+      "function"
+    ) {
       await window.loadPage("home", {
         updateHistory: true,
         replaceHistory: true,

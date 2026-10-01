@@ -1,31 +1,60 @@
-async function sessionMe() {
-  try {
-    const response = await fetch("/api/auth/me", {
-      method: "GET",
-      credentials: "include",
-    });
+let currentUser = undefined;
+let sessionRequest = null;
 
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-
-    return data?.user || null;
-  } catch (error) {
-    console.error(
-      "[SESSION] Erro ao verificar sessão:",
-      error
-    );
-
-    return null;
+async function sessionMe(forceRefresh = false) {
+  if (!forceRefresh && currentUser !== undefined) {
+    return currentUser;
   }
+
+  if (!forceRefresh && sessionRequest) {
+    return sessionRequest;
+  }
+
+  sessionRequest = (async () => {
+    try {
+      const response = await fetch(
+        "/api/auth/me",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        currentUser = null;
+        return null;
+      }
+
+      const data = await response.json();
+
+      currentUser =
+        data?.user || null;
+
+      return currentUser;
+    } catch (error) {
+      console.error(
+        "[SESSION] Erro ao verificar sessão:",
+        error
+      );
+
+      currentUser = null;
+
+      return null;
+    } finally {
+      sessionRequest = null;
+    }
+  })();
+
+  return sessionRequest;
 }
 
 async function requireAuth(currentPage) {
   const user = await sessionMe();
 
-  if (!user && currentPage === "main") {
+  if (
+    !user &&
+    currentPage === "main"
+  ) {
     return {
       allowed: false,
       redirect: "login",
@@ -35,8 +64,10 @@ async function requireAuth(currentPage) {
 
   if (
     user &&
-    (currentPage === "login" ||
-      currentPage === "register")
+    (
+      currentPage === "login" ||
+      currentPage === "register"
+    )
   ) {
     return {
       allowed: false,
@@ -52,5 +83,29 @@ async function requireAuth(currentPage) {
   };
 }
 
-window.sessionMe = sessionMe;
-window.requireAuth = requireAuth;
+function setSessionUser(user) {
+  currentUser = user || null;
+}
+
+function clearSessionUser() {
+  currentUser = null;
+}
+
+function invalidateSession() {
+  currentUser = undefined;
+}
+
+window.sessionMe =
+  sessionMe;
+
+window.requireAuth =
+  requireAuth;
+
+window.setSessionUser =
+  setSessionUser;
+
+window.clearSessionUser =
+  clearSessionUser;
+
+window.invalidateSession =
+  invalidateSession;

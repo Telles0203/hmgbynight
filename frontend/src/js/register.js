@@ -66,7 +66,8 @@ async function handleRegisterSubmit() {
   try {
     if (registerButton) {
       registerButton.disabled = true;
-      registerButton.textContent = "Criando...";
+      registerButton.textContent =
+        "Criando...";
     }
 
     const response = await fetch(
@@ -102,7 +103,30 @@ async function handleRegisterSubmit() {
       return;
     }
 
-    if (data?.emailVerification?.sent === false) {
+    // Atualiza cache da sessão
+    if (
+      typeof window.setSessionUser ===
+      "function"
+    ) {
+      window.setSessionUser(
+        data.user
+      );
+    }
+
+    // Atualiza navbar
+    if (
+      typeof window.updateNavbarAuth ===
+      "function"
+    ) {
+      window.updateNavbarAuth(
+        data.user
+      );
+    }
+
+    if (
+      data?.emailVerification?.sent ===
+      false
+    ) {
       showRegisterAlert(
         "success",
         "Conta criada com sucesso. O e-mail de verificação não pôde ser enviado agora."
@@ -114,31 +138,17 @@ async function handleRegisterSubmit() {
       );
     }
 
-    if (registerButton) {
-      registerButton.disabled = false;
-      registerButton.type = "button";
-      registerButton.textContent = "Entrar";
-
-      registerButton.onclick = async () => {
-        if (
-          typeof window.loadPage === "function"
-        ) {
-          await window.loadPage("main");
-        } else {
-          window.location.href = "/main";
-        }
-      };
-    }
-
     setTimeout(async () => {
       if (
-        typeof window.loadPage === "function"
+        typeof window.loadPage ===
+        "function"
       ) {
         await window.loadPage("main");
       } else {
-        window.location.href = "/main";
+        window.location.href =
+          "/main";
       }
-    }, 3000);
+    }, 1500);
   } catch (error) {
     console.error(
       "[REGISTER] Erro ao criar conta:",
@@ -150,10 +160,7 @@ async function handleRegisterSubmit() {
       "Erro de conexão com o servidor."
     );
   } finally {
-    if (
-      registerButton &&
-      registerButton.type !== "button"
-    ) {
+    if (registerButton) {
       registerButton.disabled = false;
       registerButton.textContent =
         "Criar conta";

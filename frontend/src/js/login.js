@@ -7,7 +7,9 @@ function showLoginAlert(message) {
   }
 
   alertElement.textContent = message;
+
   alertElement.classList.remove("d-none");
+
   alertElement.classList.add(
     "alert",
     "alert-danger"
@@ -23,6 +25,7 @@ function hideLoginAlert() {
   }
 
   alertElement.textContent = "";
+
   alertElement.classList.add("d-none");
 }
 
@@ -92,7 +95,7 @@ document.addEventListener(
         .json()
         .catch(() => ({}));
 
-      if (!response.ok) {
+      if (!response.ok || !data?.ok) {
         showLoginAlert(
           data?.error || "Falha no login."
         );
@@ -100,7 +103,31 @@ document.addEventListener(
         return;
       }
 
-      if (typeof window.loadPage === "function") {
+      // Atualiza cache da sessão
+      if (
+        typeof window.setSessionUser ===
+        "function"
+      ) {
+        window.setSessionUser(
+          data.user
+        );
+      }
+
+      // Atualiza navbar
+      if (
+        typeof window.updateNavbarAuth ===
+        "function"
+      ) {
+        window.updateNavbarAuth(
+          data.user
+        );
+      }
+
+      // Vai para main
+      if (
+        typeof window.loadPage ===
+        "function"
+      ) {
         await window.loadPage("main");
       } else {
         window.location.href = "/main";
