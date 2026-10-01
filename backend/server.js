@@ -1,72 +1,224 @@
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 
-require("dotenv").config({ path: path.join(__dirname, ".env") });
+require("dotenv").config({
+  path: path.join(__dirname, ".env"),
+});
 
 const app = express();
+
 const PORT = process.env.PORT || 8080;
 
-app.use(express.json());
+// ==============================
+// Proxy
+// ==============================
 
-// app.use((req, res, next) => {
-//   console.log(`➡️ ${req.method} ${req.url}`);
-//   next();
-// });
+const trustProxyHops = Number.parseInt(
+  process.env.TRUST_PROXY_HOPS || "1",
+  10
+);
 
-const cookieParser = require("cookie-parser");
+if (
+  Number.isNaN(trustProxyHops) ||
+  trustProxyHops < 0
+) {
+  console.error(
+    "❌ TRUST_PROXY_HOPS possui um valor inválido."
+  );
+
+  process.exit(1);
+}
+
+app.set(
+  "trust proxy",
+  trustProxyHops
+);
+
+// Remove identificação do Express
+app.disable("x-powered-by");
+
+// ==============================
+// Middlewares
+// ==============================
+
+app.use(express.json({
+  limit: "100kb",
+}));
+
 app.use(cookieParser());
 
-const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes);
+// ==============================
+// API Routes
+// ==============================
 
-const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
+const authRoutes = require(
+  "./routes/authRoutes"
+);
+
+app.use(
+  "/api/auth",
+  authRoutes
+);
+
+// ==============================
+// MongoDB
+// ==============================
+
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  process.env.MONGODB_URI;
+
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI/MONGODB_URI não definido no backend/.env");
+  console.error(
+    "❌ MONGO_URI/MONGODB_URI não definido no backend/.env"
+  );
+
   process.exit(1);
 }
 
 async function connectMongo() {
-  await mongoose.connect(MONGO_URI, {
-    dbName: process.env.DB_NAME || "bynight",
-    autoIndex: true,
-  });
+  await mongoose.connect(
+    MONGO_URI,
+    {
+      dbName:
+        process.env.DB_NAME ||
+        "bynight",
 
-  console.log("🟢 MongoDB conectado (mongoose)");
+      autoIndex: true,
+    }
+  );
+
+  console.log(
+    "🟢 MongoDB conectado"
+  );
 }
 
+// ==============================
+// Frontend
+// ==============================
 
-const userRoutes = require("./routes/userRoutes");
-app.use("/api/user", userRoutes);
+const publicDir = path.join(
+  __dirname,
+  "..",
+  "frontend",
+  "public"
+);
 
-const publicDir = path.join(__dirname, "..", "frontend", "public");
-const srcDir = path.join(__dirname, "..", "frontend", "src");
+const srcDir = path.join(
+  __dirname,
+  "..",
+  "frontend",
+  "src"
+);
 
-app.use("/src", express.static(srcDir));
-app.use(express.static(publicDir));
+app.use(
+  "/src",
+  express.static(srcDir)
+);
 
-app.use((req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
-  if (path.extname(req.path)) return next();
-  return res.sendFile(path.join(publicDir, "index.html"));
-});
+app.use(
+  express.static(publicDir)
+);
 
-(async () => {
+// ==============================
+// API 404
+// ==============================
+
+app.use(
+  "/api",
+  (req, res) => {
+    return res.status(404).json({
+      ok: false,
+      error:
+        "Endpoint não encontrado.",
+    });
+  }
+);
+
+// ==============================
+// SPA fallback
+// ==============================
+
+app.use(
+  (req, res, next) => {
+    if (path.extname(req.path)) {
+      return next();
+    }
+
+    return res.sendFile(
+      path.join(
+        publicDir,
+        "index.html"
+      )
+    );
+  }
+);
+
+// ==============================
+// Start server
+// ==============================
+
+async function startServer() {
   try {
-    console.log("🔎 Conectando no MongoDB...");
+    console.log(
+      "🔎 Conectando no MongoDB..."
+    );
+
     await connectMongo();
 
-    app.listen(PORT, () => {
-      console.log(`Servidor rodando em http://localhost:${PORT}`);
-    });
+    app.listen(
+      PORT,
+      () => {
+        console.log(
+          `🚀 Servidor rodando na porta ${PORT}`
+        );
+
+        console.log(
+          `🔐 Trust proxy: ${trustProxyHops} hop(s)`
+        );
+      }
+    );
   } catch (error) {
-    console.error("🔴 Falha ao conectar no MongoDB:", error.message);
+    console.error(
+      "🔴 Falha ao iniciar servidor:",
+      error.message
+    );
+
     process.exit(1);
   }
-})();
+}
 
-process.on("SIGINT", async () => {
-  console.log("🟡 Encerrando... fechando MongoDB (mongoose)");
-  await mongoose.connection.close().catch(() => {});
+startServer();
+
+// ==============================
+// Graceful shutdown
+// ==============================
+
+async function shutdown(signal) {
+  console.log(
+    `🟡 ${signal} recebido. Encerrando servidor...`
+  );
+
+  try {
+    await mongoose.connection.close();
+  } catch (error) {
+    console.error(
+      "🔴 Erro ao fechar MongoDB:",
+      error.message
+    );
+  }
+
   process.exit(0);
-});
+}
+
+process.on(
+  "SIGINT",
+  () => shutdown("SIGINT")
+);
+
+process.on(
+  "SIGTERM",
+  () => shutdown("SIGTERM")
+);

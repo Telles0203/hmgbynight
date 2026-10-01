@@ -1,49 +1,127 @@
-const API_BASE = "";
+function showLoginAlert(message) {
+  const alertElement =
+    document.getElementById("loginAlert");
 
-function showAlert(msg) {
-    const el = document.getElementById("loginAlert");
-    if (!el) return;
+  if (!alertElement) {
+    return;
+  }
 
-    // se você já está no Bootstrap:
-    el.classList.remove("d-none");
-    el.classList.add("alert", "alert-danger");
-    el.textContent = msg;
+  alertElement.textContent = message;
+  alertElement.classList.remove("d-none");
+  alertElement.classList.add(
+    "alert",
+    "alert-danger"
+  );
 }
 
-document.addEventListener("submit", async (e) => {
-    // pega submits de QUALQUER form que tenha id="loginForm"
-    if (!(e.target instanceof HTMLFormElement)) return;
-    if (e.target.id !== "loginForm") return;
+function hideLoginAlert() {
+  const alertElement =
+    document.getElementById("loginAlert");
 
-    e.preventDefault(); // <- agora SEMPRE roda quando o loginForm for enviado
+  if (!alertElement) {
+    return;
+  }
 
-    const email = document.getElementById("email")?.value?.trim();
-    const password = document.getElementById("password")?.value;
+  alertElement.textContent = "";
+  alertElement.classList.add("d-none");
+}
+
+function onLoginPageLoaded() {
+  hideLoginAlert();
+}
+
+document.addEventListener(
+  "submit",
+  async (event) => {
+    if (
+      !(event.target instanceof HTMLFormElement) ||
+      event.target.id !== "loginForm"
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    hideLoginAlert();
+
+    const email =
+      document.getElementById("email")
+        ?.value
+        ?.trim();
+
+    const password =
+      document.getElementById("password")
+        ?.value;
+
+    const loginButton =
+      document.getElementById("btnLogin");
+
+    if (!email || !password) {
+      showLoginAlert(
+        "Informe o e-mail e a senha."
+      );
+
+      return;
+    }
 
     try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ email, password }),
-        });
+      if (loginButton) {
+        loginButton.disabled = true;
+        loginButton.textContent = "Entrando...";
+      }
 
-        const data = await res.json().catch(() => ({}));
+      const response = await fetch(
+        "/api/auth/login",
+        {
+          method: "POST",
 
-        if (!res.ok) {
-            showAlert(data?.message || "Falha no login.");
-            return;
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          credentials: "include",
+
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         }
+      );
 
-        if (data?.token) localStorage.setItem("token", data.token);
+      const data = await response
+        .json()
+        .catch(() => ({}));
 
-        // IMPORTANTE: em SPA, prefira loadPage
-        if (typeof loadPage === "function") {
-            loadPage("main");
-        } else {
-            window.location.href = "/main";
-        }
-    } catch (err) {
-        showAlert("Erro de rede ao tentar logar.");
+      if (!response.ok) {
+        showLoginAlert(
+          data?.error || "Falha no login."
+        );
+
+        return;
+      }
+
+      if (typeof window.loadPage === "function") {
+        await window.loadPage("main");
+      } else {
+        window.location.href = "/main";
+      }
+    } catch (error) {
+      console.error(
+        "[LOGIN] Erro ao realizar login:",
+        error
+      );
+
+      showLoginAlert(
+        "Erro de conexão ao tentar entrar."
+      );
+    } finally {
+      if (loginButton) {
+        loginButton.disabled = false;
+        loginButton.textContent = "Entrar";
+      }
     }
-});
+  }
+);
+
+window.onLoginPageLoaded =
+  onLoginPageLoaded;

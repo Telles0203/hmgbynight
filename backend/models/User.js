@@ -2,16 +2,74 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 40 },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 40,
+    },
 
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
 
-    isEmailValid: { type: Boolean, default: false },
-    emailVerificationToken: { type: String, default: null },
-    emailVerificationExpires: { type: Date, default: null },
+    // Nunca retorna automaticamente
+    passwordHash: {
+      type: String,
+      required: true,
+      select: false,
+    },
+
+    isEmailValid: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Nunca retorna automaticamente
+    emailVerificationToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    // Nunca retorna automaticamente
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+
+    toJSON: {
+      transform: (document, returnedObject) => {
+        delete returnedObject.passwordHash;
+        delete returnedObject.emailVerificationToken;
+        delete returnedObject.emailVerificationExpires;
+
+        return returnedObject;
+      },
+    },
+
+    toObject: {
+      transform: (document, returnedObject) => {
+        delete returnedObject.passwordHash;
+        delete returnedObject.emailVerificationToken;
+        delete returnedObject.emailVerificationExpires;
+
+        return returnedObject;
+      },
+    },
+  }
 );
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model(
+  "User",
+  UserSchema
+);

@@ -1,202 +1,362 @@
 async function loadMainUser() {
-    const greeting = document.getElementById("mainGreeting");
-    if (!greeting) return;
+  const greeting =
+    document.getElementById("mainGreeting");
 
-    greeting.innerText = "";
+  const loading =
+    document.getElementById("loadingScreen");
 
-    try {
-        const token = localStorage.getItem("token");
+  const main =
+    document.getElementById("mainPage");
 
-        const res = await fetch("/api/auth/me", {
-            method: "GET",
+  const emailValidationContainer =
+    document.getElementById(
+      "emailValidationContainer"
+    );
+
+  if (!greeting) {
+    return;
+  }
+
+  greeting.textContent = "";
+
+  try {
+    const response = await fetch(
+      "/api/auth/me",
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      if (
+        typeof window.loadPage === "function"
+      ) {
+        await window.loadPage("login");
+      } else {
+        window.location.href = "/login";
+      }
+
+      return;
+    }
+
+    const data = await response.json();
+
+    const user = data?.user;
+
+    if (!user) {
+      throw new Error(
+        "Usuário não retornado pela API."
+      );
+    }
+
+    // ==============================
+    // Email validation
+    // ==============================
+
+    if (user.isEmailValid === false) {
+      if (emailValidationContainer) {
+        const modalResponse = await fetch(
+          "/src/pages/emailValidationModal.html"
+        );
+
+        if (!modalResponse.ok) {
+          throw new Error(
+            "Não foi possível carregar a validação de e-mail."
+          );
+        }
+
+        const modalHtml =
+          await modalResponse.text();
+
+        emailValidationContainer.innerHTML =
+          modalHtml;
+
+        setupEmailValidationHandlers();
+      }
+    } else if (emailValidationContainer) {
+      emailValidationContainer.innerHTML = "";
+    }
+
+    // ==============================
+    // Greeting
+    // ==============================
+
+    greeting.textContent = user.name
+      ? `Olá ${user.name}.`
+      : "Olá.";
+
+    // ==============================
+    // Show main page
+    // ==============================
+
+    if (loading) {
+      loading.style.display = "none";
+    }
+
+    if (main) {
+      main.style.display = "block";
+    }
+  } catch (error) {
+    console.error(
+      "[MAIN] Erro ao carregar usuário:",
+      error
+    );
+
+    if (loading) {
+      loading.style.display = "none";
+    }
+
+    if (greeting) {
+      greeting.textContent =
+        "Não foi possível carregar seus dados.";
+    }
+
+    if (main) {
+      main.style.display = "block";
+    }
+  }
+}
+
+function setupEmailValidationHandlers() {
+  const validateButton =
+    document.getElementById(
+      "validateEmailButton"
+    );
+
+  const resendButton =
+    document.getElementById(
+      "resendTokenButton"
+    );
+
+  const tokenInput =
+    document.getElementById(
+      "emailTokenInput"
+    );
+
+  if (!validateButton || !tokenInput) {
+    return;
+  }
+
+  // ==============================
+  // Validate token
+  // ==============================
+
+  validateButton.addEventListener(
+    "click",
+    async () => {
+      const token = tokenInput.value.trim();
+
+      tokenInput.classList.remove(
+        "border-danger",
+        "border-success"
+      );
+
+      if (!token) {
+        tokenInput.classList.add(
+          "border-danger"
+        );
+
+        tokenInput.focus();
+
+        showEmailValidationAlert(
+          "Informe o código de validação.",
+          "danger"
+        );
+
+        return;
+      }
+
+      try {
+        validateButton.disabled = true;
+        validateButton.textContent =
+          "Validando...";
+
+        const response = await fetch(
+          "/api/auth/email/verify-email-token",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
             credentials: "include",
-            headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
 
-        if (!res.ok) {
-            window.location.replace("/login");
-            return;
+            body: JSON.stringify({
+              token,
+            }),
+          }
+        );
+
+        const data = await response
+          .json()
+          .catch(() => ({}));
+
+        if (!response.ok || !data?.ok) {
+          tokenInput.classList.add(
+            "border-danger"
+          );
+
+          tokenInput.focus();
+
+          showEmailValidationAlert(
+            data?.error ||
+              "Código inválido ou expirado.",
+            "danger"
+          );
+
+          return;
         }
 
-        const data = await res.json();
+        tokenInput.classList.remove(
+          "border-danger"
+        );
 
-        console.log("Resposta completa do usuário:", data);
+        tokenInput.classList.add(
+          "border-success"
+        );
 
-        const isEmailValid =
-            data?.isEmailValid ??
-            data?.user?.isEmailValid ??
-            data?.data?.isEmailValid ??
-            data?.data?.user?.isEmailValid;
+        showEmailValidationAlert(
+          "E-mail validado com sucesso.",
+          "success"
+        );
 
-        if (isEmailValid === false) {
-            const container = document.getElementById("emailValidationContainer");
-            if (container) {
-                const modalRes = await fetch("/src/pages/emailValidationModal.html");
-                const html = await modalRes.text();
-                container.innerHTML = html;
+        tokenInput.value = "";
 
+        await loadMainUser();
+      } catch (error) {
+        console.error(
+          "[EMAIL VALIDATION] Erro ao validar:",
+          error
+        );
 
-                await setupEmailValidationHandlers();
-            }
-        } else {
-            const container = document.getElementById("emailValidationContainer");
-            if (container) container.innerHTML = "";
-        }
+        tokenInput.classList.add(
+          "border-danger"
+        );
 
-        const name =
-            data?.name ||
-            data?.user?.name ||
-            data?.data?.name ||
-            data?.data?.user?.name;
-
-        greeting.innerText = name ? `Olá ${name}.` : "Olá, cadastrado no sistema.";
-
-        const loading = document.getElementById("loadingScreen");
-        const main = document.getElementById("mainPage");
-
-        if (loading) loading.style.display = "none";
-        if (main) main.style.display = "block";
-    } catch (err) {
-        console.error("Erro ao carregar usuário:", err);
+        showEmailValidationAlert(
+          "Falha ao validar o código.",
+          "danger"
+        );
+      } finally {
+        validateButton.disabled = false;
+        validateButton.textContent =
+          "Validar e-mail";
+      }
     }
-}
+  );
 
-async function setupEmailValidationHandlers() {
-    const validateBtn = document.getElementById("validateEmailButton");
-    const resendBtn = document.getElementById("resendTokenButton");
-    const tokenInput = document.getElementById("emailTokenInput");
-    const warningBox = document.getElementById("emailValidationWarning");
+  // ==============================
+  // Resend token
+  // ==============================
 
-    if (!validateBtn || !tokenInput || !warningBox) return;
-
-    // Evita duplicar listener se você entrar no main mais de uma vez
-    if (validateBtn.dataset.listenerAttached === "true") return;
-    validateBtn.dataset.listenerAttached = "true";
-
-    validateBtn.addEventListener("click", async () => {
-        const token = (tokenInput.value || "").trim();
-
-        console.log("Clique em Validar e-mail. Token:", token);
-
-        // limpa estilos anteriores
-        tokenInput.classList.remove("border-danger", "border-success");
-
-        if (!token) {
-            tokenInput.classList.add("border-danger");
-            tokenInput.focus();
-            showEmailValidationAlert("Informe o token.", "danger");
-            return;
-        }
-
+  if (resendButton) {
+    resendButton.addEventListener(
+      "click",
+      async () => {
         try {
-            console.log("POST -> /api/auth/email/verify-email-token");
+          resendButton.disabled = true;
+          resendButton.textContent =
+            "Enviando...";
 
-            const response = await fetch("/api/auth/email/verify-email-token", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ token })
-            });
-
-            const data = await response.json().catch(() => null);
-
-            console.log("VERIFY RESPONSE status:", response.status);
-            console.log("VERIFY RESPONSE body:", data);
-
-            if (!response.ok || !data?.ok) {
-                let msg = "Não foi possível validar o token.";
-
-                if (data?.debug === "token_mismatch") {
-                    msg = "Token incorreto. Verifique o código enviado por e-mail.";
-                    tokenInput.classList.add("border-danger");
-                    tokenInput.focus();
-                    tokenInput.select();
-                } else if (data?.debug === "token_expired") {
-                    msg = "Token expirado. Clique em 'Enviar novo token'.";
-                    tokenInput.classList.add("border-danger");
-                    document.getElementById("resendTokenButton")?.focus();
-                } else if (data?.debug === "user_not_found") {
-                    msg = "Sessão inválida. Faça login novamente.";
-                } else {
-                    msg = data?.error || data?.message || "Token inválido ou expirado.";
-                    tokenInput.classList.add("border-danger");
-                }
-
-                console.log("VERIFY FAILED msg:", msg, "debug:", data?.debug);
-                showEmailValidationAlert(msg, "danger");
-                return;
+          const response = await fetch(
+            "/api/auth/email/send-token",
+            {
+              method: "POST",
+              credentials: "include",
             }
+          );
 
-            // sucesso
-            tokenInput.classList.add("border-success");
-            showEmailValidationAlert("E-mail validado com sucesso!", "success");
+          const data = await response
+            .json()
+            .catch(() => ({}));
 
-            warningBox.style.display = "none";
-            tokenInput.value = "";
+          if (!response.ok || !data?.ok) {
+            showEmailValidationAlert(
+              data?.error ||
+                "Não foi possível enviar um novo código.",
+              "danger"
+            );
 
-            await loadMainUser();
-        } catch (err) {
-            console.error("Erro ao validar e-mail:", err);
-            tokenInput.classList.add("border-danger");
-            showEmailValidationAlert("Falha ao validar. Tente novamente.", "danger");
+            return;
+          }
+
+          tokenInput.classList.remove(
+            "border-danger",
+            "border-success"
+          );
+
+          tokenInput.value = "";
+          tokenInput.focus();
+
+          showEmailValidationAlert(
+            "Novo código enviado para seu e-mail.",
+            "success"
+          );
+        } catch (error) {
+          console.error(
+            "[EMAIL VALIDATION] Erro ao reenviar:",
+            error
+          );
+
+          showEmailValidationAlert(
+            "Falha ao enviar um novo código.",
+            "danger"
+          );
+        } finally {
+          resendButton.disabled = false;
+          resendButton.textContent =
+            "Enviar novo token";
         }
-    });
-
-    // ✅ Handler do botão "Enviar novo token"
-    if (resendBtn && resendBtn.dataset.listenerAttached !== "true") {
-        resendBtn.dataset.listenerAttached = "true";
-
-        resendBtn.addEventListener("click", async () => {
-            try {
-                console.log("POST -> /api/auth/email/send-token");
-
-                const response = await fetch("/api/auth/email/send-token", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include"
-                });
-
-                const data = await response.json().catch(() => null);
-
-                if (!response.ok || !data?.ok) {
-                    const msg = data?.error || data?.message || "Não foi possível enviar um novo token.";
-                    showEmailValidationAlert(msg, "danger");
-                    return;
-                }
-
-                // UX: limpa input e destaca pra colar o novo token
-                tokenInput.classList.remove("border-danger", "border-success");
-                tokenInput.value = "";
-                tokenInput.focus();
-
-                showEmailValidationAlert(
-                    "Novo token enviado para seu e-mail. Ele expira em 10 minutos.",
-                    "success"
-                );
-            } catch (err) {
-                console.error("Erro ao reenviar token:", err);
-                showEmailValidationAlert("Falha ao reenviar. Tente novamente.", "danger");
-            }
-        });
-    }
+      }
+    );
+  }
 }
 
-function showEmailValidationAlert(message, type = "danger") {
-    const warningBox = document.getElementById("emailValidationWarning");
-    if (!warningBox) return;
+function showEmailValidationAlert(
+  message,
+  type = "danger"
+) {
+  const warningBox =
+    document.getElementById(
+      "emailValidationWarning"
+    );
 
-    let alert = document.getElementById("emailValidationAlert");
-    if (!alert) {
-        alert = document.createElement("div");
-        alert.id = "emailValidationAlert";
-        alert.className = "alert mt-3";
-        alert.role = "alert";
-        warningBox.querySelector(".card-body")?.appendChild(alert);
-    }
+  if (!warningBox) {
+    return;
+  }
 
-    alert.classList.remove("alert-danger", "alert-success", "alert-warning", "alert-info");
-    alert.classList.add(type === "success" ? "alert-success" : "alert-danger");
-    alert.textContent = message;
+  let alert =
+    document.getElementById(
+      "emailValidationAlert"
+    );
+
+  if (!alert) {
+    alert = document.createElement("div");
+
+    alert.id = "emailValidationAlert";
+    alert.className = "alert mt-3";
+    alert.role = "alert";
+
+    warningBox
+      .querySelector(".card-body")
+      ?.appendChild(alert);
+  }
+
+  alert.classList.remove(
+    "alert-danger",
+    "alert-success"
+  );
+
+  alert.classList.add(
+    type === "success"
+      ? "alert-success"
+      : "alert-danger"
+  );
+
+  alert.textContent = message;
 }
 
 window.loadMainUser = loadMainUser;

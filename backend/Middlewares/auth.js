@@ -5,20 +5,71 @@ function getCookieName() {
 }
 
 function requireAuth(req, res, next) {
-  try {
-    const cookieName = getCookieName();
-    const token = req.cookies?.[cookieName];
+  const jwtSecret = process.env.JWT_SECRET;
 
-    if (!token) {
-      return res.status(401).json({ ok: false, error: "Não autenticado" });
+  if (!jwtSecret) {
+    console.error(
+      "[AUTH] JWT_SECRET não está configurado."
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Erro interno de autenticação.",
+    });
+  }
+
+  const cookieName = getCookieName();
+  const token = req.cookies?.[cookieName];
+
+  if (!token) {
+    return res.status(401).json({
+      ok: false,
+      error: "Não autenticado.",
+    });
+  }
+
+  try {
+    const payload = jwt.verify(
+      token,
+      jwtSecret,
+      {
+        algorithms: ["HS256"],
+      }
+    );
+
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      !payload.sub
+    ) {
+      return res.status(401).json({
+        ok: false,
+        error: "Sessão inválida.",
+      });
     }
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload; // { sub, email, name }
+    req.user = {
+      sub: String(payload.sub),
+      email: payload.email,
+      name: payload.name,
+    };
+
     return next();
-  } catch (err) {
-    return res.status(401).json({ ok: false, error: "Token inválido" });
+  } catch (error) {
+    if (error?.name === "TokenExpiredError") {
+      return res.status(401).json({
+        ok: false,
+        error: "Sessão expirada.",
+      });
+    }
+
+    return res.status(401).json({
+      ok: false,
+      error: "Sessão inválida.",
+    });
   }
 }
 
-module.exports = { requireAuth };
+module.exports = {
+  requireAuth,
+};
