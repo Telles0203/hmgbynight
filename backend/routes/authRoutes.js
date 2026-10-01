@@ -20,14 +20,15 @@ const {
 // Rate limits
 // ==============================
 
-// Máximo de 10 tentativas de login
-// por IP a cada 15 minutos.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
 
   standardHeaders: "draft-7",
   legacyHeaders: false,
+
+  // Login bem-sucedido não consome limite.
+  skipSuccessfulRequests: true,
 
   message: {
     ok: false,
@@ -36,7 +37,6 @@ const loginLimiter = rateLimit({
   },
 });
 
-// Evita criação excessiva de contas.
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 10,
@@ -51,7 +51,6 @@ const registerLimiter = rateLimit({
   },
 });
 
-// Limita reenvio de código por usuário/IP.
 const emailTokenLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   limit: 5,
@@ -66,7 +65,6 @@ const emailTokenLimiter = rateLimit({
   },
 });
 
-// Limita tentativas de código de validação.
 const emailVerifyLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   limit: 10,
@@ -103,9 +101,11 @@ router.get(
   me
 );
 
+// Logout sem requireAuth.
+// Mesmo com JWT expirado ou inválido,
+// o cookie ainda poderá ser removido.
 router.post(
   "/logout",
-  requireAuth,
   logout
 );
 
