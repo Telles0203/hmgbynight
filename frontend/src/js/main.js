@@ -1,12 +1,26 @@
-async function loadMainUser(forceRefresh = false) {
+let emailResendCountdownInterval = null;
+
+// ==============================
+// Main user
+// ==============================
+
+async function loadMainUser(
+  forceRefresh = false
+) {
   const greeting =
-    document.getElementById("mainGreeting");
+    document.getElementById(
+      "mainGreeting"
+    );
 
   const loading =
-    document.getElementById("loadingScreen");
+    document.getElementById(
+      "loadingScreen"
+    );
 
   const main =
-    document.getElementById("mainPage");
+    document.getElementById(
+      "mainPage"
+    );
 
   const emailValidationContainer =
     document.getElementById(
@@ -58,7 +72,9 @@ async function loadMainUser(forceRefresh = false) {
     // Email validation
     // ==============================
 
-    if (user.isEmailValid === false) {
+    if (
+      user.isEmailValid === false
+    ) {
       if (
         emailValidationContainer
       ) {
@@ -79,13 +95,23 @@ async function loadMainUser(forceRefresh = false) {
         emailValidationContainer.innerHTML =
           modalHtml;
 
-        setupEmailValidationHandlers();
+        const initialRetryAfter =
+          Number(
+            user.emailVerificationRetryAfter ||
+            0
+          );
+
+        setupEmailValidationHandlers(
+          initialRetryAfter
+        );
       }
     } else if (
       emailValidationContainer
     ) {
       emailValidationContainer.innerHTML =
         "";
+
+      clearEmailResendCountdown();
     }
 
     // ==============================
@@ -102,11 +128,13 @@ async function loadMainUser(forceRefresh = false) {
     // ==============================
 
     if (loading) {
-      loading.style.display = "none";
+      loading.style.display =
+        "none";
     }
 
     if (main) {
-      main.style.display = "block";
+      main.style.display =
+        "block";
     }
   } catch (error) {
     console.error(
@@ -115,19 +143,102 @@ async function loadMainUser(forceRefresh = false) {
     );
 
     if (loading) {
-      loading.style.display = "none";
+      loading.style.display =
+        "none";
     }
 
     greeting.textContent =
       "Não foi possível carregar seus dados.";
 
     if (main) {
-      main.style.display = "block";
+      main.style.display =
+        "block";
     }
   }
 }
 
-function setupEmailValidationHandlers() {
+// ==============================
+// Resend countdown
+// ==============================
+
+function clearEmailResendCountdown() {
+  if (
+    emailResendCountdownInterval
+  ) {
+    clearInterval(
+      emailResendCountdownInterval
+    );
+
+    emailResendCountdownInterval =
+      null;
+  }
+}
+
+function startEmailResendCountdown(
+  button,
+  seconds
+) {
+  clearEmailResendCountdown();
+
+  let remainingSeconds =
+    Math.max(
+      0,
+      Math.ceil(
+        Number(seconds) || 0
+      )
+    );
+
+  if (
+    !button ||
+    remainingSeconds <= 0
+  ) {
+    if (button) {
+      button.disabled = false;
+
+      button.textContent =
+        "Enviar novo token";
+    }
+
+    return;
+  }
+
+  button.disabled = true;
+
+  button.textContent =
+    `Reenviar em ${remainingSeconds}s`;
+
+  emailResendCountdownInterval =
+    setInterval(
+      () => {
+        remainingSeconds -= 1;
+
+        if (
+          remainingSeconds <= 0
+        ) {
+          clearEmailResendCountdown();
+
+          button.disabled = false;
+
+          button.textContent =
+            "Enviar novo token";
+
+          return;
+        }
+
+        button.textContent =
+          `Reenviar em ${remainingSeconds}s`;
+      },
+      1000
+    );
+}
+
+// ==============================
+// Email validation handlers
+// ==============================
+
+function setupEmailValidationHandlers(
+  initialRetryAfter = 0
+) {
   const validateButton =
     document.getElementById(
       "validateEmailButton"
@@ -148,6 +259,16 @@ function setupEmailValidationHandlers() {
     !tokenInput
   ) {
     return;
+  }
+
+  if (
+    resendButton &&
+    initialRetryAfter > 0
+  ) {
+    startEmailResendCountdown(
+      resendButton,
+      initialRetryAfter
+    );
   }
 
   // ==============================
@@ -243,8 +364,8 @@ function setupEmailValidationHandlers() {
 
         tokenInput.value = "";
 
-        // Atualiza os dados da sessão
-        // porque isEmailValid mudou.
+        clearEmailResendCountdown();
+
         await loadMainUser(true);
       } catch (error) {
         console.error(
@@ -290,6 +411,7 @@ function setupEmailValidationHandlers() {
               "/api/auth/email/send-token",
               {
                 method: "POST",
+
                 credentials:
                   "include",
               }
@@ -310,6 +432,21 @@ function setupEmailValidationHandlers() {
               "danger"
             );
 
+            if (
+              data?.retryAfter
+            ) {
+              startEmailResendCountdown(
+                resendButton,
+                data.retryAfter
+              );
+            } else {
+              resendButton.disabled =
+                false;
+
+              resendButton.textContent =
+                "Enviar novo token";
+            }
+
             return;
           }
 
@@ -325,6 +462,11 @@ function setupEmailValidationHandlers() {
             "Novo código enviado para seu e-mail.",
             "success"
           );
+
+          startEmailResendCountdown(
+            resendButton,
+            data?.retryAfter || 60
+          );
         } catch (error) {
           console.error(
             "[EMAIL VALIDATION] Erro ao reenviar:",
@@ -335,7 +477,7 @@ function setupEmailValidationHandlers() {
             "Falha ao enviar um novo código.",
             "danger"
           );
-        } finally {
+
           resendButton.disabled =
             false;
 
@@ -346,6 +488,10 @@ function setupEmailValidationHandlers() {
     );
   }
 }
+
+// ==============================
+// Email validation alert
+// ==============================
 
 function showEmailValidationAlert(
   message,

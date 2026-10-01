@@ -76,7 +76,8 @@ async function handleRegisterSubmit() {
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type":
+            "application/json",
         },
 
         credentials: "include",
@@ -103,13 +104,23 @@ async function handleRegisterSubmit() {
       return;
     }
 
+    const sessionUser = {
+      ...data.user,
+
+      emailVerificationRetryAfter:
+        Number(
+          data?.emailVerification
+            ?.retryAfter || 0
+        ),
+    };
+
     // Atualiza cache da sessão
     if (
       typeof window.setSessionUser ===
       "function"
     ) {
       window.setSessionUser(
-        data.user
+        sessionUser
       );
     }
 
@@ -119,7 +130,7 @@ async function handleRegisterSubmit() {
       "function"
     ) {
       window.updateNavbarAuth(
-        data.user
+        sessionUser
       );
     }
 
@@ -143,7 +154,9 @@ async function handleRegisterSubmit() {
         typeof window.loadPage ===
         "function"
       ) {
-        await window.loadPage("main");
+        await window.loadPage(
+          "main"
+        );
       } else {
         window.location.href =
           "/main";
@@ -172,8 +185,12 @@ document.addEventListener(
   "submit",
   async (event) => {
     if (
-      !(event.target instanceof HTMLFormElement) ||
-      event.target.id !== "registerForm"
+      !(
+        event.target instanceof
+        HTMLFormElement
+      ) ||
+      event.target.id !==
+        "registerForm"
     ) {
       return;
     }

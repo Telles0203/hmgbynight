@@ -18,27 +18,61 @@ const {
 } = require("../utils/zohoMail");
 
 const EMAIL_TOKEN_EXPIRATION_MINUTES = 10;
+const EMAIL_TOKEN_RESEND_SECONDS = 60;
+
 const PASSWORD_RESET_EXPIRATION_MINUTES = 15;
 const PASSWORD_MIN_LENGTH = 6;
+
+const PASSWORD_RECOVERY_MIN_RESPONSE_MS = 700;
+const PASSWORD_RECOVERY_JITTER_MS = 300;
+
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(
+  "bynight-invalid-account-placeholder",
+  10
+);
 
 // ==============================
 // Helpers
 // ==============================
 
 function getCookieName() {
-  return process.env.COOKIE_NAME || "hmg_auth";
+  return (
+    process.env.COOKIE_NAME ||
+    "bn_session"
+  );
 }
 
 function getCookieOptions() {
   const isProduction =
-    process.env.NODE_ENV === "production";
+    process.env.NODE_ENV ===
+    "production";
 
   return {
     httpOnly: true,
     secure: isProduction,
     sameSite: "lax",
     path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge:
+      7 * 24 * 60 * 60 * 1000,
+  };
+}
+
+function getCookieClearOptions() {
+  const cookieOptions =
+    getCookieOptions();
+
+  return {
+    httpOnly:
+      cookieOptions.httpOnly,
+
+    secure:
+      cookieOptions.secure,
+
+    sameSite:
+      cookieOptions.sameSite,
+
+    path:
+      cookieOptions.path,
   };
 }
 
@@ -108,6 +142,89 @@ function getApplicationUrl(req) {
   return `${req.protocol}://${req.get("host")}`;
 }
 
+function wait(milliseconds) {
+  return new Promise(
+    (resolve) => {
+      setTimeout(
+        resolve,
+        milliseconds
+      );
+    }
+  );
+}
+
+async function waitForPasswordRecoveryResponse(
+  startedAt
+) {
+  const jitter =
+    crypto.randomInt(
+      0,
+      PASSWORD_RECOVERY_JITTER_MS + 1
+    );
+
+  const targetDuration =
+    PASSWORD_RECOVERY_MIN_RESPONSE_MS +
+    jitter;
+
+  const elapsed =
+    Date.now() - startedAt;
+
+  const remaining =
+    targetDuration - elapsed;
+
+  if (remaining > 0) {
+    await wait(remaining);
+  }
+}
+
+async function sendPasswordResetInBackground(
+  user,
+  token,
+  tokenHash,
+  applicationUrl
+) {
+  const resetUrl =
+    `${applicationUrl}/reset-password?token=${encodeURIComponent(
+      token
+    )}`;
+
+  try {
+    await sendPasswordResetMail(
+      user.email,
+      resetUrl
+    );
+  } catch (error) {
+    console.error(
+      "[PASSWORD RESET] Falha ao enviar e-mail:",
+      error.message
+    );
+
+    try {
+      await User.updateOne(
+        {
+          _id: user._id,
+          resetPasswordTokenHash:
+            tokenHash,
+        },
+        {
+          $set: {
+            resetPasswordTokenHash:
+              null,
+
+            resetPasswordExpires:
+              null,
+          },
+        }
+      );
+    } catch (databaseError) {
+      console.error(
+        "[PASSWORD RESET] Erro ao invalidar token após falha de e-mail:",
+        databaseError
+      );
+    }
+  }
+}
+
 // ==============================
 // Register
 // ==============================
@@ -118,7 +235,7 @@ async function register(req, res) {
       name,
       email,
       password,
-    } = req.body;
+    } = req.body || {};
 
     const cleanName =
       String(name || "").trim();
@@ -157,7 +274,8 @@ async function register(req, res) {
     }
 
     if (
-      typeof password !== "string" ||
+      typeof password !==
+        "string" ||
       password.length <
         PASSWORD_MIN_LENGTH
     ) {
@@ -182,7 +300,10 @@ async function register(req, res) {
     }
 
     const passwordHash =
-      await bcrypt.hash(password, 10);
+      await bcrypt.hash(
+        password,
+        10
+      );
 
     const emailVerificationToken =
       generateEmailToken(10);
@@ -190,15 +311,16 @@ async function register(req, res) {
     const emailVerificationExpires =
       createEmailTokenExpiration();
 
-    const user = await User.create({
-      name: cleanName,
-      email: cleanEmail,
-      passwordHash,
-      isEmailValid: false,
-      authVersion: 0,
-      emailVerificationToken,
-      emailVerificationExpires,
-    });
+    const user =
+      await User.create({
+        name: cleanName,
+        email: cleanEmail,
+        passwordHash,
+        isEmailValid: false,
+        authVersion: 0,
+        emailVerificationToken,
+        emailVerificationExpires,
+      });
 
     let emailSent = false;
 
@@ -209,6 +331,11 @@ async function register(req, res) {
       );
 
       emailSent = true;
+
+      user.emailVerificationLastSentAt =
+        new Date();
+
+      await user.save();
     } catch (error) {
       console.error(
         "[REGISTER] Falha ao enviar e-mail de verificação:",
@@ -225,28 +352,37 @@ async function register(req, res) {
       getCookieOptions()
     );
 
-    return res.status(201).json({
-      ok: true,
+    return res
+      .status(201)
+      .json({
+        ok: true,
 
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        isEmailValid:
-          user.isEmailValid,
-      },
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          isEmailValid:
+            user.isEmailValid,
+        },
 
-      emailVerification: {
-        sent: emailSent,
-      },
-    });
+        emailVerification: {
+          sent: emailSent,
+
+          retryAfter:
+            emailSent
+              ? EMAIL_TOKEN_RESEND_SECONDS
+              : 0,
+        },
+      });
   } catch (error) {
     if (error?.code === 11000) {
-      return res.status(409).json({
-        ok: false,
-        error:
-          "E-mail já cadastrado.",
-      });
+      return res
+        .status(409)
+        .json({
+          ok: false,
+          error:
+            "E-mail já cadastrado.",
+        });
     }
 
     console.error(
@@ -271,12 +407,17 @@ async function login(req, res) {
     const {
       email,
       password,
-    } = req.body;
+    } = req.body || {};
 
     const cleanEmail =
       normalizeEmail(email);
 
-    if (!cleanEmail || !password) {
+    if (
+      !cleanEmail ||
+      typeof password !==
+        "string" ||
+      !password
+    ) {
       return res.status(400).json({
         ok: false,
         error:
@@ -291,21 +432,20 @@ async function login(req, res) {
         "+passwordHash authVersion"
       );
 
-    if (!user) {
-      return res.status(401).json({
-        ok: false,
-        error:
-          "Credenciais inválidas.",
-      });
-    }
+    const passwordHash =
+      user?.passwordHash ||
+      DUMMY_PASSWORD_HASH;
 
     const passwordMatches =
       await bcrypt.compare(
         password,
-        user.passwordHash
+        passwordHash
       );
 
-    if (!passwordMatches) {
+    if (
+      !user ||
+      !passwordMatches
+    ) {
       return res.status(401).json({
         ok: false,
         error:
@@ -355,6 +495,15 @@ async function forgotPassword(
   req,
   res
 ) {
+  const startedAt =
+    Date.now();
+
+  const genericResponse = {
+    ok: true,
+    message:
+      "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
+  };
+
   try {
     const cleanEmail =
       normalizeEmail(
@@ -369,24 +518,13 @@ async function forgotPassword(
       });
     }
 
-    if (!isValidEmail(cleanEmail)) {
+    if (
+      !isValidEmail(cleanEmail)
+    ) {
       return res.status(400).json({
         ok: false,
         error:
           "E-mail inválido.",
-      });
-    }
-
-    const user =
-      await User.findOne({
-        email: cleanEmail,
-      });
-
-    if (!user) {
-      return res.json({
-        ok: true,
-        message:
-          "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
       });
     }
 
@@ -395,53 +533,38 @@ async function forgotPassword(
       tokenHash,
     } = generatePasswordResetToken();
 
-    user.resetPasswordTokenHash =
-      tokenHash;
+    const user =
+      await User.findOne({
+        email: cleanEmail,
+      });
 
-    user.resetPasswordExpires =
-      createPasswordResetExpiration();
-
-    await user.save();
-
-    const applicationUrl =
-      getApplicationUrl(req);
-
-    const resetUrl =
-      `${applicationUrl}/reset-password?token=${encodeURIComponent(
-        token
-      )}`;
-
-    try {
-      await sendPasswordResetMail(
-        user.email,
-        resetUrl
-      );
-    } catch (error) {
-      console.error(
-        "[PASSWORD RESET] Falha ao enviar e-mail:",
-        error.message
-      );
-
+    if (user) {
       user.resetPasswordTokenHash =
-        null;
+        tokenHash;
 
       user.resetPasswordExpires =
-        null;
+        createPasswordResetExpiration();
 
       await user.save();
 
-      return res.json({
-        ok: true,
-        message:
-          "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
-      });
+      const applicationUrl =
+        getApplicationUrl(req);
+
+      void sendPasswordResetInBackground(
+        user,
+        token,
+        tokenHash,
+        applicationUrl
+      );
     }
 
-    return res.json({
-      ok: true,
-      message:
-        "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
-    });
+    await waitForPasswordRecoveryResponse(
+      startedAt
+    );
+
+    return res.json(
+      genericResponse
+    );
   } catch (error) {
     console.error(
       "[PASSWORD RESET] Erro ao solicitar recuperação:",
@@ -468,7 +591,7 @@ async function resetPassword(
     const {
       token,
       password,
-    } = req.body;
+    } = req.body || {};
 
     if (
       !token ||
@@ -482,7 +605,8 @@ async function resetPassword(
     }
 
     if (
-      typeof password !== "string" ||
+      typeof password !==
+        "string" ||
       password.length <
         PASSWORD_MIN_LENGTH
     ) {
@@ -544,24 +668,9 @@ async function resetPassword(
 
     await user.save();
 
-    const cookieOptions =
-      getCookieOptions();
-
     res.clearCookie(
       getCookieName(),
-      {
-        httpOnly:
-          cookieOptions.httpOnly,
-
-        secure:
-          cookieOptions.secure,
-
-        sameSite:
-          cookieOptions.sameSite,
-
-        path:
-          cookieOptions.path,
-      }
+      getCookieClearOptions()
     );
 
     return res.json({
@@ -627,24 +736,9 @@ async function me(req, res) {
 // ==============================
 
 function logout(req, res) {
-  const cookieOptions =
-    getCookieOptions();
-
   res.clearCookie(
     getCookieName(),
-    {
-      httpOnly:
-        cookieOptions.httpOnly,
-
-      secure:
-        cookieOptions.secure,
-
-      sameSite:
-        cookieOptions.sameSite,
-
-      path:
-        cookieOptions.path,
-    }
+    getCookieClearOptions()
   );
 
   return res.json({
@@ -664,6 +758,8 @@ async function sendEmailVerificationToken(
     const user =
       await User.findById(
         req.user.sub
+      ).select(
+        "+emailVerificationToken +emailVerificationExpires +emailVerificationLastSentAt"
       );
 
     if (!user) {
@@ -682,6 +778,36 @@ async function sendEmailVerificationToken(
       });
     }
 
+    if (
+      user.emailVerificationLastSentAt
+    ) {
+      const elapsedSeconds =
+        Math.floor(
+          (
+            Date.now() -
+            user.emailVerificationLastSentAt.getTime()
+          ) / 1000
+        );
+
+      if (
+        elapsedSeconds <
+        EMAIL_TOKEN_RESEND_SECONDS
+      ) {
+        const retryAfter =
+          EMAIL_TOKEN_RESEND_SECONDS -
+          elapsedSeconds;
+
+        return res.status(429).json({
+          ok: false,
+
+          error:
+            `Aguarde ${retryAfter} segundos antes de solicitar um novo código.`,
+
+          retryAfter,
+        });
+      }
+    }
+
     const emailVerificationToken =
       generateEmailToken(10);
 
@@ -693,6 +819,14 @@ async function sendEmailVerificationToken(
 
     user.emailVerificationExpires =
       emailVerificationExpires;
+
+    /*
+     * Reservamos o intervalo antes
+     * do envio para impedir cliques
+     * repetidos rapidamente.
+     */
+    user.emailVerificationLastSentAt =
+      new Date();
 
     await user.save();
 
@@ -707,6 +841,21 @@ async function sendEmailVerificationToken(
         error.message
       );
 
+      /*
+       * Se o envio falhar, liberamos
+       * uma nova tentativa imediatamente.
+       */
+      user.emailVerificationToken =
+        null;
+
+      user.emailVerificationExpires =
+        null;
+
+      user.emailVerificationLastSentAt =
+        null;
+
+      await user.save();
+
       return res.status(500).json({
         ok: false,
         error:
@@ -716,8 +865,12 @@ async function sendEmailVerificationToken(
 
     return res.json({
       ok: true,
+
       message:
         "Código de verificação enviado por e-mail.",
+
+      retryAfter:
+        EMAIL_TOKEN_RESEND_SECONDS,
     });
   } catch (error) {
     console.error(
@@ -742,7 +895,9 @@ async function verifyEmailToken(
   res
 ) {
   try {
-    const { token } = req.body;
+    const {
+      token,
+    } = req.body || {};
 
     if (
       !token ||
@@ -793,8 +948,9 @@ async function verifyEmailToken(
     }
 
     if (
-      user.emailVerificationExpires.getTime() <=
-      Date.now()
+      user
+        .emailVerificationExpires
+        .getTime() <= Date.now()
     ) {
       user.emailVerificationToken =
         null;

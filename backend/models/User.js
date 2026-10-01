@@ -46,6 +46,12 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
+    emailVerificationLastSentAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
     resetPasswordTokenHash: {
       type: String,
       default: null,
@@ -57,10 +63,6 @@ const UserSchema = new mongoose.Schema(
       default: null,
       select: false,
     },
-
-    // ==============================
-    // Account anonymization
-    // ==============================
 
     isAnonymized: {
       type: Boolean,
@@ -84,6 +86,7 @@ const UserSchema = new mongoose.Schema(
 
         delete returnedObject.emailVerificationToken;
         delete returnedObject.emailVerificationExpires;
+        delete returnedObject.emailVerificationLastSentAt;
 
         delete returnedObject.resetPasswordTokenHash;
         delete returnedObject.resetPasswordExpires;
@@ -103,6 +106,7 @@ const UserSchema = new mongoose.Schema(
 
         delete returnedObject.emailVerificationToken;
         delete returnedObject.emailVerificationExpires;
+        delete returnedObject.emailVerificationLastSentAt;
 
         delete returnedObject.resetPasswordTokenHash;
         delete returnedObject.resetPasswordExpires;
