@@ -1,14 +1,29 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const User = require("../models/User");
-const generateEmailToken = require("../utils/generateToken");
+
+const generateEmailToken = require(
+  "../utils/generateToken"
+);
+
+const generatePasswordResetToken = require(
+  "../utils/generatePasswordResetToken"
+);
+
 const {
   sendEmailVerificationTokenMail,
+  sendPasswordResetMail,
 } = require("../utils/zohoMail");
 
 const EMAIL_TOKEN_EXPIRATION_MINUTES = 10;
+const PASSWORD_RESET_EXPIRATION_MINUTES = 15;
 const PASSWORD_MIN_LENGTH = 6;
+
+// ==============================
+// Helpers
+// ==============================
 
 function getCookieName() {
   return process.env.COOKIE_NAME || "hmg_auth";
@@ -66,6 +81,26 @@ function createEmailTokenExpiration() {
         60 *
         1000
   );
+}
+
+function createPasswordResetExpiration() {
+  return new Date(
+    Date.now() +
+      PASSWORD_RESET_EXPIRATION_MINUTES *
+        60 *
+        1000
+  );
+}
+
+function getApplicationUrl(req) {
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(
+      /\/+$/,
+      ""
+    );
+  }
+
+  return `${req.protocol}://${req.get("host")}`;
 }
 
 // ==============================
@@ -136,7 +171,8 @@ async function register(req, res) {
     if (existingUser) {
       return res.status(409).json({
         ok: false,
-        error: "E-mail já cadastrado.",
+        error:
+          "E-mail já cadastrado.",
       });
     }
 
@@ -242,9 +278,6 @@ async function login(req, res) {
       });
     }
 
-    // passwordHash possui select:false,
-    // então precisamos solicitá-lo
-    // explicitamente somente aqui.
     const user =
       await User.findOne({
         email: cleanEmail,
@@ -307,6 +340,229 @@ async function login(req, res) {
 }
 
 // ==============================
+// Forgot password
+// ==============================
+
+async function forgotPassword(
+  req,
+  res
+) {
+  try {
+    const cleanEmail =
+      normalizeEmail(
+        req.body?.email
+      );
+
+    if (!cleanEmail) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Informe o endereço de e-mail.",
+      });
+    }
+
+    if (!isValidEmail(cleanEmail)) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "E-mail inválido.",
+      });
+    }
+
+    const user =
+      await User.findOne({
+        email: cleanEmail,
+      });
+
+    /*
+     * Não informamos se o usuário existe.
+     * Isso evita enumeração de contas.
+     */
+    if (!user) {
+      return res.json({
+        ok: true,
+        message:
+          "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
+      });
+    }
+
+    const {
+      token,
+      tokenHash,
+    } = generatePasswordResetToken();
+
+    user.resetPasswordTokenHash =
+      tokenHash;
+
+    user.resetPasswordExpires =
+      createPasswordResetExpiration();
+
+    await user.save();
+
+    const applicationUrl =
+      getApplicationUrl(req);
+
+    const resetUrl =
+      `${applicationUrl}/reset-password?token=${encodeURIComponent(
+        token
+      )}`;
+
+    try {
+      await sendPasswordResetMail(
+        user.email,
+        resetUrl
+      );
+    } catch (error) {
+      console.error(
+        "[PASSWORD RESET] Falha ao enviar e-mail:",
+        error.message
+      );
+
+      /*
+       * Remove o token criado, já que
+       * o e-mail não foi enviado.
+       */
+      user.resetPasswordTokenHash =
+        null;
+
+      user.resetPasswordExpires =
+        null;
+
+      await user.save();
+
+      /*
+       * Mantemos resposta genérica para
+       * não revelar se o e-mail existe.
+       */
+      return res.json({
+        ok: true,
+        message:
+          "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
+      });
+    }
+
+    return res.json({
+      ok: true,
+      message:
+        "Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.",
+    });
+  } catch (error) {
+    console.error(
+      "[PASSWORD RESET] Erro ao solicitar recuperação:",
+      error
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error:
+        "Erro interno ao processar recuperação de senha.",
+    });
+  }
+}
+
+// ==============================
+// Reset password
+// ==============================
+
+async function resetPassword(
+  req,
+  res
+) {
+  try {
+    const {
+      token,
+      password,
+    } = req.body;
+
+    if (
+      !token ||
+      typeof token !== "string"
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Token de recuperação obrigatório.",
+      });
+    }
+
+    if (
+      typeof password !== "string" ||
+      password.length <
+        PASSWORD_MIN_LENGTH
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          `A senha deve possuir pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`,
+      });
+    }
+
+    const cleanToken =
+      token.trim();
+
+    const tokenHash =
+      crypto
+        .createHash("sha256")
+        .update(cleanToken)
+        .digest("hex");
+
+    const user =
+      await User.findOne({
+        resetPasswordTokenHash:
+          tokenHash,
+
+        resetPasswordExpires: {
+          $gt: new Date(),
+        },
+      }).select(
+        "+passwordHash +resetPasswordTokenHash +resetPasswordExpires"
+      );
+
+    if (!user) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Link de recuperação inválido ou expirado.",
+      });
+    }
+
+    const passwordHash =
+      await bcrypt.hash(
+        password,
+        10
+      );
+
+    user.passwordHash =
+      passwordHash;
+
+    user.resetPasswordTokenHash =
+      null;
+
+    user.resetPasswordExpires =
+      null;
+
+    await user.save();
+
+    return res.json({
+      ok: true,
+      message:
+        "Senha alterada com sucesso.",
+    });
+  } catch (error) {
+    console.error(
+      "[PASSWORD RESET] Erro ao redefinir senha:",
+      error
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error:
+        "Erro interno ao redefinir senha.",
+    });
+  }
+}
+
+// ==============================
 // Current user
 // ==============================
 
@@ -358,10 +614,13 @@ function logout(req, res) {
     {
       httpOnly:
         cookieOptions.httpOnly,
+
       secure:
         cookieOptions.secure,
+
       sameSite:
         cookieOptions.sameSite,
+
       path:
         cookieOptions.path,
     }
@@ -478,8 +737,6 @@ async function verifyEmailToken(
     const cleanToken =
       token.trim();
 
-    // Estes campos possuem select:false,
-    // então são carregados apenas aqui.
     const user =
       await User.findById(
         req.user.sub
@@ -576,6 +833,8 @@ async function verifyEmailToken(
 module.exports = {
   register,
   login,
+  forgotPassword,
+  resetPassword,
   me,
   logout,
   sendEmailVerificationToken,

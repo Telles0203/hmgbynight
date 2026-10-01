@@ -1,29 +1,57 @@
 <div class="container py-5" style="max-width: 520px;">
     <div class="card bg-dark border border-danger shadow-sm">
         <div class="card-body">
-            <h1 class="h4 text-light mb-3">Entrar</h1>
 
-            <div id="loginAlert" class="alert d-none" role="alert"></div>
+            <h1 class="h4 text-light mb-3">
+                Entrar
+            </h1>
 
-            <form id="loginForm" autocomplete="on">
+            <div
+                id="loginAlert"
+                class="alert d-none"
+                role="alert"
+            ></div>
+
+            <form
+                id="loginForm"
+                autocomplete="on"
+            >
                 <div class="mb-3">
-                    <label class="form-label text-secondary">E-mail</label>
+
+                    <label
+                        for="email"
+                        class="form-label text-secondary"
+                    >
+                        E-mail
+                    </label>
+
                     <input
                         id="email"
                         class="form-control bg-black text-light border-secondary"
                         type="email"
+                        autocomplete="email"
                         required
                     />
+
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label text-secondary">Senha</label>
+
+                    <label
+                        for="password"
+                        class="form-label text-secondary"
+                    >
+                        Senha
+                    </label>
+
                     <input
                         id="password"
                         class="form-control bg-black text-light border-secondary"
                         type="password"
+                        autocomplete="current-password"
                         required
                     />
+
                 </div>
 
                 <button
@@ -34,7 +62,16 @@
                     Entrar
                 </button>
 
-                <div class="text-center mt-3">
+                <div class="d-flex justify-content-between flex-wrap gap-2 mt-3">
+
+                    <a
+                        href="#"
+                        class="text-secondary"
+                        onclick="event.preventDefault(); loadPage('forgot-password')"
+                    >
+                        Esqueceu a senha?
+                    </a>
+
                     <a
                         href="#"
                         class="text-secondary"
@@ -42,8 +79,11 @@
                     >
                         Criar conta
                     </a>
+
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>

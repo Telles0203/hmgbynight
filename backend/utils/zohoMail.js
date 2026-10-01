@@ -47,6 +47,10 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+// ==============================
+// Email verification
+// ==============================
+
 async function sendEmailVerificationTokenMail(
   to,
   token
@@ -108,12 +112,7 @@ async function sendEmailVerificationTokenMail(
               border-radius: 8px;
             "
           >
-            <h2
-              style="
-                margin-top: 0;
-                text-align: center;
-              "
-            >
+            <h2 style="margin-top: 0; text-align: center;">
               Verificação de e-mail
             </h2>
 
@@ -161,6 +160,128 @@ async function sendEmailVerificationTokenMail(
   });
 }
 
+// ==============================
+// Password reset
+// ==============================
+
+async function sendPasswordResetMail(
+  to,
+  resetUrl
+) {
+  if (!to) {
+    throw new Error(
+      "Destinatário do e-mail não informado."
+    );
+  }
+
+  if (!resetUrl) {
+    throw new Error(
+      "URL de recuperação não informada."
+    );
+  }
+
+  const { user } = getMailConfig();
+
+  const transporter = createTransporter();
+
+  const safeResetUrl =
+    escapeHtml(resetUrl);
+
+  return transporter.sendMail({
+    from: `"ByNight" <${user}>`,
+    to,
+
+    subject:
+      "Redefinição de senha - ByNight",
+
+    text: [
+      "Redefinição de senha",
+      "",
+      "Recebemos uma solicitação para redefinir sua senha.",
+      "",
+      "Acesse o link abaixo:",
+      resetUrl,
+      "",
+      "Este link expira em 15 minutos.",
+      "",
+      "Se você não solicitou esta alteração, ignore este e-mail.",
+    ].join("\n"),
+
+    html: `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <body
+          style="
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #212529;
+          "
+        >
+          <div
+            style="
+              max-width: 520px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              padding: 32px;
+              border-radius: 8px;
+            "
+          >
+            <h2 style="margin-top: 0; text-align: center;">
+              Redefinição de senha
+            </h2>
+
+            <p>
+              Recebemos uma solicitação para
+              redefinir sua senha no ByNight.
+            </p>
+
+            <div
+              style="
+                margin: 28px 0;
+                text-align: center;
+              "
+            >
+              <a
+                href="${safeResetUrl}"
+                style="
+                  display: inline-block;
+                  padding: 12px 20px;
+                  background-color: #8b0000;
+                  color: #ffffff;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-weight: bold;
+                "
+              >
+                Redefinir senha
+              </a>
+            </div>
+
+            <p>
+              Este link expira em
+              <strong>15 minutos</strong>.
+            </p>
+
+            <p
+              style="
+                margin-top: 32px;
+                font-size: 12px;
+                color: #666666;
+              "
+            >
+              Se você não solicitou esta alteração,
+              ignore este e-mail.
+            </p>
+          </div>
+        </body>
+      </html>
+    `,
+  });
+}
+
 module.exports = {
   sendEmailVerificationTokenMail,
+  sendPasswordResetMail,
 };

@@ -18,7 +18,6 @@ const UserSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Nunca retorna automaticamente
     passwordHash: {
       type: String,
       required: true,
@@ -30,15 +29,29 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
 
-    // Nunca retorna automaticamente
     emailVerificationToken: {
       type: String,
       default: null,
       select: false,
     },
 
-    // Nunca retorna automaticamente
     emailVerificationExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    // ==============================
+    // Password reset
+    // ==============================
+
+    resetPasswordTokenHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    resetPasswordExpires: {
       type: Date,
       default: null,
       select: false,
@@ -50,8 +63,12 @@ const UserSchema = new mongoose.Schema(
     toJSON: {
       transform: (document, returnedObject) => {
         delete returnedObject.passwordHash;
+
         delete returnedObject.emailVerificationToken;
         delete returnedObject.emailVerificationExpires;
+
+        delete returnedObject.resetPasswordTokenHash;
+        delete returnedObject.resetPasswordExpires;
 
         return returnedObject;
       },
@@ -60,8 +77,12 @@ const UserSchema = new mongoose.Schema(
     toObject: {
       transform: (document, returnedObject) => {
         delete returnedObject.passwordHash;
+
         delete returnedObject.emailVerificationToken;
         delete returnedObject.emailVerificationExpires;
+
+        delete returnedObject.resetPasswordTokenHash;
+        delete returnedObject.resetPasswordExpires;
 
         return returnedObject;
       },

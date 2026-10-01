@@ -63,6 +63,14 @@ async function runPageScripts(route) {
   ) {
     window.onRegisterPageLoaded();
   }
+
+  if (
+    route === "forgot-password" &&
+    typeof window.onForgotPasswordPageLoaded ===
+      "function"
+  ) {
+    window.onForgotPasswordPageLoaded();
+  }
 }
 
 async function checkRouteAccess(route) {
@@ -89,11 +97,14 @@ async function checkRouteAccess(route) {
     );
 
     return {
-      allowed: route !== "main",
+      allowed:
+        route !== "main",
+
       redirect:
         route === "main"
           ? "login"
           : null,
+
       user: null,
     };
   }

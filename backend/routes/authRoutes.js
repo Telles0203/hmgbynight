@@ -6,6 +6,8 @@ const router = express.Router();
 const {
   register,
   login,
+  forgotPassword,
+  resetPassword,
   me,
   logout,
   sendEmailVerificationToken,
@@ -27,7 +29,6 @@ const loginLimiter = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
 
-  // Login bem-sucedido não consome limite.
   skipSuccessfulRequests: true,
 
   message: {
@@ -48,6 +49,34 @@ const registerLimiter = rateLimit({
     ok: false,
     error:
       "Muitas tentativas de cadastro. Tente novamente mais tarde.",
+  },
+});
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+
+  message: {
+    ok: false,
+    error:
+      "Muitas solicitações de recuperação. Aguarde alguns minutos.",
+  },
+});
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+
+  message: {
+    ok: false,
+    error:
+      "Muitas tentativas de redefinição. Aguarde alguns minutos.",
   },
 });
 
@@ -80,7 +109,7 @@ const emailVerifyLimiter = rateLimit({
 });
 
 // ==============================
-// Auth
+// Authentication
 // ==============================
 
 router.post(
@@ -95,15 +124,27 @@ router.post(
   login
 );
 
+router.post(
+  "/forgot-password",
+  forgotPasswordLimiter,
+  forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  resetPasswordLimiter,
+  resetPassword
+);
+
 router.get(
   "/me",
   requireAuth,
   me
 );
 
-// Logout sem requireAuth.
-// Mesmo com JWT expirado ou inválido,
-// o cookie ainda poderá ser removido.
+// Logout não exige autenticação.
+// Mesmo com JWT expirado, o cookie
+// pode ser removido normalmente.
 router.post(
   "/logout",
   logout
