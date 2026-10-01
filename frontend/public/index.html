@@ -60,7 +60,18 @@
     <div id="page-content"></div>
 
     <footer class="footer-fixed bg-dark text-light text-center py-2">
-        <small>© 2025 - 2026 ByNight</small>
+        <small>
+            © 2025 - 2026 ByNight
+            <span class="mx-2">•</span>
+
+            <a
+                href="#"
+                class="text-secondary text-decoration-none"
+                onclick="event.preventDefault(); loadPage('privacy')"
+            >
+                Privacidade e Cookies
+            </a>
+        </small>
     </footer>
 
     <script
@@ -68,31 +79,31 @@
         defer
     ></script>
 
-    <!-- Sessão -->
     <script
         src="/src/js/session.js"
         defer
     ></script>
 
-    <!-- Layout -->
     <script
         src="/src/js/loadLayout.js"
         defer
     ></script>
 
-    <!-- Logout -->
+    <script
+        src="/src/js/cookieNotice.js"
+        defer
+    ></script>
+
     <script
         src="/src/js/logout.js"
         defer
     ></script>
 
-    <!-- Router -->
     <script
         src="/src/js/router.js"
         defer
     ></script>
 
-    <!-- Auth -->
     <script
         src="/src/js/register.js"
         defer
@@ -113,7 +124,6 @@
         defer
     ></script>
 
-    <!-- Main -->
     <script
         src="/src/js/main.js"
         defer
