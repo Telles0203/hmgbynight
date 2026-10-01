@@ -71,6 +71,14 @@ async function runPageScripts(route) {
   ) {
     window.onForgotPasswordPageLoaded();
   }
+
+  if (
+    route === "reset-password" &&
+    typeof window.onResetPasswordPageLoaded ===
+      "function"
+  ) {
+    window.onResetPasswordPageLoaded();
+  }
 }
 
 async function checkRouteAccess(route) {
@@ -140,6 +148,7 @@ async function loadPage(
     updateHistory = true,
     replaceHistory = false,
     checkAuth = true,
+    preserveQuery = false,
   } = options;
 
   if (!isValidRoute(route)) {
@@ -212,7 +221,15 @@ async function loadPage(
     // ==============================
 
     if (updateHistory) {
-      const newUrl = `/${route}`;
+      let newUrl = `/${route}`;
+
+      if (
+        preserveQuery &&
+        window.location.search
+      ) {
+        newUrl +=
+          window.location.search;
+      }
 
       if (replaceHistory) {
         history.replaceState(
@@ -222,7 +239,11 @@ async function loadPage(
         );
       } else if (
         window.location.pathname !==
-        newUrl
+          `/${route}` ||
+        (
+          preserveQuery &&
+          window.location.search
+        )
       ) {
         history.pushState(
           { route },
@@ -282,6 +303,11 @@ document.addEventListener(
     await loadPage(route, {
       updateHistory: true,
       replaceHistory: true,
+
+      // Fundamental para:
+      // /reset-password?token=...
+      preserveQuery:
+        route === "reset-password",
     });
   }
 );
