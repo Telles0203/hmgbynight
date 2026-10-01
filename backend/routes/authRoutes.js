@@ -15,6 +15,11 @@ const {
 } = require("../controllers/authController");
 
 const {
+  updateAccountName,
+  updateAccountPassword,
+} = require("../controllers/accountController");
+
+const {
   requireAuth,
 } = require("../Middlewares/auth");
 
@@ -108,6 +113,20 @@ const emailVerifyLimiter = rateLimit({
   },
 });
 
+const accountPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+
+  message: {
+    ok: false,
+    error:
+      "Muitas tentativas de alteração de senha. Aguarde alguns minutos.",
+  },
+});
+
 // ==============================
 // Authentication
 // ==============================
@@ -142,9 +161,27 @@ router.get(
   me
 );
 
-// Logout não exige autenticação.
-// Mesmo com JWT expirado, o cookie
-// pode ser removido normalmente.
+// ==============================
+// Account
+// ==============================
+
+router.patch(
+  "/account/name",
+  requireAuth,
+  updateAccountName
+);
+
+router.patch(
+  "/account/password",
+  requireAuth,
+  accountPasswordLimiter,
+  updateAccountPassword
+);
+
+// ==============================
+// Logout
+// ==============================
+
 router.post(
   "/logout",
   logout

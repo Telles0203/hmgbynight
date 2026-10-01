@@ -95,6 +95,19 @@
           <a
             class="nav-link text-light"
             href="#"
+            onclick="event.preventDefault(); loadPage('account')"
+          >
+            Minha conta
+          </a>
+        </li>
+
+        <li
+          class="nav-item d-none"
+          data-auth="user"
+        >
+          <a
+            class="nav-link text-light"
+            href="#"
             onclick="event.preventDefault(); logoutUser()"
           >
             Sair
@@ -179,6 +192,20 @@
           data-bs-dismiss="offcanvas"
         >
           Principal
+        </a>
+      </li>
+
+      <li
+        class="d-none"
+        data-auth="user"
+      >
+        <a
+          class="nav-link text-light"
+          href="#"
+          onclick="event.preventDefault(); loadPage('account')"
+          data-bs-dismiss="offcanvas"
+        >
+          Minha conta
         </a>
       </li>
 

@@ -1,7 +1,8 @@
 function getCurrentRoute() {
-  const route = window.location.pathname
-    .replace(/^\/+|\/+$/g, "")
-    .trim();
+  const route =
+    window.location.pathname
+      .replace(/^\/+|\/+$/g, "")
+      .trim();
 
   return route || "home";
 }
@@ -30,11 +31,9 @@ function updateNavbarRoute(route) {
           `loadPage('${route}'`
         )
       ) {
-        listItem.style.display =
-          "none";
+        listItem.style.display = "none";
       } else {
-        listItem.style.display =
-          "";
+        listItem.style.display = "";
       }
     });
 }
@@ -46,6 +45,14 @@ async function runPageScripts(route) {
       "function"
   ) {
     await window.loadMainUser();
+  }
+
+  if (
+    route === "account" &&
+    typeof window.onAccountPageLoaded ===
+      "function"
+  ) {
+    await window.onAccountPageLoaded();
   }
 
   if (
@@ -84,6 +91,7 @@ async function runPageScripts(route) {
 async function checkRouteAccess(route) {
   const authRoutes = [
     "main",
+    "account",
     "login",
     "register",
   ];
@@ -106,10 +114,12 @@ async function checkRouteAccess(route) {
 
     return {
       allowed:
-        route !== "main",
+        route !== "main" &&
+        route !== "account",
 
       redirect:
-        route === "main"
+        route === "main" ||
+        route === "account"
           ? "login"
           : null,
 
@@ -133,8 +143,23 @@ function showNotFound() {
   pageContent.innerHTML = `
     <div class="container-fluid pt-5">
       <div class="container content-conteiner pt-3">
-        <h1>404</h1>
-        <p>Página não encontrada.</p>
+        <div class="text-center py-5">
+          <h1 class="text-light">
+            Página não encontrada
+          </h1>
+
+          <p class="text-secondary">
+            A página solicitada não existe.
+          </p>
+
+          <button
+            type="button"
+            class="btn btn-danger"
+            onclick="loadPage('home')"
+          >
+            Ir para Home
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -157,10 +182,6 @@ async function loadPage(
   }
 
   try {
-    // ==============================
-    // Authentication
-    // ==============================
-
     if (checkAuth) {
       const access =
         await checkRouteAccess(route);
@@ -179,10 +200,6 @@ async function loadPage(
         );
       }
     }
-
-    // ==============================
-    // Load HTML
-    // ==============================
 
     const response = await fetch(
       `/src/pages/${route}.html`
@@ -215,10 +232,6 @@ async function loadPage(
         </div>
       </div>
     `;
-
-    // ==============================
-    // Browser history
-    // ==============================
 
     if (updateHistory) {
       let newUrl = `/${route}`;
@@ -253,15 +266,7 @@ async function loadPage(
       }
     }
 
-    // ==============================
-    // Navbar
-    // ==============================
-
     updateNavbarRoute(route);
-
-    // ==============================
-    // Page JS
-    // ==============================
 
     await runPageScripts(route);
   } catch (error) {
@@ -273,10 +278,6 @@ async function loadPage(
     showNotFound();
   }
 }
-
-// ==============================
-// Back / forward
-// ==============================
 
 window.addEventListener(
   "popstate",
@@ -290,10 +291,6 @@ window.addEventListener(
   }
 );
 
-// ==============================
-// Initial route
-// ==============================
-
 document.addEventListener(
   "DOMContentLoaded",
   async () => {
@@ -303,9 +300,6 @@ document.addEventListener(
     await loadPage(route, {
       updateHistory: true,
       replaceHistory: true,
-
-      // Fundamental para:
-      // /reset-password?token=...
       preserveQuery:
         route === "reset-password",
     });
