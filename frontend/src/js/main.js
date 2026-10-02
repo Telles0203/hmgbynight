@@ -94,9 +94,7 @@ async function loadMainUser(
           "none";
       }
 
-      if (
-        emailValidationContainer
-      ) {
+      if (emailValidationContainer) {
         const modalResponse =
           await fetch(
             "/src/pages/emailValidationModal.html",
@@ -128,9 +126,7 @@ async function loadMainUser(
         );
       }
     } else {
-      if (
-        emailValidationContainer
-      ) {
+      if (emailValidationContainer) {
         emailValidationContainer.innerHTML =
           "";
       }
@@ -168,15 +164,12 @@ async function loadMainUser(
         "none";
     }
 
-    if (
-      emailValidationContainer
-    ) {
-      emailValidationContainer.innerHTML =
-        `
-          <div class="alert alert-danger">
-            Não foi possível carregar seus dados.
-          </div>
-        `;
+    if (emailValidationContainer) {
+      emailValidationContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Não foi possível carregar seus dados.
+        </div>
+      `;
     }
 
     if (main) {
@@ -246,6 +239,11 @@ function populateCharacterOptions() {
       "characterSect"
     );
 
+  const otherSectSelect =
+    document.getElementById(
+      "characterOtherSect"
+    );
+
   const clanSelect =
     document.getElementById(
       "characterClan"
@@ -253,33 +251,42 @@ function populateCharacterOptions() {
 
   if (
     !sectSelect ||
+    !otherSectSelect ||
     !clanSelect ||
     !characterOptionsCache
   ) {
     return;
   }
 
+  const mainSectValues = [
+    "camarilla",
+    "anarch",
+    "sabbat",
+  ];
+
   // ==============================
-  // Sects
+  // Main sects
   // ==============================
 
-  sectSelect.innerHTML = "";
+  sectSelect.innerHTML = `
+    <option value="">
+      Selecione a seita
+    </option>
+  `;
 
-  const emptySectOption =
-    document.createElement(
-      "option"
-    );
+  mainSectValues.forEach(
+    (sectValue) => {
+      const sect =
+        characterOptionsCache.sects.find(
+          (option) =>
+            option.value ===
+            sectValue
+        );
 
-  emptySectOption.value = "";
-  emptySectOption.textContent =
-    "Selecione a seita";
+      if (!sect) {
+        return;
+      }
 
-  sectSelect.appendChild(
-    emptySectOption
-  );
-
-  characterOptionsCache.sects.forEach(
-    (sect) => {
       const option =
         document.createElement(
           "option"
@@ -297,24 +304,66 @@ function populateCharacterOptions() {
     }
   );
 
-  // ==============================
-  // Clans
-  // ==============================
-
-  clanSelect.innerHTML = "";
-
-  const emptyClanOption =
+  const otherOption =
     document.createElement(
       "option"
     );
 
-  emptyClanOption.value = "";
-  emptyClanOption.textContent =
-    "Selecione o clã";
+  otherOption.value =
+    "other";
 
-  clanSelect.appendChild(
-    emptyClanOption
+  otherOption.textContent =
+    "Outras opções";
+
+  sectSelect.appendChild(
+    otherOption
   );
+
+  // ==============================
+  // Other sects
+  // ==============================
+
+  otherSectSelect.innerHTML = `
+    <option value="">
+      Selecione uma opção
+    </option>
+  `;
+
+  characterOptionsCache.sects
+    .filter(
+      (sect) =>
+        !mainSectValues.includes(
+          sect.value
+        )
+    )
+    .forEach(
+      (sect) => {
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          sect.value;
+
+        option.textContent =
+          sect.label;
+
+        otherSectSelect.appendChild(
+          option
+        );
+      }
+    );
+
+  // ==============================
+  // Clans
+  // ==============================
+
+  clanSelect.innerHTML = `
+    <option value="">
+      Selecione o clã
+    </option>
+  `;
 
   characterOptionsCache.clans.forEach(
     (clan) => {
@@ -334,9 +383,13 @@ function populateCharacterOptions() {
       );
     }
   );
+
+  updateOtherSectVisibility();
 }
 
-function getSectLabel(sectValue) {
+function getSectLabel(
+  sectValue
+) {
   if (!characterOptionsCache) {
     return sectValue || "";
   }
@@ -344,7 +397,8 @@ function getSectLabel(sectValue) {
   const sect =
     characterOptionsCache.sects.find(
       (option) =>
-        option.value === sectValue
+        option.value ===
+        sectValue
     );
 
   return (
@@ -352,6 +406,80 @@ function getSectLabel(sectValue) {
     sectValue ||
     ""
   );
+}
+
+// ==============================
+// Sect selection
+// ==============================
+
+function updateOtherSectVisibility() {
+  const sectSelect =
+    document.getElementById(
+      "characterSect"
+    );
+
+  const otherSectSelect =
+    document.getElementById(
+      "characterOtherSect"
+    );
+
+  const otherSectContainer =
+    document.getElementById(
+      "otherSectContainer"
+    );
+
+  if (
+    !sectSelect ||
+    !otherSectSelect ||
+    !otherSectContainer
+  ) {
+    return;
+  }
+
+  const showOther =
+    sectSelect.value === "other";
+
+  otherSectContainer.classList.toggle(
+    "d-none",
+    !showOther
+  );
+
+  otherSectSelect.required =
+    showOther;
+
+  otherSectSelect.disabled =
+    !showOther;
+
+  if (!showOther) {
+    otherSectSelect.value = "";
+  }
+}
+
+function getSelectedSect() {
+  const sectSelect =
+    document.getElementById(
+      "characterSect"
+    );
+
+  const otherSectSelect =
+    document.getElementById(
+      "characterOtherSect"
+    );
+
+  if (!sectSelect) {
+    return "";
+  }
+
+  if (
+    sectSelect.value === "other"
+  ) {
+    return (
+      otherSectSelect?.value ||
+      ""
+    );
+  }
+
+  return sectSelect.value;
 }
 
 // ==============================
@@ -445,73 +573,83 @@ function renderCharacters(
 
   const characterCards =
     characters
-      .map((character) => {
-        const characterName =
-          escapeHtml(
-            character.name
-          );
+      .map(
+        (character) => {
+          const characterName =
+            escapeHtml(
+              character.name
+            );
 
-        const clanName =
-          escapeHtml(
-            character.clanDisplayName ||
-            character.clan ||
-            ""
-          );
+          const clanName =
+            escapeHtml(
+              character.clanDisplayName ||
+              character.clan ||
+              ""
+            );
 
-        const sectName =
-          escapeHtml(
-            getSectLabel(
-              character.sect
-            )
-          );
+          const sectName =
+            escapeHtml(
+              getSectLabel(
+                character.sect
+              )
+            );
 
-        const houseText =
-          character.motherHouse
-            ? "Vinculado a uma House"
-            : "Sem House";
+          const houseText =
+            character.motherHouse
+              ? "Vinculado a uma House"
+              : "Sem House";
 
-        return `
-          <div
-            class="border border-secondary rounded p-3 mb-2"
-          >
+          return `
             <div
-              class="d-flex justify-content-between align-items-center gap-3"
+              class="border border-secondary rounded p-3 mb-2"
             >
+              <div
+                class="d-flex justify-content-between align-items-center gap-3"
+              >
 
-              <div>
+                <div>
 
-                <h3
-                  class="h6 text-light mb-1"
-                >
-                  ${characterName}
-                </h3>
+                  <h3
+                    class="h6 text-light mb-1"
+                  >
+                    ${characterName}
+                  </h3>
 
-                <div
-                  class="text-secondary small"
-                >
-                  ${clanName}
+                  ${
+                    clanName
+                      ? `
+                        <div class="text-secondary small">
+                          ${clanName}
+                        </div>
+                      `
+                      : ""
+                  }
+
+                  <div
+                    class="text-secondary small"
+                  >
+                    ${
+                      sectName
+                        ? `${sectName} · `
+                        : ""
+                    }${houseText}
+                  </div>
+
                 </div>
 
-                <div
-                  class="text-secondary small"
+                <button
+                  type="button"
+                  class="btn btn-outline-light btn-sm"
+                  disabled
                 >
-                  ${sectName} · ${houseText}
-                </div>
+                  Abrir
+                </button>
 
               </div>
-
-              <button
-                type="button"
-                class="btn btn-outline-light btn-sm"
-                disabled
-              >
-                Abrir
-              </button>
-
             </div>
-          </div>
-        `;
-      })
+          `;
+        }
+      )
       .join("");
 
   container.innerHTML = `
@@ -642,17 +780,33 @@ function setupCharacterFormHandlers() {
       "createCharacterModal"
     );
 
+  const sectSelect =
+    document.getElementById(
+      "characterSect"
+    );
+
   if (!form) {
     return;
   }
 
   if (
-    form.dataset.bound === "true"
+    form.dataset.bound ===
+    "true"
   ) {
     return;
   }
 
-  form.dataset.bound = "true";
+  form.dataset.bound =
+    "true";
+
+  if (sectSelect) {
+    sectSelect.addEventListener(
+      "change",
+      () => {
+        updateOtherSectVisibility();
+      }
+    );
+  }
 
   form.addEventListener(
     "submit",
@@ -664,9 +818,14 @@ function setupCharacterFormHandlers() {
           "characterName"
         );
 
-      const sectSelect =
+      const primarySectSelect =
         document.getElementById(
           "characterSect"
+        );
+
+      const otherSectSelect =
+        document.getElementById(
+          "characterOtherSect"
         );
 
       const clanSelect =
@@ -683,7 +842,7 @@ function setupCharacterFormHandlers() {
         nameInput?.value?.trim();
 
       const sect =
-        sectSelect?.value || "";
+        getSelectedSect();
 
       const clan =
         clanSelect?.value || "";
@@ -700,12 +859,36 @@ function setupCharacterFormHandlers() {
         return;
       }
 
-      if (!sect) {
+      if (
+        !primarySectSelect?.value
+      ) {
         showCharacterAlert(
           "Selecione a seita do personagem."
         );
 
-        sectSelect?.focus();
+        primarySectSelect?.focus();
+
+        return;
+      }
+
+      if (
+        primarySectSelect.value ===
+          "other" &&
+        !otherSectSelect?.value
+      ) {
+        showCharacterAlert(
+          "Selecione uma das outras seitas."
+        );
+
+        otherSectSelect?.focus();
+
+        return;
+      }
+
+      if (!sect) {
+        showCharacterAlert(
+          "Selecione a seita do personagem."
+        );
 
         return;
       }
@@ -743,11 +926,12 @@ function setupCharacterFormHandlers() {
               credentials:
                 "include",
 
-              body: JSON.stringify({
-                name,
-                sect,
-                clan,
-              }),
+              body:
+                JSON.stringify({
+                  name,
+                  sect,
+                  clan,
+                }),
             }
           );
 
@@ -775,21 +959,26 @@ function setupCharacterFormHandlers() {
 
         form.reset();
 
+        updateOtherSectVisibility();
+
         await loadCharacters();
 
-        setTimeout(() => {
-          if (
-            modalElement &&
-            window.bootstrap
-          ) {
-            const modal =
-              bootstrap.Modal.getOrCreateInstance(
-                modalElement
-              );
+        setTimeout(
+          () => {
+            if (
+              modalElement &&
+              window.bootstrap
+            ) {
+              const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                  modalElement
+                );
 
-            modal.hide();
-          }
-        }, 500);
+              modal.hide();
+            }
+          },
+          500
+        );
       } catch (error) {
         console.error(
           "[CHARACTER] Erro ao criar personagem:",
@@ -818,6 +1007,8 @@ function setupCharacterFormHandlers() {
         form.reset();
 
         hideCharacterAlert();
+
+        updateOtherSectVisibility();
       }
     );
   }
@@ -1090,9 +1281,7 @@ function setupEmailValidationHandlers(
               "danger"
             );
 
-            if (
-              data?.retryAfter
-            ) {
+            if (data?.retryAfter) {
               startEmailResendCountdown(
                 resendButton,
                 data.retryAfter
@@ -1181,11 +1370,16 @@ function showEmailValidationAlert(
     alert.className =
       "alert mt-3";
 
-    alert.role = "alert";
+    alert.role =
+      "alert";
 
     warningBox
-      .querySelector(".card-body")
-      ?.appendChild(alert);
+      .querySelector(
+        ".card-body"
+      )
+      ?.appendChild(
+        alert
+      );
   }
 
   alert.classList.remove(
