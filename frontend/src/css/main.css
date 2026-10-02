@@ -1,6 +1,6 @@
 .main-dashboard {
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
 
     --character-motion-duration: 1000ms;
 }
@@ -61,7 +61,9 @@
    ============================== */
 
 .character-card {
-    overflow: hidden;
+    position: relative;
+
+    overflow: visible;
 
     margin-bottom: 0.5rem;
 
@@ -90,13 +92,153 @@
     display: flex;
 
     align-items: center;
-    justify-content: space-between;
 
     gap: 1rem;
 }
 
 .character-card-identity {
     min-width: 0;
+    flex: 1;
+}
+
+
+/* ==============================
+   Character external button
+   ============================== */
+
+.character-open-button {
+    position: absolute;
+
+    top: 50%;
+
+    /*
+     * 24px do p-4 externo
+     * + aproximadamente 1px da borda
+     * + 14px (metade do botão)
+     *
+     * Resultado:
+     * centro do botão exatamente
+     * sobre a borda vermelha externa.
+     */
+    right: -39px;
+
+    width: 28px;
+    height: 46px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform:
+        translateY(-50%);
+
+    background-color:
+        #181818 !important;
+
+    border:
+        1px solid
+        var(--bs-danger) !important;
+
+    border-radius:
+        7px !important;
+
+    box-shadow:
+        0 0 8px
+        rgba(220, 53, 69, 0.12) !important;
+
+    color:
+        transparent !important;
+
+    font-size: 0;
+
+    cursor: pointer;
+
+    z-index: 10;
+
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+
+/* ==============================
+   Chevron
+   ============================== */
+
+.character-open-button::after {
+    content: "";
+
+    width: 8px;
+    height: 8px;
+
+    border-right:
+        2px solid #c8c8c8;
+
+    border-bottom:
+        2px solid #c8c8c8;
+
+    transform:
+        rotate(-45deg);
+
+    transition:
+        border-color 0.25s ease,
+        transform 0.3s ease;
+}
+
+
+/* Aberto */
+
+.character-card.is-selected
+.character-open-button::after {
+    transform:
+        rotate(135deg);
+}
+
+
+/* Hover */
+
+.character-open-button:hover {
+    background-color:
+        #241719 !important;
+
+    border-color:
+        #ff5263 !important;
+
+    box-shadow:
+        0 0 12px
+        rgba(220, 53, 69, 0.35) !important;
+
+    transform:
+        translateY(-50%)
+        scale(1.05);
+}
+
+.character-open-button:hover::after {
+    border-color:
+        #ffffff;
+}
+
+
+/* Focus */
+
+.character-open-button:focus,
+.character-open-button:active {
+    outline: none;
+
+    background-color:
+        #241719 !important;
+
+    border:
+        1px solid
+        var(--bs-danger) !important;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(220, 53, 69, 0.18) !important;
 }
 
 
@@ -205,7 +347,11 @@
     }
 
     .character-card-header {
-        align-items: flex-start;
+        align-items: center;
+    }
+
+    .character-open-button {
+        right: -39px;
     }
 }
 
@@ -218,7 +364,9 @@
 
     .character-card-details,
     .character-card-details-inner,
-    .character-section-card {
+    .character-section-card,
+    .character-open-button,
+    .character-open-button::after {
         transition: none;
     }
 }
