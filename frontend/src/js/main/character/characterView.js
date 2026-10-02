@@ -9,108 +9,70 @@ window.ByNightMain.character =
 
 
 // =============================================
-// VELOCIDADES
+// VELOCIDADE DE CADA ETAPA
 // =============================================
 
-// Expansão/retração lateral do painel
-const PANEL_DURATION_SECONDS = 1;
+const MOTION_DURATION_SECONDS = 1;
 
-// Desaparecimento/aparecimento dos textos
-const CONTENT_FADE_DURATION_SECONDS = 1.2;
-
-// Cards internos da ficha
-const SECTION_FADE_DURATION_SECONDS = 0.8;
-
-
-// =============================================
-// Calculated timings
-// =============================================
-
-const PANEL_DURATION =
-  PANEL_DURATION_SECONDS * 1000;
-
-const CONTENT_FADE_DURATION =
-  CONTENT_FADE_DURATION_SECONDS * 1000;
-
-const SECTION_FADE_DURATION =
-  SECTION_FADE_DURATION_SECONDS * 1000;
-
-const PANEL_START_DELAY =
-  50;
-
-// A ficha começa a aparecer ainda
-// durante a expansão.
-const DETAIL_REVEAL_DELAY =
-  PANEL_DURATION * 0.30;
-
-// A visão anterior só é removida
-// depois de terminar o fade.
-const OVERVIEW_REMOVE_DELAY =
-  CONTENT_FADE_DURATION + 100;
-
-// Tempo necessário para todas
-// as animações terminarem.
-const TRANSITION_FINISH_DELAY =
-  Math.max(
-    PANEL_START_DELAY +
-      PANEL_DURATION,
-
-    DETAIL_REVEAL_DELAY +
-      CONTENT_FADE_DURATION,
-
-    OVERVIEW_REMOVE_DELAY
-  ) + 150;
+const MOTION_DURATION =
+  MOTION_DURATION_SECONDS * 1000;
 
 
 // =============================================
 // State
 // =============================================
 
-let characterTransitionTimers = [];
-
-let characterHeightAnimationFrame =
-  null;
-
-let characterHorizontalAnimationFrame =
+let horizontalAnimationFrame =
   null;
 
 let characterTransitioning =
   false;
 
+const verticalMetrics =
+  new WeakMap();
+
 
 // ==============================
-// Open character
+// Toggle
 // ==============================
 
-function openCharacterView(
+function toggleCharacterView(
+  characterId
+) {
+  const selectedId =
+    window.ByNightMain
+      .character
+      .selectedCharacterId;
+
+  if (
+    String(selectedId) ===
+    String(characterId)
+  ) {
+    closeCharacterView();
+    return;
+  }
+
+  openCharacterView(
+    characterId
+  );
+}
+
+
+// ==============================
+// Open
+// ==============================
+
+async function openCharacterView(
   characterId
 ) {
   if (characterTransitioning) {
     return;
   }
 
-  const characters =
-    window.ByNightMain
-      .character
-      .characters;
-
-  const character =
-    characters.find(
-      (item) =>
-        String(item.id) ===
-        String(characterId)
-    );
-
-  if (!character) {
-    console.error(
-      "[CHARACTER] Personagem não encontrado."
-    );
-
-    return;
-  }
-
   const elements =
-    getCharacterViewElements();
+    getViewElements(
+      characterId
+    );
 
   if (!elements) {
     return;
@@ -121,205 +83,124 @@ function openCharacterView(
     panelsContainer,
     characterPanel,
     housePanel,
-    overview,
-    detail,
-    stage,
-    nameElement,
-    metaElement,
+    selectedCard,
+    allCards,
+    panelHeader,
+    createArea,
   } = elements;
-
-  clearCharacterTransitions();
-
-  applyTransitionDurations(
-    dashboard
-  );
 
   characterTransitioning =
     true;
 
   window.ByNightMain
     .character
-    .selectedCharacter =
-      character;
+    .selectedCharacterId =
+      characterId;
 
-  // ==============================
-  // Character information
-  // ==============================
-
-  nameElement.textContent =
-    character.name;
-
-  const clanName =
-    character.clanDisplayName ||
-    character.clan ||
-    "";
-
-  const sectName =
-    window.getSectLabel?.(
-      character.sect
-    ) ||
-    character.sect ||
-    "";
-
-  metaElement.textContent =
-    [
-      clanName,
-      sectName,
-    ]
-      .filter(Boolean)
-      .join(" · ");
-
-  // ==============================
-  // Prepare content
-  // ==============================
-
-  overview.classList.remove(
-    "d-none",
-    "is-hidden"
+  dashboard.style.setProperty(
+    "--character-motion-duration",
+    `${MOTION_DURATION}ms`
   );
 
-  detail.classList.remove(
-    "d-none",
-    "is-visible",
-    "is-static"
+  selectedCard.classList.add(
+    "is-selected"
   );
 
-  detail.setAttribute(
-    "aria-hidden",
-    "true"
+  selectedCard
+    .querySelector(
+      ".character-open-button"
+    )
+    ?.replaceChildren(
+      document.createTextNode(
+        "← Voltar"
+      )
+    );
+
+
+  // =============================================
+  // FASE 1
+  // Recolhe os outros personagens
+  // respeitando TODO o tempo da animação
+  // =============================================
+
+  const elementsToCollapse = [
+    ...allCards.filter(
+      (card) =>
+        card !== selectedCard
+    ),
+    panelHeader,
+    createArea,
+  ].filter(Boolean);
+
+  await collapseElements(
+    elementsToCollapse,
+    MOTION_DURATION
   );
 
-  const startHeight =
-    overview.getBoundingClientRect()
-      .height;
 
-  stage.style.height =
-    `${startHeight}px`;
+  // =============================================
+  // FASE 2
+  // Expande horizontalmente
+  // =============================================
 
-  // ==============================
-  // 1. Overview fades gradually
-  // ==============================
-
-  requestAnimationFrame(
-    () => {
-      requestAnimationFrame(
-        () => {
-          overview.classList.add(
-            "is-hidden"
-          );
-        }
-      );
-    }
+  dashboard.classList.add(
+    "character-focus"
   );
 
-  // ==============================
-  // 2. Horizontal expansion
-  // ==============================
+  await animateHorizontalPanels({
+    panelsContainer,
+    characterPanel,
+    housePanel,
+    opening: true,
+    duration: MOTION_DURATION,
+  });
 
-  addCharacterTransition(
-    () => {
-      dashboard.classList.add(
-        "character-focus"
-      );
 
-      animateHorizontalPanels({
-        panelsContainer,
-        characterPanel,
-        housePanel,
-        opening: true,
-        duration: PANEL_DURATION,
-      });
+  // =============================================
+  // FASE 3
+  // Expande a ficha para baixo
+  // =============================================
 
-      animateCharacterHeight({
-        stage,
-        targetElement: detail,
-        startHeight,
-        duration: PANEL_DURATION,
-      });
-    },
-    PANEL_START_DELAY
+  selectedCard.classList.add(
+    "is-open"
   );
 
-  // ==============================
-  // 3. Character detail gradually
-  // appears during expansion
-  // ==============================
-
-  addCharacterTransition(
-    () => {
-      detail.setAttribute(
-        "aria-hidden",
-        "false"
-      );
-
-      detail.classList.add(
-        "is-visible"
-      );
-    },
-    DETAIL_REVEAL_DELAY
+  await wait(
+    MOTION_DURATION
   );
 
-  // ==============================
-  // 4. Remove old content only
-  // after fade is completed
-  // ==============================
 
-  addCharacterTransition(
-    () => {
-      overview.classList.add(
-        "d-none"
-      );
-    },
-    OVERVIEW_REMOVE_DELAY
-  );
+  // =============================================
+  // Finish
+  // =============================================
 
-  // ==============================
-  // 5. Finish
-  // ==============================
-
-  addCharacterTransition(
-    () => {
-      cancelCharacterHeightAnimation();
-      cancelHorizontalAnimation();
-
-      characterPanel.style.width =
-        "100%";
-
-      housePanel.style.transform =
-        "translateX(115%)";
-
-      housePanel.style.opacity =
-        "0";
-
-      housePanel.style.pointerEvents =
-        "none";
-
-      detail.classList.add(
-        "is-static"
-      );
-
-      stage.style.height =
-        "auto";
-
-      characterTransitioning =
-        false;
-    },
-    TRANSITION_FINISH_DELAY
-  );
+  characterTransitioning =
+    false;
 }
 
 
 // ==============================
-// Close character
+// Close
 // ==============================
 
-function closeCharacterView() {
+async function closeCharacterView() {
   if (characterTransitioning) {
     return;
   }
 
+  const characterId =
+    window.ByNightMain
+      .character
+      .selectedCharacterId;
+
+  if (!characterId) {
+    return;
+  }
+
   const elements =
-    getCharacterViewElements();
+    getViewElements(
+      characterId
+    );
 
   if (!elements) {
     return;
@@ -330,174 +211,436 @@ function closeCharacterView() {
     panelsContainer,
     characterPanel,
     housePanel,
-    overview,
-    detail,
-    stage,
+    selectedCard,
+    allCards,
+    panelHeader,
+    createArea,
   } = elements;
-
-  clearCharacterTransitions();
-
-  applyTransitionDurations(
-    dashboard
-  );
 
   characterTransitioning =
     true;
 
-  const startHeight =
-    detail.getBoundingClientRect()
-      .height;
 
-  stage.style.height =
-    `${startHeight}px`;
+  // =============================================
+  // FASE 1
+  // Recolhe ficha para cima
+  // =============================================
 
-  detail.classList.remove(
-    "is-static"
+  selectedCard.classList.remove(
+    "is-open"
   );
 
-  overview.classList.remove(
-    "d-none"
+  await wait(
+    MOTION_DURATION
   );
 
-  overview.classList.add(
-    "is-hidden"
+
+  // =============================================
+  // FASE 2
+  // Retorna horizontalmente
+  // =============================================
+
+  await animateHorizontalPanels({
+    panelsContainer,
+    characterPanel,
+    housePanel,
+    opening: false,
+    duration: MOTION_DURATION,
+  });
+
+  dashboard.classList.remove(
+    "character-focus"
   );
 
-  overview.getBoundingClientRect();
 
-  // ==============================
-  // 1. Detail fades gradually
-  // ==============================
+  // =============================================
+  // FASE 3
+  // Outros personagens expandem para baixo
+  // respeitando TODO o tempo
+  // =============================================
 
-  requestAnimationFrame(
-    () => {
-      requestAnimationFrame(
-        () => {
-          detail.classList.remove(
-            "is-visible"
-          );
-        }
-      );
-    }
+  const elementsToExpand = [
+    panelHeader,
+    ...allCards.filter(
+      (card) =>
+        card !== selectedCard
+    ),
+    createArea,
+  ].filter(Boolean);
+
+  await expandElements(
+    elementsToExpand,
+    MOTION_DURATION
   );
 
-  // ==============================
-  // 2. Horizontal return
-  // ==============================
 
-  addCharacterTransition(
-    () => {
-      animateHorizontalPanels({
-        panelsContainer,
-        characterPanel,
-        housePanel,
-        opening: false,
-        duration: PANEL_DURATION,
-      });
+  // =============================================
+  // Finish
+  // =============================================
 
-      animateCharacterHeight({
-        stage,
-        targetElement: overview,
-        startHeight,
-        duration: PANEL_DURATION,
-      });
-    },
-    PANEL_START_DELAY
+  selectedCard.classList.remove(
+    "is-selected"
   );
 
-  // ==============================
-  // 3. Overview gradually returns
-  // ==============================
+  selectedCard
+    .querySelector(
+      ".character-open-button"
+    )
+    ?.replaceChildren(
+      document.createTextNode(
+        "Abrir →"
+      )
+    );
 
-  addCharacterTransition(
-    () => {
-      overview.classList.remove(
-        "is-hidden"
-      );
-    },
-    DETAIL_REVEAL_DELAY
+  window.ByNightMain
+    .character
+    .selectedCharacterId =
+      null;
+
+  characterTransitioning =
+    false;
+}
+
+
+// ==============================
+// Collapse elements
+// ==============================
+
+async function collapseElements(
+  elements,
+  duration
+) {
+  await Promise.all(
+    elements.map(
+      (element) =>
+        collapseElement(
+          element,
+          duration
+        )
+    )
+  );
+}
+
+async function collapseElement(
+  element,
+  duration
+) {
+  const style =
+    window.getComputedStyle(
+      element
+    );
+
+  const metrics = {
+    height:
+      element
+        .getBoundingClientRect()
+        .height,
+
+    marginTop:
+      parseFloat(
+        style.marginTop
+      ) || 0,
+
+    marginBottom:
+      parseFloat(
+        style.marginBottom
+      ) || 0,
+
+    paddingTop:
+      parseFloat(
+        style.paddingTop
+      ) || 0,
+
+    paddingBottom:
+      parseFloat(
+        style.paddingBottom
+      ) || 0,
+
+    borderTopWidth:
+      parseFloat(
+        style.borderTopWidth
+      ) || 0,
+
+    borderBottomWidth:
+      parseFloat(
+        style.borderBottomWidth
+      ) || 0,
+
+    opacity:
+      parseFloat(
+        style.opacity
+      ) || 1,
+  };
+
+  verticalMetrics.set(
+    element,
+    metrics
   );
 
-  // ==============================
-  // 4. Detail can disappear
-  // ==============================
+  element.style.overflow =
+    "hidden";
 
-  addCharacterTransition(
-    () => {
-      detail.classList.add(
-        "d-none"
-      );
+  element.style.pointerEvents =
+    "none";
 
-      detail.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-    },
-    OVERVIEW_REMOVE_DELAY
+  const animation =
+    element.animate(
+      [
+        {
+          height:
+            `${metrics.height}px`,
+
+          marginTop:
+            `${metrics.marginTop}px`,
+
+          marginBottom:
+            `${metrics.marginBottom}px`,
+
+          paddingTop:
+            `${metrics.paddingTop}px`,
+
+          paddingBottom:
+            `${metrics.paddingBottom}px`,
+
+          borderTopWidth:
+            `${metrics.borderTopWidth}px`,
+
+          borderBottomWidth:
+            `${metrics.borderBottomWidth}px`,
+
+          opacity:
+            metrics.opacity,
+
+          transform:
+            "translateY(0)",
+        },
+
+        {
+          height:
+            "0px",
+
+          marginTop:
+            "0px",
+
+          marginBottom:
+            "0px",
+
+          paddingTop:
+            "0px",
+
+          paddingBottom:
+            "0px",
+
+          borderTopWidth:
+            "0px",
+
+          borderBottomWidth:
+            "0px",
+
+          opacity:
+            0,
+
+          transform:
+            "translateY(-16px)",
+        },
+      ],
+      {
+        duration,
+        easing:
+          "cubic-bezier(0.45, 0, 0.55, 1)",
+        fill:
+          "forwards",
+      }
+    );
+
+  await animation.finished;
+
+  element.style.height =
+    "0px";
+
+  element.style.marginTop =
+    "0px";
+
+  element.style.marginBottom =
+    "0px";
+
+  element.style.paddingTop =
+    "0px";
+
+  element.style.paddingBottom =
+    "0px";
+
+  element.style.borderTopWidth =
+    "0px";
+
+  element.style.borderBottomWidth =
+    "0px";
+
+  element.style.opacity =
+    "0";
+
+  element.style.transform =
+    "translateY(-16px)";
+
+  animation.cancel();
+}
+
+
+// ==============================
+// Expand elements
+// ==============================
+
+async function expandElements(
+  elements,
+  duration
+) {
+  await Promise.all(
+    elements.map(
+      (element) =>
+        expandElement(
+          element,
+          duration
+        )
+    )
+  );
+}
+
+async function expandElement(
+  element,
+  duration
+) {
+  const metrics =
+    verticalMetrics.get(
+      element
+    );
+
+  if (!metrics) {
+    return;
+  }
+
+  const animation =
+    element.animate(
+      [
+        {
+          height:
+            "0px",
+
+          marginTop:
+            "0px",
+
+          marginBottom:
+            "0px",
+
+          paddingTop:
+            "0px",
+
+          paddingBottom:
+            "0px",
+
+          borderTopWidth:
+            "0px",
+
+          borderBottomWidth:
+            "0px",
+
+          opacity:
+            0,
+
+          transform:
+            "translateY(-16px)",
+        },
+
+        {
+          height:
+            `${metrics.height}px`,
+
+          marginTop:
+            `${metrics.marginTop}px`,
+
+          marginBottom:
+            `${metrics.marginBottom}px`,
+
+          paddingTop:
+            `${metrics.paddingTop}px`,
+
+          paddingBottom:
+            `${metrics.paddingBottom}px`,
+
+          borderTopWidth:
+            `${metrics.borderTopWidth}px`,
+
+          borderBottomWidth:
+            `${metrics.borderBottomWidth}px`,
+
+          opacity:
+            metrics.opacity,
+
+          transform:
+            "translateY(0)",
+        },
+      ],
+      {
+        duration,
+        easing:
+          "cubic-bezier(0.45, 0, 0.55, 1)",
+        fill:
+          "forwards",
+      }
+    );
+
+  await animation.finished;
+
+  animation.cancel();
+
+  clearVerticalStyles(
+    element
   );
 
-  // ==============================
-  // 5. Finish
-  // ==============================
-
-  addCharacterTransition(
-    () => {
-      cancelCharacterHeightAnimation();
-      cancelHorizontalAnimation();
-
-      characterPanel.style.width =
-        "";
-
-      housePanel.style.transform =
-        "";
-
-      housePanel.style.opacity =
-        "";
-
-      housePanel.style.pointerEvents =
-        "";
-
-      dashboard.classList.remove(
-        "character-focus"
-      );
-
-      stage.style.height =
-        "auto";
-
-      window.ByNightMain
-        .character
-        .selectedCharacter =
-          null;
-
-      characterTransitioning =
-        false;
-    },
-    TRANSITION_FINISH_DELAY
+  verticalMetrics.delete(
+    element
   );
 }
 
 
 // ==============================
-// Transition durations
+// Clear vertical styles
 // ==============================
 
-function applyTransitionDurations(
-  dashboard
+function clearVerticalStyles(
+  element
 ) {
-  dashboard.style.setProperty(
-    "--overview-duration",
-    `${CONTENT_FADE_DURATION}ms`
-  );
+  element.style.height =
+    "";
 
-  dashboard.style.setProperty(
-    "--detail-duration",
-    `${CONTENT_FADE_DURATION}ms`
-  );
+  element.style.marginTop =
+    "";
 
-  dashboard.style.setProperty(
-    "--section-duration",
-    `${SECTION_FADE_DURATION}ms`
-  );
+  element.style.marginBottom =
+    "";
+
+  element.style.paddingTop =
+    "";
+
+  element.style.paddingBottom =
+    "";
+
+  element.style.borderTopWidth =
+    "";
+
+  element.style.borderBottomWidth =
+    "";
+
+  element.style.opacity =
+    "";
+
+  element.style.transform =
+    "";
+
+  element.style.overflow =
+    "";
+
+  element.style.pointerEvents =
+    "";
 }
 
 
@@ -514,238 +657,184 @@ function animateHorizontalPanels({
 }) {
   cancelHorizontalAnimation();
 
-  const containerWidth =
-    panelsContainer
-      .getBoundingClientRect()
-      .width;
+  return new Promise(
+    (resolve) => {
+      const containerWidth =
+        panelsContainer
+          .getBoundingClientRect()
+          .width;
 
-  const styles =
-    window.getComputedStyle(
-      panelsContainer
-    );
+      const styles =
+        window.getComputedStyle(
+          panelsContainer
+        );
 
-  const gap =
-    Number.parseFloat(
-      styles.columnGap ||
-      styles.gap ||
-      "0"
-    ) || 0;
+      const gap =
+        Number.parseFloat(
+          styles.columnGap ||
+          styles.gap ||
+          "0"
+        ) || 0;
 
-  const mobile =
-    window.matchMedia(
-      "(max-width: 991.98px)"
-    ).matches;
+      const mobile =
+        window.matchMedia(
+          "(max-width: 991.98px)"
+        ).matches;
 
-  const defaultWidth =
-    mobile
-      ? containerWidth
-      : (
-          containerWidth -
-          gap
-        ) / 2;
+      const normalWidth =
+        mobile
+          ? containerWidth
+          : (
+              containerWidth -
+              gap
+            ) / 2;
 
-  const fullWidth =
-    containerWidth;
+      const fullWidth =
+        containerWidth;
 
-  const startWidth =
-    characterPanel
-      .getBoundingClientRect()
-      .width;
+      const startWidth =
+        characterPanel
+          .getBoundingClientRect()
+          .width;
 
-  const targetWidth =
-    opening
-      ? fullWidth
-      : defaultWidth;
+      const targetWidth =
+        opening
+          ? fullWidth
+          : normalWidth;
 
-  const startHouseOffset =
-    opening
-      ? 0
-      : 115;
+      const startHouseOffset =
+        opening
+          ? 0
+          : 115;
 
-  const targetHouseOffset =
-    opening
-      ? 115
-      : 0;
+      const targetHouseOffset =
+        opening
+          ? 115
+          : 0;
 
-  const startHouseOpacity =
-    opening
-      ? 1
-      : 0;
+      const startHouseOpacity =
+        opening
+          ? 1
+          : 0;
 
-  const targetHouseOpacity =
-    opening
-      ? 0
-      : 1;
+      const targetHouseOpacity =
+        opening
+          ? 0
+          : 1;
 
-  const startedAt =
-    performance.now();
+      const startedAt =
+        performance.now();
 
-  function update(now) {
-    const elapsed =
-      now - startedAt;
+      function update(now) {
+        const progress =
+          Math.min(
+            (
+              now -
+              startedAt
+            ) /
+            duration,
+            1
+          );
 
-    const progress =
-      Math.min(
-        elapsed / duration,
-        1
-      );
+        const eased =
+          easeInOutSine(
+            progress
+          );
 
-    const easedProgress =
-      easeInOutSine(
-        progress
-      );
+        const width =
+          startWidth +
+          (
+            targetWidth -
+            startWidth
+          ) *
+          eased;
 
-    const currentPanelWidth =
-      startWidth +
-      (
-        targetWidth -
-        startWidth
-      ) *
-      easedProgress;
+        const houseOffset =
+          startHouseOffset +
+          (
+            targetHouseOffset -
+            startHouseOffset
+          ) *
+          eased;
 
-    const currentHouseOffset =
-      startHouseOffset +
-      (
-        targetHouseOffset -
-        startHouseOffset
-      ) *
-      easedProgress;
+        const houseOpacity =
+          startHouseOpacity +
+          (
+            targetHouseOpacity -
+            startHouseOpacity
+          ) *
+          eased;
 
-    const currentHouseOpacity =
-      startHouseOpacity +
-      (
-        targetHouseOpacity -
-        startHouseOpacity
-      ) *
-      easedProgress;
+        characterPanel.style.width =
+          `${width}px`;
 
-    characterPanel.style.width =
-      `${currentPanelWidth}px`;
+        housePanel.style.transform =
+          `translateX(${houseOffset}%)`;
 
-    housePanel.style.transform =
-      `translateX(${currentHouseOffset}%)`;
+        housePanel.style.opacity =
+          String(
+            houseOpacity
+          );
 
-    housePanel.style.opacity =
-      String(
-        currentHouseOpacity
-      );
+        if (progress < 1) {
+          horizontalAnimationFrame =
+            requestAnimationFrame(
+              update
+            );
 
-    if (progress < 1) {
-      characterHorizontalAnimationFrame =
+          return;
+        }
+
+        horizontalAnimationFrame =
+          null;
+
+        if (opening) {
+          characterPanel.style.width =
+            `${fullWidth}px`;
+
+          housePanel.style.transform =
+            "translateX(115%)";
+
+          housePanel.style.opacity =
+            "0";
+        } else {
+          characterPanel.style.width =
+            "";
+
+          housePanel.style.transform =
+            "";
+
+          housePanel.style.opacity =
+            "";
+        }
+
+        resolve();
+      }
+
+      horizontalAnimationFrame =
         requestAnimationFrame(
           update
         );
-
-      return;
     }
-
-    characterHorizontalAnimationFrame =
-      null;
-  }
-
-  characterHorizontalAnimationFrame =
-    requestAnimationFrame(
-      update
-    );
-}
-
-function cancelHorizontalAnimation() {
-  if (
-    characterHorizontalAnimationFrame ===
-    null
-  ) {
-    return;
-  }
-
-  cancelAnimationFrame(
-    characterHorizontalAnimationFrame
   );
-
-  characterHorizontalAnimationFrame =
-    null;
 }
 
 
 // ==============================
-// Height animation
+// Wait
 // ==============================
 
-function animateCharacterHeight({
-  stage,
-  targetElement,
-  startHeight,
-  duration,
-}) {
-  cancelCharacterHeightAnimation();
-
-  const startedAt =
-    performance.now();
-
-  function update(now) {
-    const elapsed =
-      now - startedAt;
-
-    const progress =
-      Math.min(
-        elapsed / duration,
-        1
+function wait(
+  milliseconds
+) {
+  return new Promise(
+    (resolve) => {
+      setTimeout(
+        resolve,
+        milliseconds
       );
-
-    const easedProgress =
-      easeInOutSine(
-        progress
-      );
-
-    const targetHeight =
-      targetElement.scrollHeight;
-
-    const currentHeight =
-      startHeight +
-      (
-        targetHeight -
-        startHeight
-      ) *
-      easedProgress;
-
-    stage.style.height =
-      `${Math.max(
-        1,
-        currentHeight
-      )}px`;
-
-    if (progress < 1) {
-      characterHeightAnimationFrame =
-        requestAnimationFrame(
-          update
-        );
-
-      return;
     }
-
-    characterHeightAnimationFrame =
-      null;
-  }
-
-  characterHeightAnimationFrame =
-    requestAnimationFrame(
-      update
-    );
-}
-
-function cancelCharacterHeightAnimation() {
-  if (
-    characterHeightAnimationFrame ===
-    null
-  ) {
-    return;
-  }
-
-  cancelAnimationFrame(
-    characterHeightAnimationFrame
   );
-
-  characterHeightAnimationFrame =
-    null;
 }
 
 
@@ -765,10 +854,33 @@ function easeInOutSine(
 
 
 // ==============================
+// Cancel animation
+// ==============================
+
+function cancelHorizontalAnimation() {
+  if (
+    horizontalAnimationFrame ===
+    null
+  ) {
+    return;
+  }
+
+  cancelAnimationFrame(
+    horizontalAnimationFrame
+  );
+
+  horizontalAnimationFrame =
+    null;
+}
+
+
+// ==============================
 // Elements
 // ==============================
 
-function getCharacterViewElements() {
+function getViewElements(
+  characterId
+) {
   const dashboard =
     document.getElementById(
       "mainDashboard"
@@ -789,24 +901,28 @@ function getCharacterViewElements() {
       "housePanel"
     );
 
-  const overview =
-    document.getElementById(
-      "characterPanelOverview"
+  const selectedCard =
+    document.querySelector(
+      `.character-card[data-character-id="${CSS.escape(
+        String(characterId)
+      )}"]`
     );
 
-  const detail =
-    document.getElementById(
-      "characterPanelDetail"
+  const allCards =
+    Array.from(
+      document.querySelectorAll(
+        ".character-card"
+      )
     );
 
-  const nameElement =
+  const panelHeader =
     document.getElementById(
-      "selectedCharacterName"
+      "characterPanelHeader"
     );
 
-  const metaElement =
+  const createArea =
     document.getElementById(
-      "selectedCharacterMeta"
+      "characterCreateArea"
     );
 
   if (
@@ -814,128 +930,30 @@ function getCharacterViewElements() {
     !panelsContainer ||
     !characterPanel ||
     !housePanel ||
-    !overview ||
-    !detail ||
-    !nameElement ||
-    !metaElement
+    !selectedCard
   ) {
     return null;
   }
-
-  const stage =
-    ensureCharacterStage(
-      overview,
-      detail
-    );
 
   return {
     dashboard,
     panelsContainer,
     characterPanel,
     housePanel,
-    overview,
-    detail,
-    stage,
-    nameElement,
-    metaElement,
+    selectedCard,
+    allCards,
+    panelHeader,
+    createArea,
   };
-}
-
-
-// ==============================
-// Content stage
-// ==============================
-
-function ensureCharacterStage(
-  overview,
-  detail
-) {
-  let stage =
-    document.getElementById(
-      "characterContentStage"
-    );
-
-  if (stage) {
-    return stage;
-  }
-
-  const parent =
-    overview.parentElement;
-
-  stage =
-    document.createElement(
-      "div"
-    );
-
-  stage.id =
-    "characterContentStage";
-
-  stage.className =
-    "character-content-stage";
-
-  parent.insertBefore(
-    stage,
-    overview
-  );
-
-  stage.appendChild(
-    overview
-  );
-
-  stage.appendChild(
-    detail
-  );
-
-  return stage;
-}
-
-
-// ==============================
-// Timers
-// ==============================
-
-function addCharacterTransition(
-  callback,
-  delay
-) {
-  const timer =
-    setTimeout(
-      () => {
-        callback();
-
-        characterTransitionTimers =
-          characterTransitionTimers.filter(
-            (item) =>
-              item !== timer
-          );
-      },
-      delay
-    );
-
-  characterTransitionTimers.push(
-    timer
-  );
-}
-
-function clearCharacterTransitions() {
-  characterTransitionTimers.forEach(
-    (timer) => {
-      clearTimeout(
-        timer
-      );
-    }
-  );
-
-  characterTransitionTimers = [];
-
-  cancelCharacterHeightAnimation();
-  cancelHorizontalAnimation();
 }
 
 
 // ==============================
 // Globals
 // ==============================
+
+window.toggleCharacterView =
+  toggleCharacterView;
 
 window.openCharacterView =
   openCharacterView;
