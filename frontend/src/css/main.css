@@ -90,9 +90,7 @@
 
 .character-card-header {
     display: flex;
-
     align-items: center;
-
     gap: 1rem;
 }
 
@@ -110,16 +108,6 @@
     position: absolute;
 
     top: 50%;
-
-    /*
-     * 24px do p-4 externo
-     * + aproximadamente 1px da borda
-     * + 14px (metade do botão)
-     *
-     * Resultado:
-     * centro do botão exatamente
-     * sobre a borda vermelha externa.
-     */
     right: -39px;
 
     width: 28px;
@@ -189,17 +177,11 @@
         transform 0.3s ease;
 }
 
-
-/* Aberto */
-
 .character-card.is-selected
 .character-open-button::after {
     transform:
         rotate(135deg);
 }
-
-
-/* Hover */
 
 .character-open-button:hover {
     background-color:
@@ -222,9 +204,6 @@
         #ffffff;
 }
 
-
-/* Focus */
-
 .character-open-button:focus,
 .character-open-button:active {
     outline: none;
@@ -243,25 +222,28 @@
 
 
 /* ==============================
-   Selected character expansion
+   Character details
+   JS controla SOMENTE a altura
    ============================== */
 
 .character-card-details {
-    display: grid;
+    height: 0;
 
-    grid-template-rows: 0fr;
+    overflow: hidden;
 
     opacity: 0;
-
-    transition:
-        grid-template-rows
-        var(--character-motion-duration)
-        cubic-bezier(0.45, 0, 0.55, 1),
-
-        opacity
-        var(--character-motion-duration)
-        ease-in-out;
 }
+
+.character-card.is-open
+.character-card-details {
+    opacity: 1;
+}
+
+
+/* ==============================
+   Character details inner
+   CSS controla o movimento
+   ============================== */
 
 .character-card-details-inner {
     min-height: 0;
@@ -278,16 +260,15 @@
 }
 
 .character-card.is-open
-.character-card-details {
-    grid-template-rows: 1fr;
-
-    opacity: 1;
-}
-
-.character-card.is-open
 .character-card-details-inner {
     transform:
         translateY(0);
+}
+
+.character-card.is-closing
+.character-card-details-inner {
+    transform:
+        translateY(-30px);
 }
 
 
@@ -303,8 +284,7 @@
     background-color: #111;
 
     border:
-        1px solid
-        #4b4b4b;
+        1px solid #4b4b4b;
 
     border-radius: 0.5rem;
 
@@ -329,6 +309,14 @@
 
     transform:
         translateY(0);
+}
+
+.character-card.is-closing
+.character-section-card {
+    opacity: 0;
+
+    transform:
+        translateY(-20px);
 }
 
 
@@ -362,7 +350,6 @@
 
 @media (prefers-reduced-motion: reduce) {
 
-    .character-card-details,
     .character-card-details-inner,
     .character-section-card,
     .character-open-button,

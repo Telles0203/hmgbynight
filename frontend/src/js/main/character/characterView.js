@@ -22,11 +22,10 @@ const MOTION_DURATION =
 // State
 // =============================================
 
-let horizontalAnimationFrame =
-  null;
+let horizontalAnimationFrame = null;
+let characterDetailsAnimationFrame = null;
 
-let characterTransitioning =
-  false;
+let characterTransitioning = false;
 
 const verticalMetrics =
   new WeakMap();
@@ -120,7 +119,7 @@ async function openCharacterView(
   // =============================================
   // FASE 1
   // Recolhe os outros personagens
-  // respeitando TODO o tempo da animação
+  // e deixa somente o selecionado
   // =============================================
 
   const elementsToCollapse = [
@@ -140,7 +139,7 @@ async function openCharacterView(
 
   // =============================================
   // FASE 2
-  // Expande horizontalmente
+  // Expande para o lado
   // =============================================
 
   dashboard.classList.add(
@@ -161,11 +160,9 @@ async function openCharacterView(
   // Expande a ficha para baixo
   // =============================================
 
-  selectedCard.classList.add(
-    "is-open"
-  );
-
-  await wait(
+  await animateCharacterDetails(
+    selectedCard,
+    true,
     MOTION_DURATION
   );
 
@@ -223,21 +220,19 @@ async function closeCharacterView() {
 
   // =============================================
   // FASE 1
-  // Recolhe ficha para cima
+  // Recolhe a ficha para cima
   // =============================================
 
-  selectedCard.classList.remove(
-    "is-open"
-  );
-
-  await wait(
+  await animateCharacterDetails(
+    selectedCard,
+    false,
     MOTION_DURATION
   );
 
 
   // =============================================
   // FASE 2
-  // Retorna horizontalmente
+  // Retorna para o lado
   // =============================================
 
   await animateHorizontalPanels({
@@ -255,16 +250,18 @@ async function closeCharacterView() {
 
   // =============================================
   // FASE 3
-  // Outros personagens expandem para baixo
-  // respeitando TODO o tempo
+  // Outros personagens expandem
+  // novamente para baixo
   // =============================================
 
   const elementsToExpand = [
     panelHeader,
+
     ...allCards.filter(
       (card) =>
         card !== selectedCard
     ),
+
     createArea,
   ].filter(Boolean);
 
@@ -303,6 +300,180 @@ async function closeCharacterView() {
 
 
 // ==============================
+// Character details
+// ==============================
+
+function animateCharacterDetails(
+  card,
+  opening,
+  duration
+) {
+  cancelCharacterDetailsAnimation();
+
+  const details =
+    card.querySelector(
+      ".character-card-details"
+    );
+
+  if (!details) {
+    return Promise.resolve();
+  }
+
+  return new Promise(
+    (resolve) => {
+      let startHeight;
+      let targetHeight;
+
+      if (opening) {
+
+        card.classList.remove(
+          "is-closing"
+        );
+
+        details.style.height =
+          "0px";
+
+        details.style.opacity =
+          "0";
+
+        /*
+         * Registra o estado fechado.
+         */
+        details.getBoundingClientRect();
+
+        /*
+         * O CSS anima somente
+         * o conteúdo interno.
+         */
+        card.classList.add(
+          "is-open"
+        );
+
+        /*
+         * Altura natural completa
+         * da ficha.
+         */
+        targetHeight =
+          details.scrollHeight;
+
+        startHeight = 0;
+
+      } else {
+
+        startHeight =
+          details
+            .getBoundingClientRect()
+            .height;
+
+        targetHeight = 0;
+
+        details.style.height =
+          `${startHeight}px`;
+
+        details.style.opacity =
+          "1";
+
+        /*
+         * Mantém is-open durante
+         * toda a retração.
+         */
+        card.classList.add(
+          "is-closing"
+        );
+
+        details.getBoundingClientRect();
+      }
+
+      const startedAt =
+        performance.now();
+
+      function update(now) {
+        const progress =
+          Math.min(
+            (
+              now -
+              startedAt
+            ) /
+            duration,
+            1
+          );
+
+        const eased =
+          easeInOutSine(
+            progress
+          );
+
+        const currentHeight =
+          startHeight +
+          (
+            targetHeight -
+            startHeight
+          ) *
+          eased;
+
+        const currentOpacity =
+          opening
+            ? eased
+            : 1 - eased;
+
+        details.style.height =
+          `${Math.max(
+            0,
+            currentHeight
+          )}px`;
+
+        details.style.opacity =
+          String(
+            currentOpacity
+          );
+
+        if (progress < 1) {
+          characterDetailsAnimationFrame =
+            requestAnimationFrame(
+              update
+            );
+
+          return;
+        }
+
+        characterDetailsAnimationFrame =
+          null;
+
+        if (opening) {
+
+          details.style.height =
+            "auto";
+
+          details.style.opacity =
+            "1";
+
+        } else {
+
+          card.classList.remove(
+            "is-open",
+            "is-closing"
+          );
+
+          details.style.height =
+            "0px";
+
+          details.style.opacity =
+            "0";
+        }
+
+        resolve();
+      }
+
+      characterDetailsAnimationFrame =
+        requestAnimationFrame(
+          update
+        );
+    }
+  );
+}
+
+
+// ==============================
 // Collapse elements
 // ==============================
 
@@ -320,6 +491,7 @@ async function collapseElements(
     )
   );
 }
+
 
 async function collapseElement(
   element,
@@ -416,29 +588,15 @@ async function collapseElement(
         },
 
         {
-          height:
-            "0px",
+          height: "0px",
+          marginTop: "0px",
+          marginBottom: "0px",
+          paddingTop: "0px",
+          paddingBottom: "0px",
+          borderTopWidth: "0px",
+          borderBottomWidth: "0px",
 
-          marginTop:
-            "0px",
-
-          marginBottom:
-            "0px",
-
-          paddingTop:
-            "0px",
-
-          paddingBottom:
-            "0px",
-
-          borderTopWidth:
-            "0px",
-
-          borderBottomWidth:
-            "0px",
-
-          opacity:
-            0,
+          opacity: 0,
 
           transform:
             "translateY(-16px)",
@@ -446,8 +604,10 @@ async function collapseElement(
       ],
       {
         duration,
+
         easing:
           "cubic-bezier(0.45, 0, 0.55, 1)",
+
         fill:
           "forwards",
       }
@@ -505,6 +665,7 @@ async function expandElements(
   );
 }
 
+
 async function expandElement(
   element,
   duration
@@ -522,29 +683,15 @@ async function expandElement(
     element.animate(
       [
         {
-          height:
-            "0px",
+          height: "0px",
+          marginTop: "0px",
+          marginBottom: "0px",
+          paddingTop: "0px",
+          paddingBottom: "0px",
+          borderTopWidth: "0px",
+          borderBottomWidth: "0px",
 
-          marginTop:
-            "0px",
-
-          marginBottom:
-            "0px",
-
-          paddingTop:
-            "0px",
-
-          paddingBottom:
-            "0px",
-
-          borderTopWidth:
-            "0px",
-
-          borderBottomWidth:
-            "0px",
-
-          opacity:
-            0,
+          opacity: 0,
 
           transform:
             "translateY(-16px)",
@@ -581,8 +728,10 @@ async function expandElement(
       ],
       {
         duration,
+
         easing:
           "cubic-bezier(0.45, 0, 0.55, 1)",
+
         fill:
           "forwards",
       }
@@ -609,38 +758,17 @@ async function expandElement(
 function clearVerticalStyles(
   element
 ) {
-  element.style.height =
-    "";
-
-  element.style.marginTop =
-    "";
-
-  element.style.marginBottom =
-    "";
-
-  element.style.paddingTop =
-    "";
-
-  element.style.paddingBottom =
-    "";
-
-  element.style.borderTopWidth =
-    "";
-
-  element.style.borderBottomWidth =
-    "";
-
-  element.style.opacity =
-    "";
-
-  element.style.transform =
-    "";
-
-  element.style.overflow =
-    "";
-
-  element.style.pointerEvents =
-    "";
+  element.style.height = "";
+  element.style.marginTop = "";
+  element.style.marginBottom = "";
+  element.style.paddingTop = "";
+  element.style.paddingBottom = "";
+  element.style.borderTopWidth = "";
+  element.style.borderBottomWidth = "";
+  element.style.opacity = "";
+  element.style.transform = "";
+  element.style.overflow = "";
+  element.style.pointerEvents = "";
 }
 
 
@@ -789,6 +917,7 @@ function animateHorizontalPanels({
           null;
 
         if (opening) {
+
           characterPanel.style.width =
             `${fullWidth}px`;
 
@@ -797,7 +926,9 @@ function animateHorizontalPanels({
 
           housePanel.style.opacity =
             "0";
+
         } else {
+
           characterPanel.style.width =
             "";
 
@@ -821,24 +952,6 @@ function animateHorizontalPanels({
 
 
 // ==============================
-// Wait
-// ==============================
-
-function wait(
-  milliseconds
-) {
-  return new Promise(
-    (resolve) => {
-      setTimeout(
-        resolve,
-        milliseconds
-      );
-    }
-  );
-}
-
-
-// ==============================
 // Easing
 // ==============================
 
@@ -854,7 +967,7 @@ function easeInOutSine(
 
 
 // ==============================
-// Cancel animation
+// Cancel animations
 // ==============================
 
 function cancelHorizontalAnimation() {
@@ -870,6 +983,23 @@ function cancelHorizontalAnimation() {
   );
 
   horizontalAnimationFrame =
+    null;
+}
+
+
+function cancelCharacterDetailsAnimation() {
+  if (
+    characterDetailsAnimationFrame ===
+    null
+  ) {
+    return;
+  }
+
+  cancelAnimationFrame(
+    characterDetailsAnimationFrame
+  );
+
+  characterDetailsAnimationFrame =
     null;
 }
 
