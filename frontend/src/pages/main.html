@@ -2,10 +2,7 @@
     <br>
 </div>
 
-<div
-    id="mainPage"
-    style="display: none;"
->
+<div id="mainPage" style="display: none;">
 
     <div id="emailValidationContainer"></div>
 
@@ -14,7 +11,6 @@
         style="display: none;"
     >
 
-        <!-- Cabeçalho fixo do Main -->
         <div class="mb-4">
 
             <h1
@@ -29,7 +25,6 @@
         </div>
 
 
-        <!-- Dashboard -->
         <div
             id="mainDashboard"
             class="main-dashboard"
@@ -39,7 +34,7 @@
 
 
                 <!-- ============================== -->
-                <!-- CHARACTER PANEL -->
+                <!-- CHARACTERS -->
                 <!-- ============================== -->
 
                 <section
@@ -47,199 +42,40 @@
                     class="main-dashboard-panel main-character-panel"
                 >
 
-                    <div
-                        class="card bg-dark border-danger shadow"
-                    >
+                    <div class="card bg-dark border-danger shadow">
 
                         <div class="card-body p-4">
 
-
-                            <!-- ============================== -->
-                            <!-- CHARACTER OVERVIEW -->
-                            <!-- ============================== -->
-
                             <div
-                                id="characterPanelOverview"
-                                class="character-panel-overview"
+                                id="characterPanelHeader"
+                                class="mb-4"
                             >
 
-                                <div class="mb-4">
+                                <h2 class="h4 text-light mb-2">
+                                    Personagens
+                                </h2>
 
-                                    <h2 class="h4 text-light mb-2">
-                                        Personagens
-                                    </h2>
-
-                                    <p class="text-secondary mb-0">
-                                        Crie e gerencie seus personagens de jogador.
-                                    </p>
-
-                                </div>
-
-                                <div class="mt-auto">
-
-                                    <p class="text-secondary small">
-                                        Você ainda não possui personagens cadastrados.
-                                    </p>
-
-                                    <button
-                                        id="createCharacterButton"
-                                        type="button"
-                                        class="btn btn-blood w-100"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#createCharacterModal"
-                                    >
-                                        Criar meu primeiro personagem
-                                    </button>
-
-                                </div>
+                                <p class="text-secondary mb-0">
+                                    Crie e gerencie seus personagens de jogador.
+                                </p>
 
                             </div>
 
+                            <div id="characterListContainer">
 
-                            <!-- ============================== -->
-                            <!-- CHARACTER DETAIL -->
-                            <!-- ============================== -->
+                                <p class="text-secondary small">
+                                    Você ainda não possui personagens cadastrados.
+                                </p>
 
-                            <div
-                                id="characterPanelDetail"
-                                class="character-panel-detail d-none"
-                            >
-
-                                <div
-                                    class="d-flex justify-content-between align-items-start gap-3 mb-4"
+                                <button
+                                    id="createCharacterButton"
+                                    type="button"
+                                    class="btn btn-blood w-100"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#createCharacterModal"
                                 >
-
-                                    <div>
-
-                                        <button
-                                            type="button"
-                                            class="btn btn-outline-secondary btn-sm mb-3"
-                                            onclick="closeCharacterView()"
-                                        >
-                                            ← Voltar
-                                        </button>
-
-                                        <h2
-                                            id="selectedCharacterName"
-                                            class="h3 text-light mb-1"
-                                        >
-                                            Personagem
-                                        </h2>
-
-                                        <div
-                                            id="selectedCharacterMeta"
-                                            class="text-secondary"
-                                        ></div>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="row g-3">
-
-                                    <div class="col-12 col-md-6">
-
-                                        <div class="character-section-card">
-
-                                            <h3 class="h6 text-light">
-                                                Identidade
-                                            </h3>
-
-                                            <p class="text-secondary small mb-0">
-                                                Informações básicas do personagem.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="col-12 col-md-6">
-
-                                        <div class="character-section-card">
-
-                                            <h3 class="h6 text-light">
-                                                Atributos
-                                            </h3>
-
-                                            <p class="text-secondary small mb-0">
-                                                Físicos, Sociais e Mentais.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="col-12 col-md-6">
-
-                                        <div class="character-section-card">
-
-                                            <h3 class="h6 text-light">
-                                                Habilidades
-                                            </h3>
-
-                                            <p class="text-secondary small mb-0">
-                                                Habilidades do personagem.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="col-12 col-md-6">
-
-                                        <div class="character-section-card">
-
-                                            <h3 class="h6 text-light">
-                                                Disciplinas
-                                            </h3>
-
-                                            <p class="text-secondary small mb-0">
-                                                Disciplinas vampíricas.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="col-12 col-md-6">
-
-                                        <div class="character-section-card">
-
-                                            <h3 class="h6 text-light">
-                                                Antecedentes
-                                            </h3>
-
-                                            <p class="text-secondary small mb-0">
-                                                Antecedentes e recursos.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="col-12 col-md-6">
-
-                                        <div class="character-section-card">
-
-                                            <h3 class="h6 text-light">
-                                                Outros
-                                            </h3>
-
-                                            <p class="text-secondary small mb-0">
-                                                Demais características.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
+                                    Criar meu primeiro personagem
+                                </button>
 
                             </div>
 
@@ -251,7 +87,7 @@
 
 
                 <!-- ============================== -->
-                <!-- HOUSE PANEL -->
+                <!-- HOUSES -->
                 <!-- ============================== -->
 
                 <section
@@ -259,9 +95,7 @@
                     class="main-dashboard-panel main-house-panel"
                 >
 
-                    <div
-                        class="card bg-dark border-danger shadow"
-                    >
+                    <div class="card bg-dark border-danger shadow">
 
                         <div class="card-body p-4">
 
@@ -278,21 +112,17 @@
 
                             </div>
 
-                            <div class="mt-auto">
+                            <p class="text-secondary small">
+                                Você ainda não possui nenhuma House cadastrada.
+                            </p>
 
-                                <p class="text-secondary small">
-                                    Você ainda não possui nenhuma House cadastrada.
-                                </p>
-
-                                <button
-                                    id="createHouseButton"
-                                    type="button"
-                                    class="btn btn-blood w-100"
-                                >
-                                    Criar minha primeira House
-                                </button>
-
-                            </div>
+                            <button
+                                id="createHouseButton"
+                                type="button"
+                                class="btn btn-blood w-100"
+                            >
+                                Criar minha primeira House
+                            </button>
 
                         </div>
 
@@ -323,9 +153,7 @@
 
     <div class="modal-dialog modal-dialog-centered">
 
-        <div
-            class="modal-content bg-dark border border-danger"
-        >
+        <div class="modal-content bg-dark border border-danger">
 
             <div class="modal-header border-secondary">
 
@@ -345,7 +173,6 @@
 
             </div>
 
-
             <form id="createCharacterForm">
 
                 <div class="modal-body">
@@ -356,8 +183,6 @@
                         role="alert"
                     ></div>
 
-
-                    <!-- Nome -->
                     <div class="mb-3">
 
                         <label
@@ -380,8 +205,6 @@
 
                     </div>
 
-
-                    <!-- Seita -->
                     <div class="mb-3">
 
                         <label
@@ -400,8 +223,6 @@
 
                     </div>
 
-
-                    <!-- Outras seitas -->
                     <div
                         id="otherSectContainer"
                         class="mb-3 d-none"
@@ -422,8 +243,6 @@
 
                     </div>
 
-
-                    <!-- Clã -->
                     <div class="mb-3">
 
                         <label
@@ -442,14 +261,12 @@
 
                     </div>
 
-
                     <p class="text-secondary small mb-0">
                         Este personagem será criado como PC e ficará
                         vinculado à sua conta.
                     </p>
 
                 </div>
-
 
                 <div class="modal-footer border-secondary">
 
