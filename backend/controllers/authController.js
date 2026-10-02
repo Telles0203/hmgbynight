@@ -26,6 +26,8 @@ const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_RECOVERY_MIN_RESPONSE_MS = 700;
 const PASSWORD_RECOVERY_JITTER_MS = 300;
 
+const PRIVACY_POLICY_VERSION = "2026-10-01";
+
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync(
   "bynight-invalid-account-placeholder",
   10
@@ -235,6 +237,7 @@ async function register(req, res) {
       name,
       email,
       password,
+      privacyPolicyAccepted,
     } = req.body || {};
 
     const cleanName =
@@ -252,6 +255,16 @@ async function register(req, res) {
         ok: false,
         error:
           "Nome, e-mail e senha são obrigatórios.",
+      });
+    }
+
+    if (
+      privacyPolicyAccepted !== true
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "É necessário aceitar a Política de Privacidade para criar a conta.",
       });
     }
 
@@ -316,10 +329,18 @@ async function register(req, res) {
         name: cleanName,
         email: cleanEmail,
         passwordHash,
+
         isEmailValid: false,
         authVersion: 0,
+
         emailVerificationToken,
         emailVerificationExpires,
+
+        privacyPolicyAccepted: true,
+        privacyPolicyAcceptedAt:
+          new Date(),
+        privacyPolicyVersion:
+          PRIVACY_POLICY_VERSION,
       });
 
     let emailSent = false;

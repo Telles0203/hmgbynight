@@ -1,12 +1,18 @@
-function showRegisterAlert(type, message) {
+function showRegisterAlert(
+  type,
+  message
+) {
   const alertBox =
-    document.getElementById("registerAlert");
+    document.getElementById(
+      "registerAlert"
+    );
 
   if (!alertBox) {
     return;
   }
 
-  alertBox.className = "alert";
+  alertBox.className =
+    "alert";
 
   alertBox.classList.add(
     type === "success"
@@ -14,20 +20,27 @@ function showRegisterAlert(type, message) {
       : "alert-danger"
   );
 
-  alertBox.textContent = message;
-  alertBox.classList.remove("d-none");
+  alertBox.textContent =
+    message;
+
+  alertBox.classList.remove(
+    "d-none"
+  );
 }
 
 function hideRegisterAlert() {
   const alertBox =
-    document.getElementById("registerAlert");
+    document.getElementById(
+      "registerAlert"
+    );
 
   if (!alertBox) {
     return;
   }
 
   alertBox.textContent = "";
-  alertBox.className = "alert d-none";
+  alertBox.className =
+    "alert d-none";
 }
 
 function onRegisterPageLoaded() {
@@ -36,25 +49,37 @@ function onRegisterPageLoaded() {
 
 async function handleRegisterSubmit() {
   const name =
-    document.getElementById("name")
-      ?.value
-      ?.trim();
+    document.getElementById(
+      "name"
+    )?.value?.trim();
 
   const email =
-    document.getElementById("email")
-      ?.value
-      ?.trim();
+    document.getElementById(
+      "email"
+    )?.value?.trim();
 
   const password =
-    document.getElementById("password")
-      ?.value;
+    document.getElementById(
+      "password"
+    )?.value;
+
+  const privacyPolicyAccepted =
+    document.getElementById(
+      "privacyPolicyAccepted"
+    )?.checked === true;
 
   const registerButton =
-    document.getElementById("btnRegister");
+    document.getElementById(
+      "btnRegister"
+    );
 
   hideRegisterAlert();
 
-  if (!name || !email || !password) {
+  if (
+    !name ||
+    !email ||
+    !password
+  ) {
     showRegisterAlert(
       "error",
       "Preencha todos os campos."
@@ -63,38 +88,56 @@ async function handleRegisterSubmit() {
     return;
   }
 
+  if (!privacyPolicyAccepted) {
+    showRegisterAlert(
+      "error",
+      "É necessário aceitar a Política de Privacidade para criar a conta."
+    );
+
+    return;
+  }
+
   try {
     if (registerButton) {
-      registerButton.disabled = true;
+      registerButton.disabled =
+        true;
+
       registerButton.textContent =
         "Criando...";
     }
 
-    const response = await fetch(
-      "/api/auth/register",
-      {
-        method: "POST",
+    const response =
+      await fetch(
+        "/api/auth/register",
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-        credentials: "include",
+          credentials:
+            "include",
 
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      }
-    );
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            privacyPolicyAccepted,
+          }),
+        }
+      );
 
-    const data = await response
-      .json()
-      .catch(() => ({}));
+    const data =
+      await response
+        .json()
+        .catch(() => ({}));
 
-    if (!response.ok || !data?.ok) {
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
       showRegisterAlert(
         "error",
         data?.error ||
@@ -114,7 +157,6 @@ async function handleRegisterSubmit() {
         ),
     };
 
-    // Atualiza cache da sessão
     if (
       typeof window.setSessionUser ===
       "function"
@@ -124,7 +166,6 @@ async function handleRegisterSubmit() {
       );
     }
 
-    // Atualiza navbar
     if (
       typeof window.updateNavbarAuth ===
       "function"
@@ -174,7 +215,9 @@ async function handleRegisterSubmit() {
     );
   } finally {
     if (registerButton) {
-      registerButton.disabled = false;
+      registerButton.disabled =
+        false;
+
       registerButton.textContent =
         "Criar conta";
     }

@@ -64,6 +64,29 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
+    // ==============================
+    // Privacy policy
+    // ==============================
+
+    privacyPolicyAccepted: {
+      type: Boolean,
+      default: false,
+    },
+
+    privacyPolicyAcceptedAt: {
+      type: Date,
+      default: null,
+    },
+
+    privacyPolicyVersion: {
+      type: String,
+      default: null,
+    },
+
+    // ==============================
+    // Account anonymization
+    // ==============================
+
     isAnonymized: {
       type: Boolean,
       default: false,

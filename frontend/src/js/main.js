@@ -22,6 +22,11 @@ async function loadMainUser(
       "mainPage"
     );
 
+  const verifiedMainContent =
+    document.getElementById(
+      "verifiedMainContent"
+    );
+
   const emailValidationContainer =
     document.getElementById(
       "emailValidationContainer"
@@ -32,6 +37,11 @@ async function loadMainUser(
   }
 
   greeting.textContent = "";
+
+  if (verifiedMainContent) {
+    verifiedMainContent.style.display =
+      "none";
+  }
 
   try {
     if (
@@ -69,18 +79,35 @@ async function loadMainUser(
     }
 
     // ==============================
+    // Greeting
+    // ==============================
+
+    greeting.textContent =
+      user.name
+        ? `Olá ${user.name}.`
+        : "Olá.";
+
+    // ==============================
     // Email validation
     // ==============================
 
-    if (
-      user.isEmailValid === false
-    ) {
+    if (user.isEmailValid !== true) {
+      if (
+        verifiedMainContent
+      ) {
+        verifiedMainContent.style.display =
+          "none";
+      }
+
       if (
         emailValidationContainer
       ) {
         const modalResponse =
           await fetch(
-            "/src/pages/emailValidationModal.html"
+            "/src/pages/emailValidationModal.html",
+            {
+              cache: "no-store",
+            }
           );
 
         if (!modalResponse.ok) {
@@ -105,23 +132,23 @@ async function loadMainUser(
           initialRetryAfter
         );
       }
-    } else if (
-      emailValidationContainer
-    ) {
-      emailValidationContainer.innerHTML =
-        "";
+    } else {
+      if (
+        emailValidationContainer
+      ) {
+        emailValidationContainer.innerHTML =
+          "";
+      }
 
       clearEmailResendCountdown();
+
+      if (
+        verifiedMainContent
+      ) {
+        verifiedMainContent.style.display =
+          "block";
+      }
     }
-
-    // ==============================
-    // Greeting
-    // ==============================
-
-    greeting.textContent =
-      user.name
-        ? `Olá ${user.name}.`
-        : "Olá.";
 
     // ==============================
     // Show main page
@@ -147,8 +174,16 @@ async function loadMainUser(
         "none";
     }
 
-    greeting.textContent =
-      "Não foi possível carregar seus dados.";
+    if (
+      emailValidationContainer
+    ) {
+      emailValidationContainer.innerHTML =
+        `
+          <div class="alert alert-danger">
+            Não foi possível carregar seus dados.
+          </div>
+        `;
+    }
 
     if (main) {
       main.style.display =
@@ -233,7 +268,7 @@ function startEmailResendCountdown(
 }
 
 // ==============================
-// Email validation handlers
+// Email validation
 // ==============================
 
 function setupEmailValidationHandlers(
@@ -541,7 +576,8 @@ function showEmailValidationAlert(
       : "alert-danger"
   );
 
-  alert.textContent = message;
+  alert.textContent =
+    message;
 }
 
 window.loadMainUser =
