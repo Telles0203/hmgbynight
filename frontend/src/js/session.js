@@ -1,12 +1,32 @@
 let currentUser = undefined;
 let sessionRequest = null;
 
+function isCompleteUser(user) {
+  if (!user) {
+    return false;
+  }
+
+  return (
+    typeof user.id !== "undefined" &&
+    typeof user.name === "string" &&
+    typeof user.email === "string" &&
+    typeof user.isEmailValid === "boolean"
+  );
+}
+
 async function sessionMe(
   forceRefresh = false
 ) {
   if (
     !forceRefresh &&
-    currentUser !== undefined
+    currentUser === null
+  ) {
+    return null;
+  }
+
+  if (
+    !forceRefresh &&
+    isCompleteUser(currentUser)
   ) {
     return currentUser;
   }
@@ -25,11 +45,13 @@ async function sessionMe(
         {
           method: "GET",
           credentials: "include",
+          cache: "no-store",
         }
       );
 
       if (!response.ok) {
         currentUser = null;
+
         return null;
       }
 

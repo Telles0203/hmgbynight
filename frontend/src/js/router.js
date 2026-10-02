@@ -202,7 +202,10 @@ async function loadPage(
     }
 
     const response = await fetch(
-      `/src/pages/${route}.html`
+      `/src/pages/${route}.html`,
+      {
+        cache: "no-store",
+      }
     );
 
     if (!response.ok) {
