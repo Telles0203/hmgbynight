@@ -1,3 +1,34 @@
+<style>
+    .main-viewport {
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .main-slider {
+        display: flex;
+        width: 200%;
+        transform: translateX(-50%);
+        transition: transform 0.35s ease;
+    }
+
+    .main-slider.character-open {
+        transform: translateX(0);
+    }
+
+    .main-slide {
+        flex: 0 0 50%;
+        width: 50%;
+        padding: 0 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .main-slider {
+            transition: none;
+        }
+    }
+</style>
+
+
 <div id="loadingScreen">
     <br>
 </div>
@@ -7,119 +38,300 @@
     <!-- Validação de e-mail -->
     <div id="emailValidationContainer"></div>
 
-    <!-- Conteúdo liberado somente após validar o e-mail -->
+    <!-- Conteúdo liberado somente após validar -->
     <div
         id="verifiedMainContent"
         style="display: none;"
     >
 
-        <!-- Cabeçalho -->
-        <div class="mb-4">
+        <div class="main-viewport">
 
-            <h1
-                id="mainGreeting"
-                class="h3 text-light mb-1"
-            ></h1>
+            <div
+                id="mainSlider"
+                class="main-slider"
+            >
 
-            <p class="text-secondary mb-0">
-                Bem-vindo ao ByNight.
-            </p>
+                <!-- ============================= -->
+                <!-- PERSONAGEM ABERTO -->
+                <!-- ============================= -->
 
-        </div>
-
-        <!-- Áreas principais -->
-        <div class="row g-4 mt-2 align-items-start">
-
-            <!-- Personagens -->
-            <div class="col-12 col-lg-6">
-
-                <div
-                    class="card bg-dark border-danger shadow"
+                <section
+                    id="characterDetailView"
+                    class="main-slide"
                 >
 
-                    <div
-                        class="card-body d-flex flex-column p-4"
+                    <button
+                        type="button"
+                        class="btn btn-outline-light btn-sm mb-4"
+                        onclick="closeCharacterView()"
                     >
+                        ← Voltar
+                    </button>
 
-                        <div class="mb-4">
+                    <div class="mb-4">
 
-                            <h2 class="h4 text-light mb-2">
-                                Personagens
-                            </h2>
+                        <h1
+                            id="selectedCharacterName"
+                            class="h3 text-light mb-1"
+                        >
+                            Personagem
+                        </h1>
 
-                            <p class="text-secondary mb-0">
-                                Crie e gerencie seus personagens de jogador.
-                            </p>
+                        <div
+                            id="selectedCharacterMeta"
+                            class="text-secondary"
+                        ></div>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-6">
+
+                            <div
+                                class="card bg-dark border-secondary shadow-sm"
+                            >
+                                <div class="card-body">
+
+                                    <h2 class="h5 text-light">
+                                        Identidade
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        Nome, clã, seita e informações básicas.
+                                    </p>
+
+                                </div>
+                            </div>
 
                         </div>
 
-                        <div class="mt-auto">
+                        <div class="col-12 col-md-6">
 
-                            <p class="text-secondary small">
-                                Você ainda não possui personagens cadastrados.
-                            </p>
-
-                            <button
-                                id="createCharacterButton"
-                                type="button"
-                                class="btn btn-blood w-100"
-                                data-bs-toggle="modal"
-                                data-bs-target="#createCharacterModal"
+                            <div
+                                class="card bg-dark border-secondary shadow-sm"
                             >
-                                Criar meu primeiro personagem
-                            </button>
+                                <div class="card-body">
+
+                                    <h2 class="h5 text-light">
+                                        Atributos
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        Físicos, Sociais e Mentais.
+                                    </p>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-12 col-md-6">
+
+                            <div
+                                class="card bg-dark border-secondary shadow-sm"
+                            >
+                                <div class="card-body">
+
+                                    <h2 class="h5 text-light">
+                                        Habilidades
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        Habilidades do personagem.
+                                    </p>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-12 col-md-6">
+
+                            <div
+                                class="card bg-dark border-secondary shadow-sm"
+                            >
+                                <div class="card-body">
+
+                                    <h2 class="h5 text-light">
+                                        Disciplinas
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        Disciplinas vampíricas.
+                                    </p>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-12 col-md-6">
+
+                            <div
+                                class="card bg-dark border-secondary shadow-sm"
+                            >
+                                <div class="card-body">
+
+                                    <h2 class="h5 text-light">
+                                        Antecedentes
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        Antecedentes e recursos.
+                                    </p>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-12 col-md-6">
+
+                            <div
+                                class="card bg-dark border-secondary shadow-sm"
+                            >
+                                <div class="card-body">
+
+                                    <h2 class="h5 text-light">
+                                        Outros
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        Qualidades, defeitos e demais informações.
+                                    </p>
+
+                                </div>
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
+                </section>
 
-            </div>
 
-            <!-- Houses -->
-            <div class="col-12 col-lg-6">
+                <!-- ============================= -->
+                <!-- VISÃO PRINCIPAL -->
+                <!-- ============================= -->
 
-                <div
-                    class="card bg-dark border-danger shadow"
+                <section
+                    id="mainOverviewView"
+                    class="main-slide"
                 >
 
-                    <div
-                        class="card-body d-flex flex-column p-4"
-                    >
+                    <div class="mb-4">
 
-                        <div class="mb-4">
+                        <h1
+                            id="mainGreeting"
+                            class="h3 text-light mb-1"
+                        ></h1>
 
-                            <h2 class="h4 text-light mb-2">
-                                Houses
-                            </h2>
+                        <p class="text-secondary mb-0">
+                            Bem-vindo ao ByNight.
+                        </p>
 
-                            <p class="text-secondary mb-0">
-                                Crie uma House para organizar seus jogos,
-                                personagens e narradores.
-                            </p>
+                    </div>
+
+                    <div class="row g-4 mt-2 align-items-start">
+
+                        <!-- Personagens -->
+                        <div class="col-12 col-lg-6">
+
+                            <div
+                                class="card bg-dark border-danger shadow"
+                            >
+
+                                <div
+                                    class="card-body d-flex flex-column p-4"
+                                >
+
+                                    <div class="mb-4">
+
+                                        <h2 class="h4 text-light mb-2">
+                                            Personagens
+                                        </h2>
+
+                                        <p class="text-secondary mb-0">
+                                            Crie e gerencie seus personagens de jogador.
+                                        </p>
+
+                                    </div>
+
+                                    <div class="mt-auto">
+
+                                        <p class="text-secondary small">
+                                            Você ainda não possui personagens cadastrados.
+                                        </p>
+
+                                        <button
+                                            id="createCharacterButton"
+                                            type="button"
+                                            class="btn btn-blood w-100"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#createCharacterModal"
+                                        >
+                                            Criar meu primeiro personagem
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
-                        <div class="mt-auto">
 
-                            <p class="text-secondary small">
-                                Você ainda não possui nenhuma House cadastrada.
-                            </p>
+                        <!-- Houses -->
+                        <div class="col-12 col-lg-6">
 
-                            <button
-                                id="createHouseButton"
-                                type="button"
-                                class="btn btn-blood w-100"
+                            <div
+                                class="card bg-dark border-danger shadow"
                             >
-                                Criar minha primeira House
-                            </button>
+
+                                <div
+                                    class="card-body d-flex flex-column p-4"
+                                >
+
+                                    <div class="mb-4">
+
+                                        <h2 class="h4 text-light mb-2">
+                                            Houses
+                                        </h2>
+
+                                        <p class="text-secondary mb-0">
+                                            Crie uma House para organizar seus jogos,
+                                            personagens e narradores.
+                                        </p>
+
+                                    </div>
+
+                                    <div class="mt-auto">
+
+                                        <p class="text-secondary small">
+                                            Você ainda não possui nenhuma House cadastrada.
+                                        </p>
+
+                                        <button
+                                            id="createHouseButton"
+                                            type="button"
+                                            class="btn btn-blood w-100"
+                                        >
+                                            Criar minha primeira House
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
+                </section>
 
             </div>
 
@@ -172,7 +384,6 @@
                         role="alert"
                     ></div>
 
-                    <!-- Nome -->
                     <div class="mb-3">
 
                         <label
@@ -184,7 +395,6 @@
 
                         <input
                             id="characterName"
-                            name="characterName"
                             type="text"
                             class="form-control bg-black text-light border-secondary"
                             minlength="2"
@@ -195,7 +405,6 @@
 
                     </div>
 
-                    <!-- Seita principal -->
                     <div class="mb-3">
 
                         <label
@@ -207,36 +416,12 @@
 
                         <select
                             id="characterSect"
-                            name="characterSect"
                             class="form-select bg-black text-light border-secondary"
                             required
-                        >
-
-                            <option value="">
-                                Selecione a seita
-                            </option>
-
-                            <option value="camarilla">
-                                Camarilla
-                            </option>
-
-                            <option value="anarch">
-                                Anarch
-                            </option>
-
-                            <option value="sabbat">
-                                Sabbat
-                            </option>
-
-                            <option value="other">
-                                Outras opções
-                            </option>
-
-                        </select>
+                        ></select>
 
                     </div>
 
-                    <!-- Outras seitas -->
                     <div
                         id="otherSectContainer"
                         class="mb-3 d-none"
@@ -251,39 +436,11 @@
 
                         <select
                             id="characterOtherSect"
-                            name="characterOtherSect"
                             class="form-select bg-black text-light border-secondary"
-                        >
-
-                            <option value="">
-                                Selecione uma opção
-                            </option>
-
-                            <option value="ashirra">
-                                Ashirra
-                            </option>
-
-                            <option value="inconnu">
-                                Inconnu
-                            </option>
-
-                            <option value="independent">
-                                Independent
-                            </option>
-
-                            <option value="jati">
-                                Jati
-                            </option>
-
-                            <option value="laibon">
-                                Laibon
-                            </option>
-
-                        </select>
+                        ></select>
 
                     </div>
 
-                    <!-- Clã -->
                     <div class="mb-3">
 
                         <label
@@ -295,16 +452,9 @@
 
                         <select
                             id="characterClan"
-                            name="characterClan"
                             class="form-select bg-black text-light border-secondary"
                             required
-                        >
-
-                            <option value="">
-                                Selecione o clã
-                            </option>
-
-                        </select>
+                        ></select>
 
                     </div>
 

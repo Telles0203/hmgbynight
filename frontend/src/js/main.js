@@ -1,5 +1,6 @@
 let emailResendCountdownInterval = null;
 let characterOptionsCache = null;
+let charactersCache = [];
 
 // ==============================
 // Main user
@@ -94,7 +95,9 @@ async function loadMainUser(
           "none";
       }
 
-      if (emailValidationContainer) {
+      if (
+        emailValidationContainer
+      ) {
         const modalResponse =
           await fetch(
             "/src/pages/emailValidationModal.html",
@@ -126,7 +129,9 @@ async function loadMainUser(
         );
       }
     } else {
-      if (emailValidationContainer) {
+      if (
+        emailValidationContainer
+      ) {
         emailValidationContainer.innerHTML =
           "";
       }
@@ -164,7 +169,9 @@ async function loadMainUser(
         "none";
     }
 
-    if (emailValidationContainer) {
+    if (
+      emailValidationContainer
+    ) {
       emailValidationContainer.innerHTML = `
         <div class="alert alert-danger">
           Não foi possível carregar seus dados.
@@ -211,11 +218,15 @@ async function loadCharacterOptions() {
     }
 
     characterOptionsCache = {
-      sects: Array.isArray(data.sects)
+      sects: Array.isArray(
+        data.sects
+      )
         ? data.sects
         : [],
 
-      clans: Array.isArray(data.clans)
+      clans: Array.isArray(
+        data.clans
+      )
         ? data.clans
         : [],
     };
@@ -268,20 +279,32 @@ function populateCharacterOptions() {
   // Main sects
   // ==============================
 
-  sectSelect.innerHTML = `
-    <option value="">
-      Selecione a seita
-    </option>
-  `;
+  sectSelect.innerHTML = "";
+
+  const emptySectOption =
+    document.createElement(
+      "option"
+    );
+
+  emptySectOption.value = "";
+
+  emptySectOption.textContent =
+    "Selecione a seita";
+
+  sectSelect.appendChild(
+    emptySectOption
+  );
 
   mainSectValues.forEach(
     (sectValue) => {
       const sect =
-        characterOptionsCache.sects.find(
-          (option) =>
-            option.value ===
-            sectValue
-        );
+        characterOptionsCache
+          .sects
+          .find(
+            (option) =>
+              option.value ===
+              sectValue
+          );
 
       if (!sect) {
         return;
@@ -323,11 +346,21 @@ function populateCharacterOptions() {
   // Other sects
   // ==============================
 
-  otherSectSelect.innerHTML = `
-    <option value="">
-      Selecione uma opção
-    </option>
-  `;
+  otherSectSelect.innerHTML = "";
+
+  const emptyOtherSectOption =
+    document.createElement(
+      "option"
+    );
+
+  emptyOtherSectOption.value = "";
+
+  emptyOtherSectOption.textContent =
+    "Selecione uma opção";
+
+  otherSectSelect.appendChild(
+    emptyOtherSectOption
+  );
 
   characterOptionsCache.sects
     .filter(
@@ -359,11 +392,21 @@ function populateCharacterOptions() {
   // Clans
   // ==============================
 
-  clanSelect.innerHTML = `
-    <option value="">
-      Selecione o clã
-    </option>
-  `;
+  clanSelect.innerHTML = "";
+
+  const emptyClanOption =
+    document.createElement(
+      "option"
+    );
+
+  emptyClanOption.value = "";
+
+  emptyClanOption.textContent =
+    "Selecione o clã";
+
+  clanSelect.appendChild(
+    emptyClanOption
+  );
 
   characterOptionsCache.clans.forEach(
     (clan) => {
@@ -395,11 +438,13 @@ function getSectLabel(
   }
 
   const sect =
-    characterOptionsCache.sects.find(
-      (option) =>
-        option.value ===
-        sectValue
-    );
+    characterOptionsCache
+      .sects
+      .find(
+        (option) =>
+          option.value ===
+          sectValue
+      );
 
   return (
     sect?.label ||
@@ -439,10 +484,12 @@ function updateOtherSectVisibility() {
   const showOther =
     sectSelect.value === "other";
 
-  otherSectContainer.classList.toggle(
-    "d-none",
-    !showOther
-  );
+  otherSectContainer
+    .classList
+    .toggle(
+      "d-none",
+      !showOther
+    );
 
   otherSectSelect.required =
     showOther;
@@ -533,6 +580,9 @@ async function loadCharacters() {
 function renderCharacters(
   characters
 ) {
+  charactersCache =
+    characters;
+
   const createButton =
     document.getElementById(
       "createCharacterButton"
@@ -575,6 +625,11 @@ function renderCharacters(
     characters
       .map(
         (character) => {
+          const characterId =
+            escapeHtml(
+              character.id
+            );
+
           const characterName =
             escapeHtml(
               character.name
@@ -618,7 +673,9 @@ function renderCharacters(
                   ${
                     clanName
                       ? `
-                        <div class="text-secondary small">
+                        <div
+                          class="text-secondary small"
+                        >
                           ${clanName}
                         </div>
                       `
@@ -640,9 +697,10 @@ function renderCharacters(
                 <button
                   type="button"
                   class="btn btn-outline-light btn-sm"
-                  disabled
+                  data-character-id="${characterId}"
+                  onclick="openCharacterView(this.dataset.characterId)"
                 >
-                  Abrir
+                  Abrir →
                 </button>
 
               </div>
@@ -673,6 +731,8 @@ function renderCharacters(
 }
 
 function renderCharacterError() {
+  charactersCache = [];
+
   const createButton =
     document.getElementById(
       "createCharacterButton"
@@ -721,6 +781,102 @@ function escapeHtml(value) {
     String(value || "");
 
   return element.innerHTML;
+}
+
+// ==============================
+// Character view
+// ==============================
+
+function openCharacterView(
+  characterId
+) {
+  const character =
+    charactersCache.find(
+      (item) =>
+        String(item.id) ===
+        String(characterId)
+    );
+
+  if (!character) {
+    console.error(
+      "[CHARACTER] Personagem não encontrado."
+    );
+
+    return;
+  }
+
+  const slider =
+    document.getElementById(
+      "mainSlider"
+    );
+
+  const nameElement =
+    document.getElementById(
+      "selectedCharacterName"
+    );
+
+  const metaElement =
+    document.getElementById(
+      "selectedCharacterMeta"
+    );
+
+  if (
+    !slider ||
+    !nameElement ||
+    !metaElement
+  ) {
+    return;
+  }
+
+  nameElement.textContent =
+    character.name;
+
+  const clanName =
+    character.clanDisplayName ||
+    character.clan ||
+    "";
+
+  const sectName =
+    getSectLabel(
+      character.sect
+    );
+
+  metaElement.textContent =
+    [
+      clanName,
+      sectName,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+  slider.classList.add(
+    "character-open"
+  );
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+
+function closeCharacterView() {
+  const slider =
+    document.getElementById(
+      "mainSlider"
+    );
+
+  if (!slider) {
+    return;
+  }
+
+  slider.classList.remove(
+    "character-open"
+  );
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 }
 
 // ==============================
@@ -845,7 +1001,8 @@ function setupCharacterFormHandlers() {
         getSelectedSect();
 
       const clan =
-        clanSelect?.value || "";
+        clanSelect?.value ||
+        "";
 
       hideCharacterAlert();
 
@@ -970,9 +1127,10 @@ function setupCharacterFormHandlers() {
               window.bootstrap
             ) {
               const modal =
-                bootstrap.Modal.getOrCreateInstance(
-                  modalElement
-                );
+                bootstrap.Modal
+                  .getOrCreateInstance(
+                    modalElement
+                  );
 
               modal.hide();
             }
@@ -1074,7 +1232,8 @@ function startEmailResendCountdown(
         ) {
           clearEmailResendCountdown();
 
-          button.disabled = false;
+          button.disabled =
+            false;
 
           button.textContent =
             "Enviar novo token";
@@ -1281,7 +1440,9 @@ function setupEmailValidationHandlers(
               "danger"
             );
 
-            if (data?.retryAfter) {
+            if (
+              data?.retryAfter
+            ) {
               startEmailResendCountdown(
                 resendButton,
                 data.retryAfter
@@ -1397,5 +1558,15 @@ function showEmailValidationAlert(
     message;
 }
 
+// ==============================
+// Globals
+// ==============================
+
 window.loadMainUser =
   loadMainUser;
+
+window.openCharacterView =
+  openCharacterView;
+
+window.closeCharacterView =
+  closeCharacterView;
