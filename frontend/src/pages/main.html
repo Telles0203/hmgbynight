@@ -28,13 +28,13 @@
         </div>
 
         <!-- Áreas principais -->
-        <div class="row g-4 mt-2">
+        <div class="row g-4 mt-2 align-items-start">
 
             <!-- Personagens -->
             <div class="col-12 col-lg-6">
 
                 <div
-                    class="card bg-dark border-danger shadow h-100"
+                    class="card bg-dark border-danger shadow"
                 >
 
                     <div
@@ -81,7 +81,7 @@
             <div class="col-12 col-lg-6">
 
                 <div
-                    class="card bg-dark border-danger shadow h-100"
+                    class="card bg-dark border-danger shadow"
                 >
 
                     <div
@@ -195,7 +195,7 @@
 
                     </div>
 
-                    <!-- Seita -->
+                    <!-- Seita principal -->
                     <div class="mb-3">
 
                         <label
@@ -216,16 +216,51 @@
                                 Selecione a seita
                             </option>
 
+                            <option value="camarilla">
+                                Camarilla
+                            </option>
+
                             <option value="anarch">
                                 Anarch
                             </option>
 
-                            <option value="ashirra">
-                                Ashirra
+                            <option value="sabbat">
+                                Sabbat
                             </option>
 
-                            <option value="camarilla">
-                                Camarilla
+                            <option value="other">
+                                Outras opções
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Outras seitas -->
+                    <div
+                        id="otherSectContainer"
+                        class="mb-3 d-none"
+                    >
+
+                        <label
+                            for="characterOtherSect"
+                            class="form-label text-secondary"
+                        >
+                            Outra seita
+                        </label>
+
+                        <select
+                            id="characterOtherSect"
+                            name="characterOtherSect"
+                            class="form-select bg-black text-light border-secondary"
+                        >
+
+                            <option value="">
+                                Selecione uma opção
+                            </option>
+
+                            <option value="ashirra">
+                                Ashirra
                             </option>
 
                             <option value="inconnu">
@@ -242,10 +277,6 @@
 
                             <option value="laibon">
                                 Laibon
-                            </option>
-
-                            <option value="sabbat">
-                                Sabbat
                             </option>
 
                         </select>
