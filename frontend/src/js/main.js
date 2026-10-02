@@ -1,5 +1,73 @@
+let mainStylesPromise = null;
 let emailValidationModulePromise = null;
 let characterModulesPromise = null;
+
+// ==============================
+// Main stylesheet
+// ==============================
+
+function loadMainStyles() {
+  if (mainStylesPromise) {
+    return mainStylesPromise;
+  }
+
+  mainStylesPromise =
+    new Promise(
+      (resolve, reject) => {
+        const existingLink =
+          document.getElementById(
+            "mainStylesheet"
+          );
+
+        if (existingLink) {
+          resolve();
+          return;
+        }
+
+        const link =
+          document.createElement(
+            "link"
+          );
+
+        link.id =
+          "mainStylesheet";
+
+        link.rel =
+          "stylesheet";
+
+        link.href =
+          "/src/css/main.css";
+
+        link.addEventListener(
+          "load",
+          resolve,
+          {
+            once: true,
+          }
+        );
+
+        link.addEventListener(
+          "error",
+          () => {
+            reject(
+              new Error(
+                "Não foi possível carregar o estilo do Main."
+              )
+            );
+          },
+          {
+            once: true,
+          }
+        );
+
+        document.head.appendChild(
+          link
+        );
+      }
+    );
+
+  return mainStylesPromise;
+}
 
 // ==============================
 // Module loader
@@ -83,6 +151,8 @@ async function loadMainUser(
   }
 
   try {
+    await loadMainStyles();
+
     if (
       typeof window.sessionMe !==
       "function"
@@ -154,9 +224,9 @@ async function loadMainUser(
         "block";
     }
 
-    resetMainView();
-
     await loadCharacterModules();
+
+    resetMainView();
 
     await initializeMainModules();
 
@@ -206,11 +276,6 @@ async function initializeMainModules() {
   ) {
     await window.loadCharacters();
   }
-
-  // House entra aqui depois:
-  //
-  // await loadHouseModules();
-  // await window.loadHouses?.();
 }
 
 // ==============================
@@ -259,26 +324,47 @@ async function showEmailValidation(
 }
 
 // ==============================
-// Main view
+// Reset view
 // ==============================
 
 function resetMainView() {
-  const slider =
+  const dashboard =
     document.getElementById(
-      "mainSlider"
+      "mainDashboard"
     );
 
-  if (!slider) {
-    return;
+  const overview =
+    document.getElementById(
+      "characterPanelOverview"
+    );
+
+  const detail =
+    document.getElementById(
+      "characterPanelDetail"
+    );
+
+  dashboard?.classList.remove(
+    "character-focus",
+    "house-focus"
+  );
+
+  if (overview) {
+    overview.classList.remove(
+      "d-none",
+      "is-leaving",
+      "is-entering"
+    );
   }
 
-  slider.classList.remove(
-    "character-open"
-  );
+  if (detail) {
+    detail.classList.add(
+      "d-none"
+    );
 
-  slider.classList.remove(
-    "house-open"
-  );
+    detail.classList.remove(
+      "is-visible"
+    );
+  }
 }
 
 // ==============================

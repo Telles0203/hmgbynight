@@ -1,0 +1,281 @@
+.main-dashboard {
+    width: 100%;
+    overflow: hidden;
+
+    --overview-duration: 1200ms;
+    --detail-duration: 1200ms;
+    --section-duration: 800ms;
+}
+
+.main-dashboard-panels {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+
+/* ==============================
+   Panels
+   ============================== */
+
+.main-dashboard-panel {
+    flex: 0 0 auto;
+    width: calc(50% - 0.75rem);
+    min-width: 0;
+}
+
+.main-character-panel {
+    position: relative;
+    z-index: 2;
+
+    will-change: width;
+}
+
+.main-house-panel {
+    position: relative;
+    z-index: 1;
+
+    will-change:
+        transform,
+        opacity;
+}
+
+.main-dashboard.character-focus
+.main-house-panel {
+    pointer-events: none;
+}
+
+
+/* ==============================
+   Character content
+   ============================== */
+
+.character-content-stage {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+
+/* ==============================
+   Overview
+   ============================== */
+
+.character-panel-overview {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+
+    opacity: 1;
+    transform:
+        translateX(0)
+        scale(1);
+
+    transition:
+        opacity var(--overview-duration) ease-in-out,
+        transform var(--overview-duration)
+        cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.character-panel-overview.is-hidden {
+    opacity: 0;
+
+    transform:
+        translateX(-45px)
+        scale(0.985);
+
+    pointer-events: none;
+}
+
+
+/* ==============================
+   Character detail
+   ============================== */
+
+.character-panel-detail {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    z-index: 2;
+
+    width: 100%;
+
+    opacity: 0;
+
+    transform:
+        translateX(55px)
+        translateY(8px);
+
+    pointer-events: none;
+
+    transition:
+        opacity var(--detail-duration) ease-in-out,
+        transform var(--detail-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.character-panel-detail.is-visible {
+    opacity: 1;
+
+    transform:
+        translateX(0)
+        translateY(0);
+
+    pointer-events: auto;
+}
+
+.character-panel-detail.is-static {
+    position: relative;
+    top: auto;
+    left: auto;
+}
+
+
+/* ==============================
+   Character header
+   ============================== */
+
+.character-panel-detail
+.d-flex:first-child {
+    opacity: 0;
+
+    transform:
+        translateX(40px);
+
+    transition:
+        opacity var(--detail-duration) ease-out,
+        transform var(--detail-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.character-panel-detail.is-visible
+.d-flex:first-child {
+    opacity: 1;
+
+    transform:
+        translateX(0);
+}
+
+
+/* ==============================
+   Detail cards
+   ============================== */
+
+.character-section-card {
+    height: 100%;
+    padding: 1rem;
+
+    background-color: #161616;
+
+    border: 1px solid #4b4b4b;
+    border-radius: 0.5rem;
+
+    opacity: 0;
+
+    transform:
+        translateY(28px)
+        scale(0.985);
+
+    transition:
+        opacity var(--section-duration) ease-out,
+        transform var(--section-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.character-panel-detail.is-visible
+.character-section-card {
+    opacity: 1;
+
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+
+/* ==============================
+   Cascading appearance
+   ============================== */
+
+.character-panel-detail.is-visible
+.row > div:nth-child(1)
+.character-section-card {
+    transition-delay: 0ms;
+}
+
+.character-panel-detail.is-visible
+.row > div:nth-child(2)
+.character-section-card {
+    transition-delay: 100ms;
+}
+
+.character-panel-detail.is-visible
+.row > div:nth-child(3)
+.character-section-card {
+    transition-delay: 200ms;
+}
+
+.character-panel-detail.is-visible
+.row > div:nth-child(4)
+.character-section-card {
+    transition-delay: 300ms;
+}
+
+.character-panel-detail.is-visible
+.row > div:nth-child(5)
+.character-section-card {
+    transition-delay: 400ms;
+}
+
+.character-panel-detail.is-visible
+.row > div:nth-child(6)
+.character-section-card {
+    transition-delay: 500ms;
+}
+
+
+/* ==============================
+   Mobile
+   ============================== */
+
+@media (max-width: 991.98px) {
+
+    .main-dashboard-panels {
+        flex-direction: column;
+    }
+
+    .main-dashboard-panel {
+        width: 100%;
+    }
+
+    .character-panel-detail {
+        transform:
+            translateX(30px)
+            translateY(8px);
+    }
+
+    .character-panel-overview.is-hidden {
+        transform:
+            translateX(-30px)
+            scale(0.99);
+    }
+}
+
+
+/* ==============================
+   Reduced motion
+   ============================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .character-panel-overview,
+    .character-panel-detail,
+    .character-panel-detail
+    .d-flex:first-child,
+    .character-section-card {
+        transition: none;
+        transform: none;
+    }
+}
