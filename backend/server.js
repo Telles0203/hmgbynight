@@ -8,7 +8,13 @@ dotenv.config({
   path: path.join(__dirname, ".env"),
 });
 
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require(
+  "./routes/authRoutes"
+);
+
+const characterRoutes = require(
+  "./routes/characterRoutes"
+);
 
 const app = express();
 
@@ -59,16 +65,23 @@ app.use(
   authRoutes
 );
 
+app.use(
+  "/api/characters",
+  characterRoutes
+);
+
 // Arquivos do frontend
 app.use(
   "/src",
   express.static(srcPath)
 );
 
-// IMPORTANTE:
-// redireciona a raiz antes do express.static
+// Redireciona a raiz antes do express.static
 app.get("/", (req, res) => {
-  return res.redirect(302, "/home");
+  return res.redirect(
+    302,
+    "/home"
+  );
 });
 
 // Arquivos públicos

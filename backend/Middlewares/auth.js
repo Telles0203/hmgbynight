@@ -3,7 +3,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 function getCookieName() {
-  return process.env.COOKIE_NAME || "hmg_auth";
+  return (
+    process.env.COOKIE_NAME ||
+    "bn_session"
+  );
 }
 
 async function requireAuth(
@@ -63,10 +66,13 @@ async function requireAuth(
       await User.findById(
         payload.sub
       ).select(
-        "email name authVersion"
+        "email name authVersion isEmailValid isAnonymized"
       );
 
-    if (!user) {
+    if (
+      !user ||
+      user.isAnonymized === true
+    ) {
       return res.status(401).json({
         ok: false,
         error: "Sessão inválida.",
@@ -100,6 +106,8 @@ async function requireAuth(
       name: user.name,
       authVersion:
         userAuthVersion,
+      isEmailValid:
+        user.isEmailValid === true,
     };
 
     return next();
@@ -121,6 +129,25 @@ async function requireAuth(
   }
 }
 
+function requireVerifiedEmail(
+  req,
+  res,
+  next
+) {
+  if (
+    req.user?.isEmailValid !== true
+  ) {
+    return res.status(403).json({
+      ok: false,
+      error:
+        "Valide seu e-mail antes de utilizar esta funcionalidade.",
+    });
+  }
+
+  return next();
+}
+
 module.exports = {
   requireAuth,
+  requireVerifiedEmail,
 };
