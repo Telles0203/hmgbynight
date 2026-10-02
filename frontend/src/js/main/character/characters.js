@@ -163,7 +163,7 @@ function createCharacterCard(
 
   const house =
     character.motherHouse
-      ? "Vinculado a uma House"
+      ? "Vinculado"
       : "Sem House";
 
   return `
@@ -214,112 +214,447 @@ function createCharacterCard(
       </div>
 
 
-      <!-- Ficha que nasce dentro do próprio card -->
+      <!-- ============================== -->
+      <!-- CHARACTER SHEET -->
+      <!-- ============================== -->
 
       <div class="character-card-details">
 
         <div class="character-card-details-inner">
 
-          <div class="row g-3 pt-4">
+          <div class="character-sheet">
 
-            <div class="col-12 col-md-6">
 
-              <div class="character-section-card">
+            <!-- ============================== -->
+            <!-- IDENTIDADE -->
+            <!-- ============================== -->
 
-                <h4 class="h6 text-light">
-                  Identidade
+            <div class="character-sheet-grid">
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <h4 class="character-sheet-title">
+                  Vampiro
                 </h4>
 
-                <p class="text-secondary small mb-0">
-                  Informações básicas do personagem.
-                </p>
+                <div class="character-sheet-row">
 
-              </div>
+                  <span class="character-sheet-label">
+                    Clã
+                  </span>
+
+                  <span class="character-sheet-value">
+                    ${clan || "—"}
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Geração
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Seita
+                  </span>
+
+                  <span class="character-sheet-value">
+                    ${sect || "—"}
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    House
+                  </span>
+
+                  <span class="character-sheet-value">
+                    ${house}
+                  </span>
+
+                </div>
+
+              </section>
+
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <h4 class="character-sheet-title">
+                  Personalidade
+                </h4>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Natureza
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Comportamento
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Título
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+              </section>
+
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <h4 class="character-sheet-title">
+                  Virtudes
+                </h4>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Consciência
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Coragem
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+                <div class="character-sheet-row">
+
+                  <span class="character-sheet-label">
+                    Autocontrole
+                  </span>
+
+                  <span class="character-sheet-value">
+                    —
+                  </span>
+
+                </div>
+
+              </section>
 
             </div>
 
 
-            <div class="col-12 col-md-6">
+            <!-- ============================== -->
+            <!-- RECURSOS -->
+            <!-- ============================== -->
 
-              <div class="character-section-card">
+            <div
+              class="character-sheet-grid character-sheet-resource-grid"
+            >
 
-                <h4 class="h6 text-light">
-                  Atributos
+              <section
+                class="character-section-card character-sheet-section character-sheet-resource"
+              >
+
+                <h4 class="character-sheet-title">
+                  Sangue Máximo
                 </h4>
 
-                <p class="text-secondary small mb-0">
-                  Físicos, Sociais e Mentais.
-                </p>
+                <div class="character-sheet-pips">
+                  ${createEmptyPips(10)}
+                </div>
 
-              </div>
+              </section>
+
+
+              <section
+                class="character-section-card character-sheet-section character-sheet-resource"
+              >
+
+                <h4 class="character-sheet-title">
+                  Força de Vontade
+                </h4>
+
+                <div class="character-sheet-pips">
+                  ${createEmptyPips(10)}
+                </div>
+
+              </section>
+
+
+              <section
+                class="character-section-card character-sheet-section character-sheet-resource"
+              >
+
+                <h4 class="character-sheet-title">
+                  Trilha
+                </h4>
+
+                <div class="character-sheet-pips">
+                  ${createEmptyPips(10)}
+                </div>
+
+              </section>
 
             </div>
 
 
-            <div class="col-12 col-md-6">
+            <!-- ============================== -->
+            <!-- ATRIBUTOS -->
+            <!-- ============================== -->
 
-              <div class="character-section-card">
+            <div class="character-sheet-grid">
 
-                <h4 class="h6 text-light">
-                  Habilidades
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <h4 class="character-sheet-title">
+                  Físicos / Negativos
                 </h4>
 
-                <p class="text-secondary small mb-0">
-                  Habilidades do personagem.
-                </p>
+                <div class="character-sheet-empty">
+                  Nenhum traço cadastrado.
+                </div>
 
-              </div>
+              </section>
+
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <h4 class="character-sheet-title">
+                  Sociais / Negativos
+                </h4>
+
+                <div class="character-sheet-empty">
+                  Nenhum traço cadastrado.
+                </div>
+
+              </section>
+
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <h4 class="character-sheet-title">
+                  Mentais / Negativos
+                </h4>
+
+                <div class="character-sheet-empty">
+                  Nenhum traço cadastrado.
+                </div>
+
+              </section>
 
             </div>
 
 
-            <div class="col-12 col-md-6">
+            <!-- ============================== -->
+            <!-- CORPO PRINCIPAL -->
+            <!-- ============================== -->
 
-              <div class="character-section-card">
-
-                <h4 class="h6 text-light">
-                  Disciplinas
-                </h4>
-
-                <p class="text-secondary small mb-0">
-                  Disciplinas vampíricas.
-                </p>
-
-              </div>
-
-            </div>
+            <div
+              class="character-sheet-grid character-sheet-main-grid"
+            >
 
 
-            <div class="col-12 col-md-6">
+              <!-- ABILITIES -->
 
-              <div class="character-section-card">
+              <section
+                class="character-section-card character-sheet-section"
+              >
 
-                <h4 class="h6 text-light">
-                  Antecedentes
-                </h4>
+                <div class="character-sheet-group">
 
-                <p class="text-secondary small mb-0">
-                  Antecedentes e recursos.
-                </p>
+                  <h4 class="character-sheet-title">
+                    Habilidades
+                  </h4>
 
-              </div>
+                  <div class="character-sheet-empty">
+                    Nenhuma habilidade cadastrada.
+                  </div>
 
-            </div>
+                </div>
 
 
-            <div class="col-12 col-md-6">
+                <div class="character-sheet-group">
 
-              <div class="character-section-card">
+                  <h4 class="character-sheet-subtitle">
+                    Notas
+                  </h4>
 
-                <h4 class="h6 text-light">
-                  Outros
-                </h4>
+                  <div class="character-sheet-empty">
+                    Nenhuma nota cadastrada.
+                  </div>
 
-                <p class="text-secondary small mb-0">
-                  Demais características.
-                </p>
+                </div>
 
-              </div>
+              </section>
+
+
+              <!-- DISCIPLINES -->
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-title">
+                    Disciplinas
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhuma disciplina cadastrada.
+                  </div>
+
+                </div>
+
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-subtitle">
+                    Rituais
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhum ritual cadastrado.
+                  </div>
+
+                </div>
+
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-subtitle">
+                    Itens / Equipamentos
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhum equipamento cadastrado.
+                  </div>
+
+                </div>
+
+              </section>
+
+
+              <!-- BACKGROUNDS -->
+
+              <section
+                class="character-section-card character-sheet-section"
+              >
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-title">
+                    Antecedentes
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhum antecedente cadastrado.
+                  </div>
+
+                </div>
+
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-subtitle">
+                    Qualidades / Defeitos
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhuma característica cadastrada.
+                  </div>
+
+                </div>
+
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-subtitle">
+                    Influências
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhuma influência cadastrada.
+                  </div>
+
+                </div>
+
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-subtitle">
+                    Laços de Sangue / Vinculum
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhum vínculo cadastrado.
+                  </div>
+
+                </div>
+
+
+                <div class="character-sheet-group">
+
+                  <h4 class="character-sheet-subtitle">
+                    Vitalidade
+                  </h4>
+
+                  <div class="character-sheet-empty">
+                    Nenhum nível cadastrado.
+                  </div>
+
+                </div>
+
+              </section>
 
             </div>
 
@@ -331,6 +666,23 @@ function createCharacterCard(
 
     </article>
   `;
+}
+
+
+// ==============================
+// Pips
+// ==============================
+
+function createEmptyPips(
+  amount
+) {
+  return Array.from(
+    {
+      length: amount,
+    },
+    () =>
+      '<span class="character-sheet-pip"></span>'
+  ).join("");
 }
 
 
