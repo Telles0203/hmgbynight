@@ -63,6 +63,8 @@
                                 id="createCharacterButton"
                                 type="button"
                                 class="btn btn-blood w-100"
+                                data-bs-toggle="modal"
+                                data-bs-target="#createCharacterModal"
                             >
                                 Criar meu primeiro personagem
                             </button>
@@ -125,6 +127,105 @@
 
     </div>
 
+</div>
+
+
+<!-- Modal: criar personagem -->
+<div
+    class="modal fade"
+    id="createCharacterModal"
+    tabindex="-1"
+    aria-labelledby="createCharacterModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div
+            class="modal-content bg-dark border border-danger"
+        >
+
+            <div class="modal-header border-secondary">
+
+                <h2
+                    id="createCharacterModalLabel"
+                    class="modal-title h5 text-light"
+                >
+                    Criar personagem
+                </h2>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar"
+                ></button>
+
+            </div>
+
+            <form id="createCharacterForm">
+
+                <div class="modal-body">
+
+                    <div
+                        id="createCharacterAlert"
+                        class="alert d-none"
+                        role="alert"
+                    ></div>
+
+                    <div class="mb-3">
+
+                        <label
+                            for="characterName"
+                            class="form-label text-secondary"
+                        >
+                            Nome do personagem
+                        </label>
+
+                        <input
+                            id="characterName"
+                            name="characterName"
+                            type="text"
+                            class="form-control bg-black text-light border-secondary"
+                            minlength="2"
+                            maxlength="60"
+                            required
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <p class="text-secondary small mb-0">
+                        Este personagem será criado como PC e ficará
+                        vinculado à sua conta.
+                    </p>
+
+                </div>
+
+                <div class="modal-footer border-secondary">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        id="saveCharacterButton"
+                        type="submit"
+                        class="btn btn-blood"
+                    >
+                        Criar personagem
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 </div>
 
 <div id="overlay-root"></div>
