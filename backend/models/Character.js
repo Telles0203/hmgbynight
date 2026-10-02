@@ -1,55 +1,98 @@
 const mongoose = require("mongoose");
 
-const CharacterSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 2,
-      maxlength: 60,
-    },
-
-    type: {
-      type: String,
-      required: true,
-      enum: ["PC", "NPC"],
-    },
-
-    /*
-     * PC:
-     * usuário proprietário do personagem.
-     *
-     * NPC:
-     * deve permanecer null.
-     */
-    ownerUser: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-      index: true,
-    },
-
-    /*
-     * House mãe.
-     *
-     * PC:
-     * opcional.
-     *
-     * NPC:
-     * obrigatória.
-     */
-    motherHouse: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "House",
-      default: null,
-      index: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
+const {
+  SECT_OPTIONS,
+} = require(
+  "../data/vampire/sects"
 );
+
+const {
+  CLAN_OPTIONS,
+} = require(
+  "../data/vampire/clans"
+);
+
+const validSects =
+  SECT_OPTIONS.map(
+    (option) => option.value
+  );
+
+const validClans =
+  CLAN_OPTIONS.map(
+    (option) => option.value
+  );
+
+const CharacterSchema =
+  new mongoose.Schema(
+    {
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 2,
+        maxlength: 60,
+      },
+
+      type: {
+        type: String,
+        required: true,
+        enum: ["PC", "NPC"],
+      },
+
+      // ==============================
+      // Vampire
+      // ==============================
+
+      sect: {
+        type: String,
+        required: true,
+        enum: validSects,
+        index: true,
+      },
+
+      clan: {
+        type: String,
+        required: true,
+        enum: validClans,
+        index: true,
+      },
+
+      /*
+       * PC:
+       * usuário proprietário.
+       *
+       * NPC:
+       * deve permanecer null.
+       */
+      ownerUser: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+        index: true,
+      },
+
+      /*
+       * House mãe.
+       *
+       * PC:
+       * opcional.
+       *
+       * NPC:
+       * obrigatória.
+       */
+      motherHouse: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "House",
+        default: null,
+        index: true,
+      },
+    },
+    {
+      timestamps: true,
+    }
+  );
 
 // ==============================
 // Character rules

@@ -1,4 +1,5 @@
 let emailResendCountdownInterval = null;
+let characterOptionsCache = null;
 
 // ==============================
 // Main user
@@ -143,6 +144,7 @@ async function loadMainUser(
 
       setupCharacterFormHandlers();
 
+      await loadCharacterOptions();
       await loadCharacters();
     }
 
@@ -182,6 +184,174 @@ async function loadMainUser(
         "block";
     }
   }
+}
+
+// ==============================
+// Character options
+// ==============================
+
+async function loadCharacterOptions() {
+  try {
+    const response =
+      await fetch(
+        "/api/characters/options",
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
+    const data =
+      await response
+        .json()
+        .catch(() => ({}));
+
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
+      throw new Error(
+        data?.error ||
+          "Não foi possível carregar as opções do personagem."
+      );
+    }
+
+    characterOptionsCache = {
+      sects: Array.isArray(data.sects)
+        ? data.sects
+        : [],
+
+      clans: Array.isArray(data.clans)
+        ? data.clans
+        : [],
+    };
+
+    populateCharacterOptions();
+  } catch (error) {
+    console.error(
+      "[CHARACTER] Erro ao carregar opções:",
+      error
+    );
+
+    showCharacterAlert(
+      "Não foi possível carregar as opções de criação."
+    );
+  }
+}
+
+function populateCharacterOptions() {
+  const sectSelect =
+    document.getElementById(
+      "characterSect"
+    );
+
+  const clanSelect =
+    document.getElementById(
+      "characterClan"
+    );
+
+  if (
+    !sectSelect ||
+    !clanSelect ||
+    !characterOptionsCache
+  ) {
+    return;
+  }
+
+  // ==============================
+  // Sects
+  // ==============================
+
+  sectSelect.innerHTML = "";
+
+  const emptySectOption =
+    document.createElement(
+      "option"
+    );
+
+  emptySectOption.value = "";
+  emptySectOption.textContent =
+    "Selecione a seita";
+
+  sectSelect.appendChild(
+    emptySectOption
+  );
+
+  characterOptionsCache.sects.forEach(
+    (sect) => {
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        sect.value;
+
+      option.textContent =
+        sect.label;
+
+      sectSelect.appendChild(
+        option
+      );
+    }
+  );
+
+  // ==============================
+  // Clans
+  // ==============================
+
+  clanSelect.innerHTML = "";
+
+  const emptyClanOption =
+    document.createElement(
+      "option"
+    );
+
+  emptyClanOption.value = "";
+  emptyClanOption.textContent =
+    "Selecione o clã";
+
+  clanSelect.appendChild(
+    emptyClanOption
+  );
+
+  characterOptionsCache.clans.forEach(
+    (clan) => {
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        clan.value;
+
+      option.textContent =
+        clan.label;
+
+      clanSelect.appendChild(
+        option
+      );
+    }
+  );
+}
+
+function getSectLabel(sectValue) {
+  if (!characterOptionsCache) {
+    return sectValue || "";
+  }
+
+  const sect =
+    characterOptionsCache.sects.find(
+      (option) =>
+        option.value === sectValue
+    );
+
+  return (
+    sect?.label ||
+    sectValue ||
+    ""
+  );
 }
 
 // ==============================
@@ -281,6 +451,20 @@ function renderCharacters(
             character.name
           );
 
+        const clanName =
+          escapeHtml(
+            character.clanDisplayName ||
+            character.clan ||
+            ""
+          );
+
+        const sectName =
+          escapeHtml(
+            getSectLabel(
+              character.sect
+            )
+          );
+
         const houseText =
           character.motherHouse
             ? "Vinculado a uma House"
@@ -293,7 +477,9 @@ function renderCharacters(
             <div
               class="d-flex justify-content-between align-items-center gap-3"
             >
+
               <div>
+
                 <h3
                   class="h6 text-light mb-1"
                 >
@@ -303,8 +489,15 @@ function renderCharacters(
                 <div
                   class="text-secondary small"
                 >
-                  PC · ${houseText}
+                  ${clanName}
                 </div>
+
+                <div
+                  class="text-secondary small"
+                >
+                  ${sectName} · ${houseText}
+                </div>
+
               </div>
 
               <button
@@ -314,6 +507,7 @@ function renderCharacters(
               >
                 Abrir
               </button>
+
             </div>
           </div>
         `;
@@ -470,6 +664,16 @@ function setupCharacterFormHandlers() {
           "characterName"
         );
 
+      const sectSelect =
+        document.getElementById(
+          "characterSect"
+        );
+
+      const clanSelect =
+        document.getElementById(
+          "characterClan"
+        );
+
       const saveButton =
         document.getElementById(
           "saveCharacterButton"
@@ -477,6 +681,12 @@ function setupCharacterFormHandlers() {
 
       const name =
         nameInput?.value?.trim();
+
+      const sect =
+        sectSelect?.value || "";
+
+      const clan =
+        clanSelect?.value || "";
 
       hideCharacterAlert();
 
@@ -486,6 +696,26 @@ function setupCharacterFormHandlers() {
         );
 
         nameInput?.focus();
+
+        return;
+      }
+
+      if (!sect) {
+        showCharacterAlert(
+          "Selecione a seita do personagem."
+        );
+
+        sectSelect?.focus();
+
+        return;
+      }
+
+      if (!clan) {
+        showCharacterAlert(
+          "Selecione o clã do personagem."
+        );
+
+        clanSelect?.focus();
 
         return;
       }
@@ -513,10 +743,11 @@ function setupCharacterFormHandlers() {
               credentials:
                 "include",
 
-              body:
-                JSON.stringify({
-                  name,
-                }),
+              body: JSON.stringify({
+                name,
+                sect,
+                clan,
+              }),
             }
           );
 
@@ -585,6 +816,7 @@ function setupCharacterFormHandlers() {
       "hidden.bs.modal",
       () => {
         form.reset();
+
         hideCharacterAlert();
       }
     );

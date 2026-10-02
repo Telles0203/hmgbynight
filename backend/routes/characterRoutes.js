@@ -1,6 +1,7 @@
 const express = require("express");
 
 const {
+  getCharacterOptions,
   createCharacter,
   listCharacters,
 } = require(
@@ -15,6 +16,17 @@ const {
 );
 
 const router = express.Router();
+
+// ==============================
+// Character creation options
+// ==============================
+
+router.get(
+  "/options",
+  requireAuth,
+  requireVerifiedEmail,
+  getCharacterOptions
+);
 
 // ==============================
 // List user's PCs
