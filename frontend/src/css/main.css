@@ -2,6 +2,8 @@
     width: 100%;
     overflow: visible;
 
+    padding-bottom: 4rem;
+
     --character-motion-duration: 1000ms;
 }
 
@@ -547,7 +549,8 @@
     font-size:
         0.74rem;
 
-    font-style: italic;
+    font-style:
+        italic;
 
     text-align: center;
 }

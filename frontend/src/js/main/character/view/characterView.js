@@ -391,18 +391,3 @@ function getViewElements(
     createArea,
   };
 }
-
-
-// =============================================
-// Globals
-// Mantidos temporariamente por compatibilidade
-// =============================================
-
-window.toggleCharacterView =
-  toggleCharacterView;
-
-window.openCharacterView =
-  openCharacterView;
-
-window.closeCharacterView =
-  closeCharacterView;

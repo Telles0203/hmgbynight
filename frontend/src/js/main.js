@@ -2,6 +2,7 @@ let mainStylesPromise = null;
 let emailValidationModulePromise = null;
 let characterModulesPromise = null;
 
+
 // ==============================
 // Main stylesheet
 // ==============================
@@ -69,6 +70,7 @@ function loadMainStyles() {
   return mainStylesPromise;
 }
 
+
 // ==============================
 // Module loader
 // ==============================
@@ -84,6 +86,7 @@ async function loadEmailValidationModule() {
   await emailValidationModulePromise;
 }
 
+
 async function loadCharacterModules() {
   if (!characterModulesPromise) {
     characterModulesPromise =
@@ -97,10 +100,6 @@ async function loadCharacterModules() {
         ),
 
         import(
-          "/src/js/main/character/view/characterView.js"
-        ),
-
-        import(
           "/src/js/main/character/characterForm.js"
         ),
       ]);
@@ -108,6 +107,7 @@ async function loadCharacterModules() {
 
   await characterModulesPromise;
 }
+
 
 // ==============================
 // Main
@@ -179,6 +179,7 @@ async function loadMainUser(
           : "Olá.";
     }
 
+
     // ==============================
     // Email não validado
     // ==============================
@@ -200,6 +201,7 @@ async function loadMainUser(
 
       return;
     }
+
 
     // ==============================
     // Email validado
@@ -234,6 +236,7 @@ async function loadMainUser(
       loading,
       main
     );
+
   } catch (error) {
     console.error(
       "[MAIN] Erro ao carregar:",
@@ -250,6 +253,7 @@ async function loadMainUser(
     );
   }
 }
+
 
 // ==============================
 // Initialize modules
@@ -277,6 +281,7 @@ async function initializeMainModules() {
     await window.loadCharacters();
   }
 }
+
 
 // ==============================
 // Email validation
@@ -323,6 +328,7 @@ async function showEmailValidation(
   }
 }
 
+
 // ==============================
 // Reset view
 // ==============================
@@ -367,6 +373,7 @@ function resetMainView() {
   }
 }
 
+
 // ==============================
 // Helpers
 // ==============================
@@ -386,6 +393,7 @@ function showMainPage(
   }
 }
 
+
 function showMainError(
   container
 ) {
@@ -402,6 +410,7 @@ function showMainError(
     </div>
   `;
 }
+
 
 async function redirectToLogin() {
   if (
@@ -422,6 +431,7 @@ async function redirectToLogin() {
   window.location.href =
     "/login";
 }
+
 
 // ==============================
 // Global
