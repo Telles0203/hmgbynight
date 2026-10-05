@@ -3,8 +3,8 @@
 
     <a
       class="navbar-brand d-flex flex-column text-blood lh-1"
-      href="#"
-      onclick="event.preventDefault(); loadPage('home')"
+      href="/home"
+      data-route="home"
     >
       <span class="fw-bold">BYNIGHT</span>
 
@@ -38,22 +38,21 @@
         <li class="nav-item">
           <a
             class="nav-link text-light"
-            href="#"
-            onclick="event.preventDefault(); loadPage('home')"
+            href="/home"
+            data-route="home"
           >
             Home
           </a>
         </li>
 
-        <!-- Visitante -->
         <li
           class="nav-item"
           data-auth="guest"
         >
           <a
             class="nav-link text-light"
-            href="#"
-            onclick="event.preventDefault(); loadPage('login')"
+            href="/login"
+            data-route="login"
           >
             Login
           </a>
@@ -65,22 +64,21 @@
         >
           <a
             class="nav-link text-light"
-            href="#"
-            onclick="event.preventDefault(); loadPage('register')"
+            href="/register"
+            data-route="register"
           >
             Cadastrar
           </a>
         </li>
 
-        <!-- Usuário logado -->
         <li
           class="nav-item d-none"
           data-auth="user"
         >
           <a
             class="nav-link text-light"
-            href="#"
-            onclick="event.preventDefault(); loadPage('main')"
+            href="/main"
+            data-route="main"
           >
             Main
           </a>
@@ -92,8 +90,8 @@
         >
           <a
             class="nav-link text-light"
-            href="#"
-            onclick="event.preventDefault(); loadPage('account')"
+            href="/account"
+            data-route="account"
           >
             Account
           </a>
@@ -106,7 +104,7 @@
           <a
             class="nav-link text-light"
             href="#"
-            onclick="event.preventDefault(); logoutUser()"
+            data-action="logout"
           >
             Logout
           </a>
@@ -145,20 +143,19 @@
       <li>
         <a
           class="nav-link text-light"
-          href="#"
-          onclick="event.preventDefault(); loadPage('home')"
+          href="/home"
+          data-route="home"
           data-bs-dismiss="offcanvas"
         >
           Home
         </a>
       </li>
 
-      <!-- Visitante -->
       <li data-auth="guest">
         <a
           class="nav-link text-light"
-          href="#"
-          onclick="event.preventDefault(); loadPage('login')"
+          href="/login"
+          data-route="login"
           data-bs-dismiss="offcanvas"
         >
           Login
@@ -168,23 +165,22 @@
       <li data-auth="guest">
         <a
           class="nav-link text-light"
-          href="#"
-          onclick="event.preventDefault(); loadPage('register')"
+          href="/register"
+          data-route="register"
           data-bs-dismiss="offcanvas"
         >
           Cadastrar
         </a>
       </li>
 
-      <!-- Usuário logado -->
       <li
         class="d-none"
         data-auth="user"
       >
         <a
           class="nav-link text-light"
-          href="#"
-          onclick="event.preventDefault(); loadPage('main')"
+          href="/main"
+          data-route="main"
           data-bs-dismiss="offcanvas"
         >
           Main
@@ -197,8 +193,8 @@
       >
         <a
           class="nav-link text-light"
-          href="#"
-          onclick="event.preventDefault(); loadPage('account')"
+          href="/account"
+          data-route="account"
           data-bs-dismiss="offcanvas"
         >
           Minha conta
@@ -212,7 +208,7 @@
         <a
           class="nav-link text-light"
           href="#"
-          onclick="event.preventDefault(); logoutUser()"
+          data-action="logout"
           data-bs-dismiss="offcanvas"
         >
           Logout

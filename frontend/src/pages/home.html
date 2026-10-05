@@ -16,13 +16,26 @@
             </p>
 
             <div class="d-flex flex-wrap gap-2 mb-4">
-                <button class="btn btn-blood px-4" onclick="event.preventDefault(); loadPage('register')">
+                <button
+                    type="button"
+                    class="btn btn-blood px-4"
+                    data-route="register"
+                >
                     Criar conta
                 </button>
-                <button class="btn btn-outline-light px-4" onclick="event.preventDefault(); loadPage('login')">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-light px-4"
+                    data-route="login"
+                >
                     Entrar
                 </button>
-                <a class="btn btn-link text-blood text-decoration-none px-2" href="#o-que-e">
+
+                <a
+                    class="btn btn-link text-blood text-decoration-none px-2"
+                    href="#o-que-e"
+                >
                     O que é isso?
                 </a>
             </div>
@@ -81,6 +94,7 @@
     </div>
 
     <hr class="border-secondary my-5">
+
     <section id="o-que-e" class="mb-5">
         <h2 class="h3 text-light mb-3">O que é o ByNight?</h2>
 
@@ -91,7 +105,7 @@
                         <p class="mb-3">
                             O <strong>ByNight</strong> é uma plataforma para organizar
                             <strong>fichas, planilhas e registros de jogo</strong>,
-                            criada para mesas narrativas baseadas em <strong>teatro da mente</strong> e interpretação. 
+                            criada para mesas narrativas baseadas em <strong>teatro da mente</strong> e interpretação.
                             Pensado para <strong>narradores e jogadores</strong>, ele centraliza personagens,
                             anotações e histórico em um único lugar. Inspirado por comunidades como o
                             <strong>OWBN</strong>, mas sem se limitar a um sistema específico.
@@ -103,19 +117,38 @@
     </section>
 
 
-
     <section class="pb-5">
         <div class="card bg-dark border border-danger shadow-sm">
             <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+
                 <div>
-                    <div class="h4 text-light mb-1">Pronto para deixar tudo no lugar?</div>
-                    <div class="text-secondary">Crie uma conta ou entre para continuar.</div>
+                    <div class="h4 text-light mb-1">
+                        Pronto para deixar tudo no lugar?
+                    </div>
+
+                    <div class="text-secondary">
+                        Crie uma conta ou entre para continuar.
+                    </div>
                 </div>
+
                 <div class="d-flex gap-2">
-                    <button class="btn btn-blood px-4" onclick="event.preventDefault(); loadPage('register')">Criar
-                        conta</button>
-                    <button class="btn btn-outline-light px-4"
-                        onclick="event.preventDefault(); loadPage('login')">Entrar</button>
+
+                    <button
+                        type="button"
+                        class="btn btn-blood px-4"
+                        data-route="register"
+                    >
+                        Criar conta
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-light px-4"
+                        data-route="login"
+                    >
+                        Entrar
+                    </button>
+
                 </div>
             </div>
         </div>

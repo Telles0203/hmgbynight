@@ -30,6 +30,7 @@ function updateNavbarAuth(user) {
   });
 }
 
+
 function hideCurrentNavbarRoute() {
   const currentRoute =
     window.location.pathname
@@ -37,10 +38,12 @@ function hideCurrentNavbarRoute() {
     "home";
 
   document
-    .querySelectorAll("#navbar a.nav-link")
+    .querySelectorAll(
+      "#navbar a.nav-link[data-route]"
+    )
     .forEach((link) => {
-      const onclick =
-        link.getAttribute("onclick");
+      const route =
+        link.dataset.route;
 
       const listItem =
         link.closest("li");
@@ -49,18 +52,14 @@ function hideCurrentNavbarRoute() {
         return;
       }
 
-      if (
-        onclick &&
-        onclick.includes(
-          `loadPage('${currentRoute}'`
-        )
-      ) {
+      if (route === currentRoute) {
         listItem.style.display = "none";
       } else {
         listItem.style.display = "";
       }
     });
 }
+
 
 async function refreshNavbarAuth(
   forceRefresh = false
@@ -82,6 +81,7 @@ async function refreshNavbarAuth(
   return user;
 }
 
+
 async function loadNavbar() {
   try {
     const response = await fetch(
@@ -98,7 +98,9 @@ async function loadNavbar() {
       await response.text();
 
     const navbar =
-      document.getElementById("navbar");
+      document.getElementById(
+        "navbar"
+      );
 
     if (!navbar) {
       return;
@@ -107,6 +109,7 @@ async function loadNavbar() {
     navbar.innerHTML = html;
 
     await refreshNavbarAuth();
+
   } catch (error) {
     console.error(
       "[NAVBAR] Erro ao carregar navbar:",
@@ -115,7 +118,9 @@ async function loadNavbar() {
   }
 }
 
+
 loadNavbar();
+
 
 window.refreshNavbarAuth =
   refreshNavbarAuth;

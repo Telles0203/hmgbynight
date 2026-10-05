@@ -154,7 +154,7 @@ app.set(
 
 
 // ==============================
-// Basic security
+// Security
 // ==============================
 
 app.disable(
@@ -164,8 +164,70 @@ app.disable(
 
 app.use(
   helmet({
-    contentSecurityPolicy:
-      false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [
+          "'self'",
+        ],
+
+        scriptSrc: [
+          "'self'",
+          "https://cdn.jsdelivr.net",
+        ],
+
+        scriptSrcAttr: [
+          "'none'",
+        ],
+
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdn.jsdelivr.net",
+          "https://fonts.googleapis.com",
+        ],
+
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "data:",
+        ],
+
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https:",
+        ],
+
+        connectSrc: [
+          "'self'",
+          "https://fonts.googleapis.com",
+          "https://fonts.gstatic.com",
+        ],
+
+        objectSrc: [
+          "'none'",
+        ],
+
+        frameSrc: [
+          "'none'",
+        ],
+
+        frameAncestors: [
+          "'none'",
+        ],
+
+        baseUri: [
+          "'self'",
+        ],
+
+        formAction: [
+          "'self'",
+        ],
+
+        upgradeInsecureRequests:
+          null,
+      },
+    },
   })
 );
 

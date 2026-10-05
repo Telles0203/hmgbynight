@@ -7,16 +7,20 @@ function getCurrentRoute() {
   return route || "home";
 }
 
+
 function isValidRoute(route) {
   return /^[a-zA-Z0-9_-]+$/.test(route);
 }
 
+
 function updateNavbarRoute(route) {
   document
-    .querySelectorAll("#navbar a.nav-link")
+    .querySelectorAll(
+      "#navbar a.nav-link[data-route]"
+    )
     .forEach((link) => {
-      const onclick =
-        link.getAttribute("onclick");
+      const linkRoute =
+        link.dataset.route;
 
       const listItem =
         link.closest("li");
@@ -25,18 +29,14 @@ function updateNavbarRoute(route) {
         return;
       }
 
-      if (
-        onclick &&
-        onclick.includes(
-          `loadPage('${route}'`
-        )
-      ) {
+      if (linkRoute === route) {
         listItem.style.display = "none";
       } else {
         listItem.style.display = "";
       }
     });
 }
+
 
 async function runPageScripts(route) {
   if (
@@ -88,6 +88,7 @@ async function runPageScripts(route) {
   }
 }
 
+
 async function checkRouteAccess(route) {
   const authRoutes = [
     "main",
@@ -130,6 +131,7 @@ async function checkRouteAccess(route) {
   return window.requireAuth(route);
 }
 
+
 function showNotFound() {
   const pageContent =
     document.getElementById(
@@ -155,7 +157,7 @@ function showNotFound() {
           <button
             type="button"
             class="btn btn-danger"
-            onclick="loadPage('home')"
+            data-route="home"
           >
             Ir para Home
           </button>
@@ -164,6 +166,7 @@ function showNotFound() {
     </div>
   `;
 }
+
 
 async function loadPage(
   route,
@@ -253,6 +256,7 @@ async function loadPage(
           "",
           newUrl
         );
+
       } else if (
         window.location.pathname !==
           `/${route}` ||
@@ -272,6 +276,7 @@ async function loadPage(
     updateNavbarRoute(route);
 
     await runPageScripts(route);
+
   } catch (error) {
     console.error(
       "[ROUTER] Erro ao carregar página:",
@@ -281,6 +286,50 @@ async function loadPage(
     showNotFound();
   }
 }
+
+
+document.addEventListener(
+  "click",
+  async (event) => {
+    const routeElement =
+      event.target.closest(
+        "[data-route]"
+      );
+
+    if (routeElement) {
+      const route =
+        routeElement.dataset.route;
+
+      if (route) {
+        event.preventDefault();
+
+        await loadPage(route);
+      }
+
+      return;
+    }
+
+
+    const actionElement =
+      event.target.closest(
+        '[data-action="logout"]'
+      );
+
+    if (!actionElement) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (
+      typeof window.logoutUser ===
+      "function"
+    ) {
+      await window.logoutUser();
+    }
+  }
+);
+
 
 window.addEventListener(
   "popstate",
@@ -293,6 +342,7 @@ window.addEventListener(
     });
   }
 );
+
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -309,4 +359,6 @@ document.addEventListener(
   }
 );
 
-window.loadPage = loadPage;
+
+window.loadPage =
+  loadPage;
