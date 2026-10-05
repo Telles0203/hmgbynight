@@ -65,6 +65,35 @@ const CharacterSchema =
 
 
       // ==============================
+      // Inspiration
+      // ==============================
+
+      /*
+       * Conceito.
+       *
+       * O personagem é criado inicialmente
+       * com o campo vazio.
+       *
+       * O preenchimento ocorre posteriormente
+       * dentro da ficha.
+       */
+
+      concept: {
+        type:
+          String,
+
+        trim:
+          true,
+
+        maxlength:
+          120,
+
+        default:
+          "",
+      },
+
+
+      // ==============================
       // Vampire
       // ==============================
 
@@ -102,14 +131,6 @@ const CharacterSchema =
       // Owner
       // ==============================
 
-      /*
-       * PC:
-       * usuário proprietário.
-       *
-       * NPC:
-       * deve permanecer null.
-       */
-
       ownerUser: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -128,16 +149,6 @@ const CharacterSchema =
       // ==============================
       // Approved mother House
       // ==============================
-
-      /*
-       * House mãe já aprovada.
-       *
-       * PC:
-       * opcional.
-       *
-       * NPC:
-       * obrigatória.
-       */
 
       motherHouse: {
         type:
@@ -158,17 +169,6 @@ const CharacterSchema =
       // Pending mother House
       // ==============================
 
-      /*
-       * House solicitada pelo jogador,
-       * ainda aguardando aprovação.
-       *
-       * Usado apenas para PC.
-       *
-       * Enquanto existir somente
-       * pendingMotherHouse, o personagem
-       * ainda NÃO está vinculado à House.
-       */
-
       pendingMotherHouse: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -183,6 +183,7 @@ const CharacterSchema =
           true,
       },
     },
+
     {
       timestamps:
         true,

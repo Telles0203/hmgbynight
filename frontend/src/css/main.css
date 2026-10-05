@@ -755,6 +755,151 @@ svg {
 
 
 /* ==============================
+   Editable character fields
+   ============================== */
+
+.character-inline-display {
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        flex-end;
+
+    gap:
+        0.4rem;
+
+    max-width:
+        100%;
+}
+
+.character-field-display {
+    min-width:
+        0;
+
+    overflow-wrap:
+        anywhere;
+}
+
+.character-inline-edit-button {
+    flex:
+        0 0 auto;
+
+    line-height:
+        1;
+
+    font-size:
+        0.9rem;
+}
+
+.character-inline-edit-button:hover {
+    color:
+        #ffffff !important;
+}
+
+
+/* ==============================
+   Editable field - editing
+   ============================== */
+
+.character-editable-row.is-editing {
+    display:
+        block;
+
+    padding-top:
+        0.45rem;
+
+    padding-bottom:
+        0.55rem;
+}
+
+.character-editable-row.is-editing
+.character-sheet-label {
+    display:
+        block;
+
+    width:
+        100%;
+
+    margin-bottom:
+        0.45rem;
+
+    white-space:
+        nowrap;
+
+    text-align:
+        left;
+}
+
+.character-editable-row.is-editing
+.character-editable-value {
+    display:
+        block;
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    text-align:
+        left;
+}
+
+.character-inline-editor {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    gap:
+        0.5rem;
+}
+
+.character-inline-input {
+    display:
+        block;
+
+    width:
+        100%;
+
+    min-width:
+        0;
+}
+
+.character-inline-actions {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        0.5rem;
+}
+
+.character-inline-error {
+    width:
+        100%;
+
+    text-align:
+        left;
+}
+
+
+/* ==============================
    Resources
    ============================== */
 

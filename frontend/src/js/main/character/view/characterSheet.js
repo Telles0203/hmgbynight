@@ -3,10 +3,24 @@
 // =============================================
 
 export function createCharacterSheet({
+  characterId,
+  concept,
   clan,
   sect,
   house,
 }) {
+  const safeCharacterId =
+    escapeSheetHtml(
+      characterId
+    );
+
+
+  const safeConcept =
+    escapeSheetHtml(
+      concept || ""
+    );
+
+
   return `
     <div class="character-card-details">
 
@@ -29,6 +43,52 @@ export function createCharacterSheet({
                 Vampiro
               </h4>
 
+
+              <!-- CONCEITO -->
+
+              <div
+                class="character-sheet-row character-editable-row"
+                data-character-id="${safeCharacterId}"
+                data-character-field="concept"
+              >
+
+                <span class="character-sheet-label">
+                  Conceito
+                </span>
+
+
+                <span
+                  class="character-sheet-value character-editable-value"
+                >
+
+                  <span
+                    class="d-inline-flex align-items-center gap-2 flex-wrap"
+                  >
+
+                    <span class="character-field-display">
+                      ${safeConcept || "—"}
+                    </span>
+
+
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm text-secondary text-decoration-none p-0 character-inline-edit-button"
+                      data-character-inline-action="edit"
+                      aria-label="Editar conceito"
+                      title="Editar conceito"
+                    >
+                      ✎
+                    </button>
+
+                  </span>
+
+                </span>
+
+              </div>
+
+
+              <!-- CLÃ -->
+
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
@@ -40,6 +100,9 @@ export function createCharacterSheet({
                 </span>
 
               </div>
+
+
+              <!-- GERAÇÃO -->
 
               <div class="character-sheet-row">
 
@@ -53,6 +116,9 @@ export function createCharacterSheet({
 
               </div>
 
+
+              <!-- SEITA -->
+
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
@@ -64,6 +130,9 @@ export function createCharacterSheet({
                 </span>
 
               </div>
+
+
+              <!-- HOUSE -->
 
               <div class="character-sheet-row">
 
@@ -80,6 +149,10 @@ export function createCharacterSheet({
             </section>
 
 
+            <!-- ============================== -->
+            <!-- PERSONALIDADE -->
+            <!-- ============================== -->
+
             <section
               class="character-section-card character-sheet-section"
             >
@@ -87,6 +160,7 @@ export function createCharacterSheet({
               <h4 class="character-sheet-title">
                 Personalidade
               </h4>
+
 
               <div class="character-sheet-row">
 
@@ -100,6 +174,7 @@ export function createCharacterSheet({
 
               </div>
 
+
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
@@ -111,6 +186,7 @@ export function createCharacterSheet({
                 </span>
 
               </div>
+
 
               <div class="character-sheet-row">
 
@@ -127,6 +203,10 @@ export function createCharacterSheet({
             </section>
 
 
+            <!-- ============================== -->
+            <!-- VIRTUDES -->
+            <!-- ============================== -->
+
             <section
               class="character-section-card character-sheet-section"
             >
@@ -134,6 +214,7 @@ export function createCharacterSheet({
               <h4 class="character-sheet-title">
                 Virtudes
               </h4>
+
 
               <div class="character-sheet-row">
 
@@ -147,6 +228,7 @@ export function createCharacterSheet({
 
               </div>
 
+
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
@@ -158,6 +240,7 @@ export function createCharacterSheet({
                 </span>
 
               </div>
+
 
               <div class="character-sheet-row">
 
@@ -293,7 +376,7 @@ export function createCharacterSheet({
           >
 
 
-            <!-- ABILITIES -->
+            <!-- HABILIDADES -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -327,7 +410,7 @@ export function createCharacterSheet({
             </section>
 
 
-            <!-- DISCIPLINES -->
+            <!-- DISCIPLINAS -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -374,7 +457,7 @@ export function createCharacterSheet({
             </section>
 
 
-            <!-- BACKGROUNDS -->
+            <!-- ANTECEDENTES -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -466,9 +549,34 @@ function createEmptyPips(
 ) {
   return Array.from(
     {
-      length: amount,
+      length:
+        amount,
     },
+
     () =>
       '<span class="character-sheet-pip"></span>'
   ).join("");
+}
+
+
+// =============================================
+// Escape
+// =============================================
+
+function escapeSheetHtml(
+  value
+) {
+  const element =
+    document.createElement(
+      "div"
+    );
+
+
+  element.textContent =
+    String(
+      value ?? ""
+    );
+
+
+  return element.innerHTML;
 }

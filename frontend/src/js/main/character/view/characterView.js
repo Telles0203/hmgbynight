@@ -24,17 +24,20 @@ window.ByNightMain.character =
 // VELOCIDADE DE CADA ETAPA
 // =============================================
 
-const MOTION_DURATION_SECONDS = 1;
+const MOTION_DURATION_SECONDS =
+  1;
 
 const MOTION_DURATION =
-  MOTION_DURATION_SECONDS * 1000;
+  MOTION_DURATION_SECONDS *
+  1000;
 
 
 // =============================================
 // State
 // =============================================
 
-let characterTransitioning = false;
+let characterTransitioning =
+  false;
 
 
 // =============================================
@@ -49,13 +52,20 @@ export function toggleCharacterView(
       .character
       .selectedCharacterId;
 
+
   if (
-    String(selectedId) ===
-    String(characterId)
+    String(
+      selectedId
+    ) ===
+    String(
+      characterId
+    )
   ) {
     closeCharacterView();
+
     return;
   }
+
 
   openCharacterView(
     characterId
@@ -70,18 +80,23 @@ export function toggleCharacterView(
 export async function openCharacterView(
   characterId
 ) {
-  if (characterTransitioning) {
+  if (
+    characterTransitioning
+  ) {
     return;
   }
+
 
   const elements =
     getViewElements(
       characterId
     );
 
+
   if (!elements) {
     return;
   }
+
 
   const {
     dashboard,
@@ -92,10 +107,13 @@ export async function openCharacterView(
     allCards,
     panelHeader,
     createArea,
-  } = elements;
+  } =
+    elements;
+
 
   characterTransitioning =
     true;
+
 
   try {
     window.ByNightMain
@@ -103,14 +121,17 @@ export async function openCharacterView(
       .selectedCharacterId =
         characterId;
 
+
     dashboard.style.setProperty(
       "--character-motion-duration",
       `${MOTION_DURATION}ms`
     );
 
+
     selectedCard.classList.add(
       "is-selected"
     );
+
 
     selectedCard
       .querySelector(
@@ -132,12 +153,16 @@ export async function openCharacterView(
     const elementsToCollapse = [
       ...allCards.filter(
         (card) =>
-          card !== selectedCard
+          card !==
+          selectedCard
       ),
 
       panelHeader,
       createArea,
-    ].filter(Boolean);
+    ].filter(
+      Boolean
+    );
+
 
     await collapseElements(
       elementsToCollapse,
@@ -154,12 +179,15 @@ export async function openCharacterView(
       "character-focus"
     );
 
+
     await animateHorizontalPanels({
       panelsContainer,
       characterPanel,
       housePanel,
-      opening: true,
-      duration: MOTION_DURATION,
+      opening:
+        true,
+      duration:
+        MOTION_DURATION,
     });
 
 
@@ -192,27 +220,34 @@ export async function openCharacterView(
 // =============================================
 
 export async function closeCharacterView() {
-  if (characterTransitioning) {
+  if (
+    characterTransitioning
+  ) {
     return;
   }
+
 
   const characterId =
     window.ByNightMain
       .character
       .selectedCharacterId;
 
+
   if (!characterId) {
     return;
   }
+
 
   const elements =
     getViewElements(
       characterId
     );
 
+
   if (!elements) {
     return;
   }
+
 
   const {
     dashboard,
@@ -223,10 +258,13 @@ export async function closeCharacterView() {
     allCards,
     panelHeader,
     createArea,
-  } = elements;
+  } =
+    elements;
+
 
   characterTransitioning =
     true;
+
 
   try {
 
@@ -251,9 +289,12 @@ export async function closeCharacterView() {
       panelsContainer,
       characterPanel,
       housePanel,
-      opening: false,
-      duration: MOTION_DURATION,
+      opening:
+        false,
+      duration:
+        MOTION_DURATION,
     });
+
 
     dashboard.classList.remove(
       "character-focus"
@@ -271,11 +312,15 @@ export async function closeCharacterView() {
 
       ...allCards.filter(
         (card) =>
-          card !== selectedCard
+          card !==
+          selectedCard
       ),
 
       createArea,
-    ].filter(Boolean);
+    ].filter(
+      Boolean
+    );
+
 
     await expandElements(
       elementsToExpand,
@@ -291,6 +336,7 @@ export async function closeCharacterView() {
       "is-selected"
     );
 
+
     selectedCard
       .querySelector(
         ".character-open-button"
@@ -300,6 +346,7 @@ export async function closeCharacterView() {
           "Abrir →"
         )
       );
+
 
     window.ByNightMain
       .character
@@ -331,27 +378,34 @@ function getViewElements(
       "mainDashboard"
     );
 
+
   const panelsContainer =
     dashboard?.querySelector(
       ".main-dashboard-panels"
     );
+
 
   const characterPanel =
     document.getElementById(
       "characterPanel"
     );
 
+
   const housePanel =
     document.getElementById(
       "housePanel"
     );
 
+
   const selectedCard =
     document.querySelector(
       `.character-card[data-character-id="${CSS.escape(
-        String(characterId)
+        String(
+          characterId
+        )
       )}"]`
     );
+
 
   const allCards =
     Array.from(
@@ -360,15 +414,18 @@ function getViewElements(
       )
     );
 
+
   const panelHeader =
     document.getElementById(
       "characterPanelHeader"
     );
 
+
   const createArea =
     document.getElementById(
       "characterCreateArea"
     );
+
 
   if (
     !dashboard ||
@@ -379,6 +436,7 @@ function getViewElements(
   ) {
     return null;
   }
+
 
   return {
     dashboard,

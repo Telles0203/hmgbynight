@@ -1,5 +1,4 @@
 import {
-  escapeHouseHtml,
   searchAvailableHouses,
 } from "../house/houseSearch.js";
 
@@ -71,6 +70,29 @@ function hideCharacterAlert() {
 
   alert.className =
     "alert d-none";
+}
+
+
+// =============================================
+// Escape HTML
+// =============================================
+
+function escapeCharacterFormHtml(
+  value
+) {
+  const element =
+    document.createElement(
+      "div"
+    );
+
+
+  element.textContent =
+    String(
+      value ?? ""
+    );
+
+
+  return element.innerHTML;
 }
 
 
@@ -237,13 +259,13 @@ function renderCreateCharacterHouses(
       .map(
         (house) => {
           const id =
-            escapeHouseHtml(
+            escapeCharacterFormHtml(
               house.id
             );
 
 
           const name =
-            escapeHouseHtml(
+            escapeCharacterFormHtml(
               house.name
             );
 
@@ -333,6 +355,7 @@ function resetCreateCharacterHouseSelector() {
     clearTimeout(
       createHouseSearchTimer
     );
+
 
     createHouseSearchTimer =
       null;
@@ -570,6 +593,12 @@ function setupCharacterFormHandlers() {
         );
 
 
+      const conceptInput =
+        document.getElementById(
+          "characterConcept"
+        );
+
+
       const primarySectSelect =
         document.getElementById(
           "characterSect"
@@ -600,6 +629,12 @@ function setupCharacterFormHandlers() {
           ?.trim();
 
 
+      const concept =
+        conceptInput
+          ?.value
+          ?.trim();
+
+
       const sect =
         window
           .getSelectedSect
@@ -621,6 +656,10 @@ function setupCharacterFormHandlers() {
       hideCharacterAlert();
 
 
+      // =============================================
+      // Name
+      // =============================================
+
       if (!name) {
         showCharacterAlert(
           "Informe o nome do personagem."
@@ -631,6 +670,39 @@ function setupCharacterFormHandlers() {
         return;
       }
 
+
+      // =============================================
+      // Concept
+      // =============================================
+
+      if (!concept) {
+        showCharacterAlert(
+          "Informe o conceito do personagem."
+        );
+
+        conceptInput?.focus();
+
+        return;
+      }
+
+
+      if (
+        concept.length < 2 ||
+        concept.length > 120
+      ) {
+        showCharacterAlert(
+          "O conceito deve possuir entre 2 e 120 caracteres."
+        );
+
+        conceptInput?.focus();
+
+        return;
+      }
+
+
+      // =============================================
+      // Sect
+      // =============================================
 
       if (
         !primarySectSelect?.value
@@ -660,6 +732,10 @@ function setupCharacterFormHandlers() {
       }
 
 
+      // =============================================
+      // Clan
+      // =============================================
+
       if (!clan) {
         showCharacterAlert(
           "Selecione o clã do personagem."
@@ -670,6 +746,10 @@ function setupCharacterFormHandlers() {
         return;
       }
 
+
+      // =============================================
+      // Create
+      // =============================================
 
       try {
         if (saveButton) {
@@ -699,6 +779,7 @@ function setupCharacterFormHandlers() {
               body:
                 JSON.stringify({
                   name,
+                  concept,
                   sect,
                   clan,
                   requestedMotherHouseId,

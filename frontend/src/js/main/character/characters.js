@@ -18,6 +18,11 @@ import {
   setupCharacterHouseModal,
 } from "./characterHouse.js";
 
+import {
+  handleCharacterInlineEditClick,
+  saveActiveCharacterInlineEdit,
+} from "./characterInlineEdit.js";
+
 
 // =============================================
 // ByNight Main
@@ -28,8 +33,11 @@ window.ByNightMain =
 
 window.ByNightMain.character =
   window.ByNightMain.character || {
-    options: null,
-    characters: [],
+    options:
+      null,
+
+    characters:
+      [],
   };
 
 
@@ -333,8 +341,17 @@ function createCharacterCard(
 
 
       ${createCharacterSheet({
+        characterId:
+          character.id,
+
+        concept:
+          character.concept ||
+          "",
+
         clan,
+
         sect,
+
         house:
           houseField,
       })}
@@ -421,20 +438,12 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Atualiza o estado local
-  // =============================================
-
   character.motherHouse =
     null;
 
   character.pendingMotherHouse =
     pendingMotherHouse;
 
-
-  // =============================================
-  // Localiza o card já aberto
-  // =============================================
 
   const card =
     document.querySelector(
@@ -452,10 +461,6 @@ async function handleCharacterHouseRequestCompleted({
     return;
   }
 
-
-  // =============================================
-  // Atualiza resumo do card
-  // =============================================
 
   const summary =
     card.querySelector(
@@ -491,10 +496,6 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Atualiza somente o campo House da ficha
-  // =============================================
-
   const houseField =
     card.querySelector(
       ".character-house-field"
@@ -511,13 +512,12 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // Fallback
   await loadCharacters();
 }
 
 
 // =============================================
-// Character events
+// Events
 // =============================================
 
 function setupCharacterListEvents(
@@ -536,7 +536,7 @@ function setupCharacterListEvents(
 }
 
 
-function handleCharacterListClick(
+async function handleCharacterListClick(
   event
 ) {
   const container =
@@ -544,10 +544,61 @@ function handleCharacterListClick(
 
 
   // =============================================
-  // Delete
+  // Inline fields
   // =============================================
 
   if (
+    await handleCharacterInlineEditClick(
+      event,
+      container
+    )
+  ) {
+    return;
+  }
+
+
+  // =============================================
+  // Delete
+  // =============================================
+
+  const target =
+    event.target instanceof Element
+      ? event.target
+      : null;
+
+
+  if (!target) {
+    return;
+  }
+
+
+  const deleteAction =
+    target.closest(
+      ".character-delete-selector, .character-delete-button"
+    );
+
+
+  if (
+    deleteAction
+  ) {
+    const saved =
+      await saveActiveCharacterInlineEdit();
+
+
+    if (!saved) {
+      return;
+    }
+
+
+    if (
+      handleCharacterDeleteClick(
+        event,
+        container
+      )
+    ) {
+      return;
+    }
+  } else if (
     handleCharacterDeleteClick(
       event,
       container
@@ -561,7 +612,31 @@ function handleCharacterListClick(
   // House
   // =============================================
 
-  if (
+  const houseAction =
+    target.closest(
+      ".character-house-select-button"
+    );
+
+
+  if (houseAction) {
+    const saved =
+      await saveActiveCharacterInlineEdit();
+
+
+    if (!saved) {
+      return;
+    }
+
+
+    if (
+      handleCharacterHouseClick(
+        event,
+        container
+      )
+    ) {
+      return;
+    }
+  } else if (
     handleCharacterHouseClick(
       event,
       container
@@ -572,19 +647,8 @@ function handleCharacterListClick(
 
 
   // =============================================
-  // Open character
+  // Open / close character
   // =============================================
-
-  const target =
-    event.target instanceof Element
-      ? event.target
-      : null;
-
-
-  if (!target) {
-    return;
-  }
-
 
   const openButton =
     target.closest(
@@ -609,6 +673,18 @@ function handleCharacterListClick(
 
 
   if (!characterId) {
+    return;
+  }
+
+
+  // Se houver um campo sendo editado,
+  // salva antes de fechar/trocar personagem.
+
+  const saved =
+    await saveActiveCharacterInlineEdit();
+
+
+  if (!saved) {
     return;
   }
 

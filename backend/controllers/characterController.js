@@ -48,6 +48,9 @@ const CHARACTER_NAME_MIN_LENGTH =
 const CHARACTER_NAME_MAX_LENGTH =
   60;
 
+const CHARACTER_CONCEPT_MAX_LENGTH =
+  120;
+
 
 // ==============================
 // Helpers
@@ -293,7 +296,7 @@ async function createCharacter(
 
 
     // ==============================
-    // Optional mother House request
+    // Optional mother Chronicle
     // ==============================
 
     let requestedHouse =
@@ -315,7 +318,7 @@ async function createCharacter(
               false,
 
             error:
-              "House selecionada inválida.",
+              "Crônica selecionada inválida.",
           });
       }
 
@@ -340,7 +343,7 @@ async function createCharacter(
               false,
 
             error:
-              "A House selecionada não foi encontrada ou está inativa.",
+              "A Crônica selecionada não foi encontrada ou está inativa.",
           });
       }
     }
@@ -357,6 +360,9 @@ async function createCharacter(
 
         type:
           "PC",
+
+        concept:
+          "",
 
         sect:
           cleanSect,
@@ -388,6 +394,9 @@ async function createCharacter(
 
           name:
             character.name,
+
+          concept:
+            character.concept,
 
           type:
             character.type,
@@ -456,7 +465,7 @@ async function listCharacters(
       })
 
         .select(
-          "name type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name concept type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -495,6 +504,10 @@ async function listCharacters(
 
             name:
               character.name,
+
+            concept:
+              character.concept ||
+              "",
 
             type:
               character.type,
@@ -551,10 +564,10 @@ async function listCharacters(
 
 
 // ==============================
-// Request mother House
+// Update Concept
 // ==============================
 
-async function requestMotherHouse(
+async function updateCharacterConcept(
   req,
   res
 ) {
@@ -566,13 +579,6 @@ async function requestMotherHouse(
     const characterId =
       String(
         req.params?.characterId ||
-          ""
-      ).trim();
-
-
-    const houseId =
-      String(
-        req.body?.houseId ||
           ""
       ).trim();
 
@@ -617,7 +623,288 @@ async function requestMotherHouse(
 
 
     // ==============================
-    // House ID
+    // Concept
+    // ==============================
+
+    if (
+      typeof req.body?.concept !==
+      "string"
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Conceito inválido.",
+        });
+    }
+
+
+    const concept =
+      req.body.concept.trim();
+
+
+    if (
+      concept.length >
+      CHARACTER_CONCEPT_MAX_LENGTH
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            `O conceito pode possuir no máximo ${CHARACTER_CONCEPT_MAX_LENGTH} caracteres.`,
+        });
+    }
+
+
+    // ==============================
+    // Character ownership/state
+    // ==============================
+
+    const character =
+      await Character.findOne({
+        _id:
+          characterId,
+
+        ownerUser:
+          userId,
+
+        type:
+          "PC",
+      }).select(
+        "_id concept motherHouse pendingMotherHouse"
+      );
+
+
+    if (!character) {
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem não encontrado.",
+        });
+    }
+
+
+    // ==============================
+    // Chronicle protection
+    //
+    // Sem Crônica:
+    // pode alterar diretamente.
+    //
+    // Solicitação pendente:
+    // pode alterar diretamente.
+    //
+    // Crônica aprovada:
+    // alteração deverá passar
+    // por aprovação da Crônica.
+    // ==============================
+
+    if (
+      character.motherHouse
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Este personagem já pertence a uma Crônica. Alterações deverão ser aprovadas pela Crônica.",
+        });
+    }
+
+
+    // ==============================
+    // No change
+    // ==============================
+
+    if (
+      String(
+        character.concept ||
+        ""
+      ) ===
+      concept
+    ) {
+      return res.json({
+        ok:
+          true,
+
+        character: {
+          id:
+            character._id,
+
+          concept:
+            concept,
+        },
+      });
+    }
+
+
+    // ==============================
+    // Update only Concept
+    //
+    // Não usamos character.save().
+    //
+    // Isso evita validar novamente
+    // todos os campos de personagens
+    // antigos.
+    //
+    // O motherHouse:null também
+    // protege contra uma aprovação
+    // da Crônica acontecendo entre
+    // a leitura e a gravação.
+    // ==============================
+
+    const result =
+      await Character.updateOne(
+        {
+          _id:
+            characterId,
+
+          ownerUser:
+            userId,
+
+          type:
+            "PC",
+
+          motherHouse:
+            null,
+        },
+
+        {
+          $set: {
+            concept,
+          },
+        }
+      );
+
+
+    if (
+      result.matchedCount !==
+      1
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "O personagem foi vinculado a uma Crônica antes da alteração ser concluída. A mudança deverá ser aprovada pela Crônica.",
+        });
+    }
+
+
+    return res.json({
+      ok:
+        true,
+
+      character: {
+        id:
+          character._id,
+
+        concept:
+          concept,
+      },
+    });
+
+  } catch (error) {
+    console.error(
+      "[CHARACTER] Erro ao atualizar conceito:",
+      error
+    );
+
+
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível atualizar o conceito.",
+      });
+  }
+}
+
+
+// ==============================
+// Request mother Chronicle
+// ==============================
+
+async function requestMotherHouse(
+  req,
+  res
+) {
+  try {
+    const userId =
+      req.user?.sub;
+
+
+    const characterId =
+      String(
+        req.params?.characterId ||
+          ""
+      ).trim();
+
+
+    const houseId =
+      String(
+        req.body?.houseId ||
+          ""
+      ).trim();
+
+
+    // ==============================
+    // Authentication
+    // ==============================
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Não autenticado.",
+        });
+    }
+
+
+    // ==============================
+    // Character
+    // ==============================
+
+    if (
+      !characterId ||
+      !mongoose.isValidObjectId(
+        characterId
+      )
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem inválido.",
+        });
+    }
+
+
+    // ==============================
+    // Chronicle
     // ==============================
 
     if (
@@ -633,14 +920,10 @@ async function requestMotherHouse(
             false,
 
           error:
-            "Selecione uma House válida.",
+            "Selecione uma Crônica válida.",
         });
     }
 
-
-    // ==============================
-    // House
-    // ==============================
 
     const house =
       await House.findOne({
@@ -662,13 +945,13 @@ async function requestMotherHouse(
             false,
 
           error:
-            "A House selecionada não foi encontrada ou está inativa.",
+            "A Crônica selecionada não foi encontrada ou está inativa.",
         });
     }
 
 
     // ==============================
-    // Character ownership
+    // Ownership
     // ==============================
 
     const character =
@@ -713,7 +996,7 @@ async function requestMotherHouse(
             false,
 
           error:
-            "Este personagem já possui uma House mãe.",
+            "Este personagem já pertence a uma Crônica.",
         });
     }
 
@@ -732,29 +1015,13 @@ async function requestMotherHouse(
             false,
 
           error:
-            "Este personagem já possui uma solicitação de House aguardando aprovação.",
+            "Este personagem já possui uma solicitação de Crônica aguardando aprovação.",
         });
     }
 
 
     // ==============================
     // Create request
-    //
-    // IMPORTANTE:
-    //
-    // Usamos updateOne em vez de
-    // character.save().
-    //
-    // Personagens antigos podem não
-    // possuir campos hoje obrigatórios,
-    // como clan e sect.
-    //
-    // O save() validaria novamente todo
-    // o documento e poderia impedir a
-    // alteração de pendingMotherHouse.
-    //
-    // Aqui alteramos somente o campo
-    // necessário.
     // ==============================
 
     const result =
@@ -785,10 +1052,6 @@ async function requestMotherHouse(
       );
 
 
-    // ==============================
-    // Race/state protection
-    // ==============================
-
     if (
       result.modifiedCount !==
       1
@@ -805,16 +1068,12 @@ async function requestMotherHouse(
     }
 
 
-    // ==============================
-    // Success
-    // ==============================
-
     return res.json({
       ok:
         true,
 
       message:
-        "Solicitação enviada para a House.",
+        "Solicitação enviada para a Crônica.",
 
       pendingMotherHouse: {
         id:
@@ -827,7 +1086,7 @@ async function requestMotherHouse(
 
   } catch (error) {
     console.error(
-      "[CHARACTER] Erro ao solicitar House mãe:",
+      "[CHARACTER] Erro ao solicitar Crônica:",
       error
     );
 
@@ -839,7 +1098,7 @@ async function requestMotherHouse(
           false,
 
         error:
-          "Não foi possível solicitar o vínculo com a House.",
+          "Não foi possível solicitar o vínculo com a Crônica.",
       });
   }
 }
@@ -962,7 +1221,7 @@ async function deleteCharacter(
 
 
     // ==============================
-    // House protection
+    // Chronicle protection
     // ==============================
 
     if (
@@ -975,13 +1234,13 @@ async function deleteCharacter(
             false,
 
           error:
-            "Personagens vinculados a uma House não podem ser excluídos por aqui. A exclusão deve ser realizada pela House.",
+            "Personagens vinculados a uma Crônica não podem ser excluídos por aqui. A exclusão deve ser realizada pela própria Crônica.",
         });
     }
 
 
     // ==============================
-    // Load user password
+    // User
     // ==============================
 
     const user =
@@ -1033,12 +1292,6 @@ async function deleteCharacter(
 
     // ==============================
     // Delete
-    //
-    // Solicitação pendente de House
-    // NÃO bloqueia a exclusão.
-    //
-    // Somente motherHouse aprovada
-    // protege o personagem.
     // ==============================
 
     const result =
@@ -1068,14 +1321,10 @@ async function deleteCharacter(
             false,
 
           error:
-            "O personagem não pôde ser excluído. Verifique se ele foi vinculado a uma House.",
+            "O personagem não pôde ser excluído. Verifique se ele foi vinculado a uma Crônica.",
         });
     }
 
-
-    // ==============================
-    // Success
-    // ==============================
 
     return res.json({
       ok:
@@ -1121,6 +1370,7 @@ module.exports = {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  updateCharacterConcept,
   requestMotherHouse,
   deleteCharacter,
 };

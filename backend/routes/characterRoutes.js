@@ -13,6 +13,7 @@ const {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  updateCharacterConcept,
   requestMotherHouse,
   deleteCharacter,
 } = require(
@@ -102,6 +103,20 @@ router.post(
   requireVerifiedEmail,
 
   createCharacter
+);
+
+
+// ==============================
+// Update Concept
+// ==============================
+
+router.patch(
+  "/:characterId/concept",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateCharacterConcept
 );
 
 
