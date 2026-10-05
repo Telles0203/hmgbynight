@@ -135,3 +135,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 discloud/backup/
+
+# Repositorios Git internos
+*.git/
