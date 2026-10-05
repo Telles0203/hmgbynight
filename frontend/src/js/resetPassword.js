@@ -1,3 +1,107 @@
+let resetPasswordToken =
+  null;
+
+
+// ==============================
+// Token handling
+// ==============================
+
+function captureResetPasswordTokenFromUrl() {
+  const currentRoute =
+    window.location.pathname
+      .replace(
+        /^\/+|\/+$/g,
+        ""
+      )
+      .trim();
+
+
+  if (
+    currentRoute !==
+    "reset-password"
+  ) {
+    return null;
+  }
+
+
+  const currentUrl =
+    new URL(
+      window.location.href
+    );
+
+
+  const rawToken =
+    currentUrl.searchParams.get(
+      "token"
+    );
+
+
+  const token =
+    typeof rawToken ===
+      "string"
+      ? rawToken.trim()
+      : "";
+
+
+  if (
+    currentUrl.searchParams.has(
+      "token"
+    )
+  ) {
+    currentUrl.searchParams.delete(
+      "token"
+    );
+
+
+    const remainingQuery =
+      currentUrl.searchParams.toString();
+
+
+    const cleanUrl =
+      currentUrl.pathname +
+      (
+        remainingQuery
+          ? `?${remainingQuery}`
+          : ""
+      ) +
+      currentUrl.hash;
+
+
+    history.replaceState(
+      history.state,
+      "",
+      cleanUrl
+    );
+  }
+
+
+  return token || null;
+}
+
+
+function getResetPasswordToken() {
+  return resetPasswordToken;
+}
+
+
+/*
+ * O script é carregado com defer.
+ *
+ * Capturamos o token antes do
+ * DOMContentLoaded do router e
+ * removemos imediatamente da URL.
+ *
+ * O token permanece somente em
+ * memória durante esta sessão da página.
+ */
+resetPasswordToken =
+  captureResetPasswordTokenFromUrl();
+
+
+// ==============================
+// Alerts
+// ==============================
+
 function showResetPasswordAlert(
   message,
   type = "danger"
@@ -7,11 +111,15 @@ function showResetPasswordAlert(
       "resetPasswordAlert"
     );
 
+
   if (!alertBox) {
     return;
   }
 
-  alertBox.className = "alert";
+
+  alertBox.className =
+    "alert";
+
 
   alertBox.classList.add(
     type === "success"
@@ -19,9 +127,16 @@ function showResetPasswordAlert(
       : "alert-danger"
   );
 
-  alertBox.textContent = message;
-  alertBox.classList.remove("d-none");
+
+  alertBox.textContent =
+    message;
+
+
+  alertBox.classList.remove(
+    "d-none"
+  );
 }
+
 
 function hideResetPasswordAlert() {
   const alertBox =
@@ -29,28 +144,32 @@ function hideResetPasswordAlert() {
       "resetPasswordAlert"
     );
 
+
   if (!alertBox) {
     return;
   }
 
-  alertBox.textContent = "";
-  alertBox.className = "alert d-none";
+
+  alertBox.textContent =
+    "";
+
+
+  alertBox.className =
+    "alert d-none";
 }
 
-function getResetPasswordToken() {
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
 
-  return params.get("token");
-}
+// ==============================
+// Page load
+// ==============================
 
 function onResetPasswordPageLoaded() {
   hideResetPasswordAlert();
 
+
   const token =
     getResetPasswordToken();
+
 
   if (!token) {
     showResetPasswordAlert(
@@ -60,38 +179,56 @@ function onResetPasswordPageLoaded() {
   }
 }
 
+
+// ==============================
+// Form submit
+// ==============================
+
 document.addEventListener(
   "submit",
-  async (event) => {
+
+  async (
+    event
+  ) => {
     if (
-      !(event.target instanceof HTMLFormElement) ||
+      !(
+        event.target instanceof
+        HTMLFormElement
+      ) ||
       event.target.id !==
         "resetPasswordForm"
     ) {
       return;
     }
 
+
     event.preventDefault();
+
 
     hideResetPasswordAlert();
 
+
     const token =
       getResetPasswordToken();
+
 
     const password =
       document.getElementById(
         "newPassword"
       )?.value;
 
+
     const confirmPassword =
       document.getElementById(
         "confirmPassword"
       )?.value;
 
+
     const button =
       document.getElementById(
         "resetPasswordButton"
       );
+
 
     if (!token) {
       showResetPasswordAlert(
@@ -102,7 +239,11 @@ document.addEventListener(
       return;
     }
 
-    if (!password || !confirmPassword) {
+
+    if (
+      !password ||
+      !confirmPassword
+    ) {
       showResetPasswordAlert(
         "Preencha os dois campos de senha.",
         "danger"
@@ -111,7 +252,10 @@ document.addEventListener(
       return;
     }
 
-    if (password.length < 6) {
+
+    if (
+      password.length < 6
+    ) {
       showResetPasswordAlert(
         "A senha deve possuir pelo menos 6 caracteres.",
         "danger"
@@ -120,7 +264,11 @@ document.addEventListener(
       return;
     }
 
-    if (password !== confirmPassword) {
+
+    if (
+      password !==
+      confirmPassword
+    ) {
       showResetPasswordAlert(
         "As senhas não coincidem.",
         "danger"
@@ -129,37 +277,54 @@ document.addEventListener(
       return;
     }
 
-    let passwordChanged = false;
+
+    let passwordChanged =
+      false;
+
 
     try {
       if (button) {
-        button.disabled = true;
+        button.disabled =
+          true;
+
         button.textContent =
           "Alterando...";
       }
 
-      const response = await fetch(
-        "/api/auth/reset-password",
-        {
-          method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+      const response =
+        await fetch(
+          "/api/auth/reset-password",
+          {
+            method:
+              "POST",
 
-          body: JSON.stringify({
-            token,
-            password,
-          }),
-        }
-      );
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-      const data = await response
-        .json()
-        .catch(() => ({}));
+            body:
+              JSON.stringify({
+                token,
+                password,
+              }),
+          }
+        );
 
-      if (!response.ok || !data?.ok) {
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+
+      if (
+        !response.ok ||
+        !data?.ok
+      ) {
         showResetPasswordAlert(
           data?.error ||
             "Não foi possível alterar a senha.",
@@ -169,75 +334,115 @@ document.addEventListener(
         return;
       }
 
-      passwordChanged = true;
+
+      passwordChanged =
+        true;
+
+
+      /*
+       * O token já foi utilizado com
+       * sucesso no backend.
+       *
+       * Também o removemos da memória
+       * desta página.
+       */
+      resetPasswordToken =
+        null;
+
 
       showResetPasswordAlert(
         "Senha alterada com sucesso. Você já pode entrar com a nova senha.",
         "success"
       );
 
+
       const newPasswordInput =
         document.getElementById(
           "newPassword"
         );
+
 
       const confirmPasswordInput =
         document.getElementById(
           "confirmPassword"
         );
 
+
       if (newPasswordInput) {
-        newPasswordInput.value = "";
-        newPasswordInput.disabled = true;
+        newPasswordInput.value =
+          "";
+
+        newPasswordInput.disabled =
+          true;
       }
 
-      if (confirmPasswordInput) {
-        confirmPasswordInput.value = "";
-        confirmPasswordInput.disabled = true;
+
+      if (
+        confirmPasswordInput
+      ) {
+        confirmPasswordInput.value =
+          "";
+
+        confirmPasswordInput.disabled =
+          true;
       }
+
 
       if (button) {
-        button.disabled = false;
-        button.type = "button";
+        button.disabled =
+          false;
+
+        button.type =
+          "button";
+
         button.textContent =
           "Ir para login";
 
-        button.onclick = async () => {
-          if (
-            typeof window.loadPage ===
-            "function"
-          ) {
-            await window.loadPage(
-              "login"
-            );
-          } else {
-            window.location.href =
-              "/login";
-          }
-        };
+
+        button.onclick =
+          async () => {
+            if (
+              typeof window.loadPage ===
+              "function"
+            ) {
+              await window.loadPage(
+                "login"
+              );
+
+            } else {
+              window.location.href =
+                "/login";
+            }
+          };
       }
+
     } catch (error) {
       console.error(
         "[RESET PASSWORD] Erro:",
         error
       );
 
+
       showResetPasswordAlert(
         "Erro de conexão com o servidor.",
         "danger"
       );
+
     } finally {
       if (
         button &&
         !passwordChanged
       ) {
-        button.disabled = false;
+        button.disabled =
+          false;
+
         button.textContent =
           "Alterar senha";
       }
     }
   }
 );
+
 
 window.onResetPasswordPageLoaded =
   onResetPasswordPageLoaded;
