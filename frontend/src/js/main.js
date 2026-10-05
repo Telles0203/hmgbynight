@@ -11,10 +11,6 @@ let houseModulesPromise =
   null;
 
 
-// ==============================
-// Main stylesheet
-// ==============================
-
 function loadMainStyles() {
   if (mainStylesPromise) {
     return mainStylesPromise;
@@ -96,10 +92,6 @@ function loadMainStyles() {
 }
 
 
-// ==============================
-// Module loader
-// ==============================
-
 async function loadEmailValidationModule() {
   if (
     !emailValidationModulePromise
@@ -165,10 +157,6 @@ async function loadHouseModules() {
 }
 
 
-// ==============================
-// Main
-// ==============================
-
 async function loadMainUser(
   forceRefresh = false
 ) {
@@ -211,8 +199,8 @@ async function loadMainUser(
   if (
     verifiedMainContent
   ) {
-    verifiedMainContent.style.display =
-      "none";
+    verifiedMainContent.hidden =
+      true;
   }
 
 
@@ -252,10 +240,6 @@ async function loadMainUser(
     }
 
 
-    // ==============================
-    // Email não validado
-    // ==============================
-
     if (
       user.isEmailValid !==
       true
@@ -280,10 +264,6 @@ async function loadMainUser(
     }
 
 
-    // ==============================
-    // Email validado
-    // ==============================
-
     if (
       emailValidationContainer
     ) {
@@ -303,14 +283,10 @@ async function loadMainUser(
     if (
       verifiedMainContent
     ) {
-      verifiedMainContent.style.display =
-        "block";
+      verifiedMainContent.hidden =
+        false;
     }
 
-
-    // ==============================
-    // Load Main modules
-    // ==============================
 
     await Promise.all([
 
@@ -354,15 +330,7 @@ async function loadMainUser(
 }
 
 
-// ==============================
-// Initialize modules
-// ==============================
-
 async function initializeMainModules() {
-
-  // ==============================
-  // Characters
-  // ==============================
 
   if (
     typeof window.setupCharacterFormHandlers ===
@@ -388,10 +356,6 @@ async function initializeMainModules() {
   }
 
 
-  // ==============================
-  // Houses
-  // ==============================
-
   if (
     typeof window.setupHouseFormHandlers ===
     "function"
@@ -408,10 +372,6 @@ async function initializeMainModules() {
   }
 }
 
-
-// ==============================
-// Email validation
-// ==============================
 
 async function showEmailValidation(
   user,
@@ -461,10 +421,6 @@ async function showEmailValidation(
   }
 }
 
-
-// ==============================
-// Reset view
-// ==============================
 
 function resetMainView() {
 
@@ -516,24 +472,20 @@ function resetMainView() {
 }
 
 
-// ==============================
-// Helpers
-// ==============================
-
 function showMainPage(
   loading,
   main
 ) {
 
   if (loading) {
-    loading.style.display =
-      "none";
+    loading.hidden =
+      true;
   }
 
 
   if (main) {
-    main.style.display =
-      "block";
+    main.hidden =
+      false;
   }
 }
 
@@ -557,10 +509,6 @@ function showMainError(
   `;
 }
 
-
-// ==============================
-// Redirect
-// ==============================
 
 async function redirectToLogin() {
 
@@ -589,10 +537,6 @@ async function redirectToLogin() {
     "/login";
 }
 
-
-// ==============================
-// Global
-// ==============================
 
 window.loadMainUser =
   loadMainUser;
