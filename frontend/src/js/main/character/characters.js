@@ -206,13 +206,57 @@ function renderCharacters(
 
 
       <p class="character-delete-note">
-        Personagens vinculados a uma House
+        Personagens vinculados a uma Crônica
         não podem ser excluídos por esta tela.
-        A exclusão deve ser realizada pela própria House.
+        A exclusão deve ser realizada pela própria Crônica.
       </p>
 
     </div>
   `;
+
+
+  // =============================================
+  // Bootstrap popovers
+  // =============================================
+
+  setupCharacterPopovers(
+    container
+  );
+}
+
+
+// =============================================
+// Bootstrap popovers
+// =============================================
+
+function setupCharacterPopovers(
+  container
+) {
+  if (
+    !window.bootstrap?.Popover
+  ) {
+    console.warn(
+      "[CHARACTER] Bootstrap Popover não disponível."
+    );
+
+    return;
+  }
+
+
+  const elements =
+    container.querySelectorAll(
+      '[data-bs-toggle="popover"]'
+    );
+
+
+  elements.forEach(
+    (element) => {
+      window.bootstrap.Popover
+        .getOrCreateInstance(
+          element
+        );
+    }
+  );
 }
 
 
@@ -362,7 +406,7 @@ function createCharacterCard(
 
 
 // =============================================
-// House summary
+// Chronicle summary
 // =============================================
 
 function getCharacterHouseSummary(
@@ -385,17 +429,17 @@ function getCharacterHouseSummary(
       character
         .pendingMotherHouse
         .name ||
-      "House"
+      "Crônica"
     } · Aguardando aprovação`;
   }
 
 
-  return "Sem House";
+  return "Sem Crônica";
 }
 
 
 // =============================================
-// House request completed
+// Chronicle request completed
 // =============================================
 
 async function handleCharacterHouseRequestCompleted({
@@ -557,10 +601,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Delete
-  // =============================================
-
   const target =
     event.target instanceof Element
       ? event.target
@@ -571,6 +611,27 @@ async function handleCharacterListClick(
     return;
   }
 
+
+  // =============================================
+  // Generation help
+  //
+  // Bootstrap handles the Popover.
+  // We stop here so the click does not
+  // trigger any character action.
+  // =============================================
+
+  if (
+    target.closest(
+      ".character-generation-help"
+    )
+  ) {
+    return;
+  }
+
+
+  // =============================================
+  // Delete
+  // =============================================
 
   const deleteAction =
     target.closest(
@@ -598,6 +659,7 @@ async function handleCharacterListClick(
     ) {
       return;
     }
+
   } else if (
     handleCharacterDeleteClick(
       event,
@@ -609,7 +671,7 @@ async function handleCharacterListClick(
 
 
   // =============================================
-  // House
+  // Chronicle
   // =============================================
 
   const houseAction =
@@ -636,6 +698,7 @@ async function handleCharacterListClick(
     ) {
       return;
     }
+
   } else if (
     handleCharacterHouseClick(
       event,
@@ -676,9 +739,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // Se houver um campo sendo editado,
-  // salva antes de fechar/trocar personagem.
 
   const saved =
     await saveActiveCharacterInlineEdit();

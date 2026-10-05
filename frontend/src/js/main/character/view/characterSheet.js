@@ -44,7 +44,9 @@ export function createCharacterSheet({
               </h4>
 
 
+              <!-- ============================== -->
               <!-- CONCEITO -->
+              <!-- ============================== -->
 
               <div
                 class="character-sheet-row character-editable-row"
@@ -87,7 +89,9 @@ export function createCharacterSheet({
               </div>
 
 
+              <!-- ============================== -->
               <!-- CLÃ -->
+              <!-- ============================== -->
 
               <div class="character-sheet-row">
 
@@ -102,22 +106,45 @@ export function createCharacterSheet({
               </div>
 
 
+              <!-- ============================== -->
               <!-- GERAÇÃO -->
+              <!-- ============================== -->
 
               <div class="character-sheet-row">
 
-                <span class="character-sheet-label">
+                <span
+                  class="character-sheet-label d-inline-flex align-items-center gap-1"
+                >
                   Geração
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary rounded-circle p-0 character-generation-help"
+                    aria-label="Informações sobre Geração"
+                    data-bs-toggle="popover"
+                    data-bs-trigger="focus"
+                    data-bs-placement="right"
+                    data-bs-container="body"
+                    data-bs-custom-class="character-generation-popover"
+                    data-bs-title="Geração"
+                    data-bs-content="Todo personagem começa na 13ª Geração. Ela não pode ser alterada diretamente neste campo. Ela somente poderá ser reduzida através do Antecedente Geração."
+                  >
+                    ?
+                  </button>
+
                 </span>
 
+
                 <span class="character-sheet-value">
-                  —
+                  13ª
                 </span>
 
               </div>
 
 
+              <!-- ============================== -->
               <!-- SEITA -->
+              <!-- ============================== -->
 
               <div class="character-sheet-row">
 
@@ -132,12 +159,14 @@ export function createCharacterSheet({
               </div>
 
 
-              <!-- HOUSE -->
+              <!-- ============================== -->
+              <!-- CRÔNICA -->
+              <!-- ============================== -->
 
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
-                  House
+                  Crônica
                 </span>
 
                 <span class="character-sheet-value">
@@ -376,7 +405,9 @@ export function createCharacterSheet({
           >
 
 
+            <!-- ============================== -->
             <!-- HABILIDADES -->
+            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -410,7 +441,9 @@ export function createCharacterSheet({
             </section>
 
 
+            <!-- ============================== -->
             <!-- DISCIPLINAS -->
+            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -457,7 +490,9 @@ export function createCharacterSheet({
             </section>
 
 
+            <!-- ============================== -->
             <!-- ANTECEDENTES -->
+            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"

@@ -900,6 +900,130 @@ svg {
 
 
 /* ==============================
+   Generation help button
+   ============================== */
+
+.character-generation-help {
+    width:
+        18px;
+
+    height:
+        18px;
+
+    min-width:
+        18px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        0;
+
+    color:
+        #8e8e8e;
+
+    border-color:
+        #555555;
+
+    font-size:
+        0.65rem;
+
+    line-height:
+        1;
+
+    cursor:
+        help;
+}
+
+.character-generation-help:hover,
+.character-generation-help:focus {
+    color:
+        #ffffff;
+
+    background-color:
+        #491016;
+
+    border-color:
+        #dc3545;
+
+    box-shadow:
+        none;
+}
+
+
+/* ==============================
+   Generation help popover
+   ============================== */
+
+.character-generation-popover {
+    --bs-popover-bg:
+        #181818;
+
+    --bs-popover-border-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.65
+        );
+
+    --bs-popover-header-bg:
+        #181818;
+
+    --bs-popover-header-color:
+        #ffffff;
+
+    --bs-popover-body-color:
+        #d8d8d8;
+
+    max-width:
+        320px;
+}
+
+.character-generation-popover
+.popover-header {
+    margin:
+        0;
+
+    color:
+        #ffffff;
+
+    background-color:
+        #181818;
+
+    border-bottom:
+        1px solid
+        rgba(
+            220,
+            53,
+            69,
+            0.45
+        );
+
+    font-weight:
+        600;
+}
+
+.character-generation-popover
+.popover-body {
+    color:
+        #d8d8d8;
+
+    background-color:
+        #181818;
+
+    line-height:
+        1.55;
+}
+
+
+/* ==============================
    Resources
    ============================== */
 
@@ -1073,6 +1197,14 @@ svg {
 
         font-size:
             0.62rem;
+    }
+
+    .character-generation-popover {
+        max-width:
+            calc(
+                100vw -
+                2rem
+            );
     }
 }
 
