@@ -42,6 +42,15 @@ const {
 );
 
 
+const {
+  getCoreArchetypes,
+  getCoreArchetypeLabel,
+  isCoreArchetypeRef,
+} = require(
+  "../data/vampire/archetypes"
+);
+
+
 const CHARACTER_NAME_MIN_LENGTH =
   2;
 
@@ -52,9 +61,9 @@ const CHARACTER_CONCEPT_MAX_LENGTH =
   120;
 
 
-// ==============================
+// =============================================
 // Helpers
-// ==============================
+// =============================================
 
 function serializeHouse(
   house
@@ -89,9 +98,71 @@ function serializeHouse(
 }
 
 
-// ==============================
+// =============================================
+// Archetype serializer
+// =============================================
+
+function serializeArchetype(
+  value
+) {
+  const ref =
+    String(
+      value || ""
+    );
+
+
+  if (!ref) {
+    return {
+      ref:
+        "",
+
+      label:
+        "",
+    };
+  }
+
+
+  // =============================================
+  // Core
+  // =============================================
+
+  if (
+    isCoreArchetypeRef(
+      ref
+    )
+  ) {
+    return {
+      ref,
+
+      label:
+        getCoreArchetypeLabel(
+          ref
+        ),
+    };
+  }
+
+
+  // =============================================
+  // Chronicle
+  //
+  // Ainda não implementado.
+  //
+  // Mantemos a referência para não perder
+  // dados quando esse suporte for adicionado.
+  // =============================================
+
+  return {
+    ref,
+
+    label:
+      ref,
+  };
+}
+
+
+// =============================================
 // Character options
-// ==============================
+// =============================================
 
 async function getCharacterOptions(
   req,
@@ -145,9 +216,9 @@ async function getCharacterOptions(
 }
 
 
-// ==============================
+// =============================================
 // Create PC
-// ==============================
+// =============================================
 
 async function createCharacter(
   req,
@@ -192,9 +263,9 @@ async function createCharacter(
       ).trim();
 
 
-    // ==============================
+    // =============================================
     // Name
-    // ==============================
+    // =============================================
 
     if (!cleanName) {
       return res
@@ -227,9 +298,9 @@ async function createCharacter(
     }
 
 
-    // ==============================
+    // =============================================
     // Sect
-    // ==============================
+    // =============================================
 
     if (!cleanSect) {
       return res
@@ -261,9 +332,9 @@ async function createCharacter(
     }
 
 
-    // ==============================
+    // =============================================
     // Clan
-    // ==============================
+    // =============================================
 
     if (!cleanClan) {
       return res
@@ -295,9 +366,9 @@ async function createCharacter(
     }
 
 
-    // ==============================
+    // =============================================
     // Optional mother Chronicle
-    // ==============================
+    // =============================================
 
     let requestedHouse =
       null;
@@ -349,9 +420,9 @@ async function createCharacter(
     }
 
 
-    // ==============================
+    // =============================================
     // Create character
-    // ==============================
+    // =============================================
 
     const character =
       await Character.create({
@@ -362,6 +433,12 @@ async function createCharacter(
           "PC",
 
         concept:
+          "",
+
+        nature:
+          "",
+
+        demeanor:
           "",
 
         sect:
@@ -397,6 +474,18 @@ async function createCharacter(
 
           concept:
             character.concept,
+
+          nature:
+            "",
+
+          natureLabel:
+            "",
+
+          demeanor:
+            "",
+
+          demeanorLabel:
+            "",
 
           type:
             character.type,
@@ -446,9 +535,9 @@ async function createCharacter(
 }
 
 
-// ==============================
+// =============================================
 // List user's PCs
-// ==============================
+// =============================================
 
 async function listCharacters(
   req,
@@ -465,7 +554,7 @@ async function listCharacters(
       })
 
         .select(
-          "name concept type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name concept nature demeanor type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -498,48 +587,74 @@ async function listCharacters(
 
       characters:
         characters.map(
-          (character) => ({
-            id:
-              character._id,
+          (character) => {
+            const nature =
+              serializeArchetype(
+                character.nature
+              );
 
-            name:
-              character.name,
 
-            concept:
-              character.concept ||
-              "",
+            const demeanor =
+              serializeArchetype(
+                character.demeanor
+              );
 
-            type:
-              character.type,
 
-            sect:
-              character.sect,
+            return {
+              id:
+                character._id,
 
-            clan:
-              character.clan,
+              name:
+                character.name,
 
-            clanDisplayName:
-              getClanDisplayName(
+              concept:
+                character.concept ||
+                "",
+
+              nature:
+                nature.ref,
+
+              natureLabel:
+                nature.label,
+
+              demeanor:
+                demeanor.ref,
+
+              demeanorLabel:
+                demeanor.label,
+
+              type:
+                character.type,
+
+              sect:
                 character.sect,
-                character.clan
-              ),
 
-            motherHouse:
-              serializeHouse(
-                character.motherHouse
-              ),
+              clan:
+                character.clan,
 
-            pendingMotherHouse:
-              serializeHouse(
-                character.pendingMotherHouse
-              ),
+              clanDisplayName:
+                getClanDisplayName(
+                  character.sect,
+                  character.clan
+                ),
 
-            createdAt:
-              character.createdAt,
+              motherHouse:
+                serializeHouse(
+                  character.motherHouse
+                ),
 
-            updatedAt:
-              character.updatedAt,
-          })
+              pendingMotherHouse:
+                serializeHouse(
+                  character.pendingMotherHouse
+                ),
+
+              createdAt:
+                character.createdAt,
+
+              updatedAt:
+                character.updatedAt,
+            };
+          }
         ),
     });
 
@@ -563,11 +678,11 @@ async function listCharacters(
 }
 
 
-// ==============================
-// Update Concept
-// ==============================
+// =============================================
+// Get available Archetypes
+// =============================================
 
-async function updateCharacterConcept(
+async function getCharacterArchetypes(
   req,
   res
 ) {
@@ -583,10 +698,6 @@ async function updateCharacterConcept(
       ).trim();
 
 
-    // ==============================
-    // Authentication
-    // ==============================
-
     if (!userId) {
       return res
         .status(401)
@@ -599,10 +710,6 @@ async function updateCharacterConcept(
         });
     }
 
-
-    // ==============================
-    // Character ID
-    // ==============================
 
     if (
       !characterId ||
@@ -622,9 +729,146 @@ async function updateCharacterConcept(
     }
 
 
-    // ==============================
-    // Concept
-    // ==============================
+    const character =
+      await Character.findOne({
+        _id:
+          characterId,
+
+        ownerUser:
+          userId,
+
+        type:
+          "PC",
+      }).select(
+        "_id motherHouse pendingMotherHouse"
+      );
+
+
+    if (!character) {
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem não encontrado.",
+        });
+    }
+
+
+    // =============================================
+    // Resolution rules
+    //
+    // Sem Crônica:
+    // catálogo padrão.
+    //
+    // Aguardando Crônica:
+    // catálogo padrão.
+    //
+    // Crônica aprovada:
+    // futuramente:
+    // padrão + personalizados - desativados.
+    //
+    // Por enquanto o endpoint já fica
+    // preparado para essa resolução.
+    // =============================================
+
+    const archetypes =
+      getCoreArchetypes();
+
+
+    return res.json({
+      ok:
+        true,
+
+      source:
+        character.motherHouse
+          ? "chronicle"
+          : "core",
+
+      archetypes:
+        archetypes.map(
+          (archetype) => ({
+            ref:
+              archetype.ref,
+
+            label:
+              archetype.label,
+          })
+        ),
+    });
+
+  } catch (error) {
+    console.error(
+      "[CHARACTER] Erro ao carregar arquétipos:",
+      error
+    );
+
+
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível carregar as opções de Natureza e Comportamento.",
+      });
+  }
+}
+
+
+// =============================================
+// Update Concept
+// =============================================
+
+async function updateCharacterConcept(
+  req,
+  res
+) {
+  try {
+    const userId =
+      req.user?.sub;
+
+
+    const characterId =
+      String(
+        req.params?.characterId ||
+          ""
+      ).trim();
+
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Não autenticado.",
+        });
+    }
+
+
+    if (
+      !characterId ||
+      !mongoose.isValidObjectId(
+        characterId
+      )
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem inválido.",
+        });
+    }
+
 
     if (
       typeof req.body?.concept !==
@@ -662,10 +906,6 @@ async function updateCharacterConcept(
     }
 
 
-    // ==============================
-    // Character ownership/state
-    // ==============================
-
     const character =
       await Character.findOne({
         _id:
@@ -694,19 +934,9 @@ async function updateCharacterConcept(
     }
 
 
-    // ==============================
+    // =============================================
     // Chronicle protection
-    //
-    // Sem Crônica:
-    // pode alterar diretamente.
-    //
-    // Solicitação pendente:
-    // pode alterar diretamente.
-    //
-    // Crônica aprovada:
-    // alteração deverá passar
-    // por aprovação da Crônica.
-    // ==============================
+    // =============================================
 
     if (
       character.motherHouse
@@ -722,10 +952,6 @@ async function updateCharacterConcept(
         });
     }
 
-
-    // ==============================
-    // No change
-    // ==============================
 
     if (
       String(
@@ -748,21 +974,6 @@ async function updateCharacterConcept(
       });
     }
 
-
-    // ==============================
-    // Update only Concept
-    //
-    // Não usamos character.save().
-    //
-    // Isso evita validar novamente
-    // todos os campos de personagens
-    // antigos.
-    //
-    // O motherHouse:null também
-    // protege contra uma aprovação
-    // da Crônica acontecendo entre
-    // a leitura e a gravação.
-    // ==============================
 
     const result =
       await Character.updateOne(
@@ -837,9 +1048,321 @@ async function updateCharacterConcept(
 }
 
 
-// ==============================
+// =============================================
+// Update Archetype helper
+// =============================================
+
+async function updateCharacterArchetype(
+  req,
+  res,
+  field
+) {
+  try {
+    const userId =
+      req.user?.sub;
+
+
+    const characterId =
+      String(
+        req.params?.characterId ||
+          ""
+      ).trim();
+
+
+    const rawValue =
+      req.body?.[
+        field
+      ];
+
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Não autenticado.",
+        });
+    }
+
+
+    if (
+      !characterId ||
+      !mongoose.isValidObjectId(
+        characterId
+      )
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem inválido.",
+        });
+    }
+
+
+    if (
+      typeof rawValue !==
+      "string"
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Arquétipo inválido.",
+        });
+    }
+
+
+    const value =
+      rawValue.trim();
+
+
+    // =============================================
+    // Empty is allowed
+    // =============================================
+
+    if (
+      value &&
+      !isCoreArchetypeRef(
+        value
+      )
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "A opção selecionada não está disponível.",
+        });
+    }
+
+
+    const character =
+      await Character.findOne({
+        _id:
+          characterId,
+
+        ownerUser:
+          userId,
+
+        type:
+          "PC",
+      }).select(
+        `_id ${field} motherHouse pendingMotherHouse`
+      );
+
+
+    if (!character) {
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem não encontrado.",
+        });
+    }
+
+
+    // =============================================
+    // Approved Chronicle
+    //
+    // No futuro esta alteração vira uma
+    // solicitação para aprovação.
+    // =============================================
+
+    if (
+      character.motherHouse
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Este personagem já pertence a uma Crônica. Alterações deverão ser aprovadas pela Crônica.",
+        });
+    }
+
+
+    const currentValue =
+      String(
+        character[
+          field
+        ] ||
+        ""
+      );
+
+
+    if (
+      currentValue ===
+      value
+    ) {
+      return res.json({
+        ok:
+          true,
+
+        character: {
+          id:
+            character._id,
+
+          [
+            field
+          ]:
+            value,
+
+          [
+            `${field}Label`
+          ]:
+            getCoreArchetypeLabel(
+              value
+            ),
+        },
+      });
+    }
+
+
+    // =============================================
+    // Atomic update
+    //
+    // pendingMotherHouse NÃO bloqueia.
+    //
+    // Somente motherHouse aprovada bloqueia.
+    // =============================================
+
+    const result =
+      await Character.updateOne(
+        {
+          _id:
+            characterId,
+
+          ownerUser:
+            userId,
+
+          type:
+            "PC",
+
+          motherHouse:
+            null,
+        },
+
+        {
+          $set: {
+            [
+              field
+            ]:
+              value,
+          },
+        }
+      );
+
+
+    if (
+      result.matchedCount !==
+      1
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "O personagem foi vinculado a uma Crônica antes da alteração ser concluída. A mudança deverá ser aprovada pela Crônica.",
+        });
+    }
+
+
+    return res.json({
+      ok:
+        true,
+
+      character: {
+        id:
+          character._id,
+
+        [
+          field
+        ]:
+          value,
+
+        [
+          `${field}Label`
+        ]:
+          getCoreArchetypeLabel(
+            value
+          ),
+      },
+    });
+
+  } catch (error) {
+    console.error(
+      `[CHARACTER] Erro ao atualizar ${field}:`,
+      error
+    );
+
+
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível atualizar o arquétipo.",
+      });
+  }
+}
+
+
+// =============================================
+// Update Nature
+// =============================================
+
+async function updateCharacterNature(
+  req,
+  res
+) {
+  return updateCharacterArchetype(
+    req,
+    res,
+    "nature"
+  );
+}
+
+
+// =============================================
+// Update Demeanor
+// =============================================
+
+async function updateCharacterDemeanor(
+  req,
+  res
+) {
+  return updateCharacterArchetype(
+    req,
+    res,
+    "demeanor"
+  );
+}
+
+
+// =============================================
 // Request mother Chronicle
-// ==============================
+// =============================================
 
 async function requestMotherHouse(
   req,
@@ -864,10 +1387,6 @@ async function requestMotherHouse(
       ).trim();
 
 
-    // ==============================
-    // Authentication
-    // ==============================
-
     if (!userId) {
       return res
         .status(401)
@@ -880,10 +1399,6 @@ async function requestMotherHouse(
         });
     }
 
-
-    // ==============================
-    // Character
-    // ==============================
 
     if (
       !characterId ||
@@ -902,10 +1417,6 @@ async function requestMotherHouse(
         });
     }
 
-
-    // ==============================
-    // Chronicle
-    // ==============================
 
     if (
       !houseId ||
@@ -950,10 +1461,6 @@ async function requestMotherHouse(
     }
 
 
-    // ==============================
-    // Ownership
-    // ==============================
-
     const character =
       await Character.findOne({
         _id:
@@ -982,10 +1489,6 @@ async function requestMotherHouse(
     }
 
 
-    // ==============================
-    // Already approved
-    // ==============================
-
     if (
       character.motherHouse
     ) {
@@ -1001,10 +1504,6 @@ async function requestMotherHouse(
     }
 
 
-    // ==============================
-    // Already pending
-    // ==============================
-
     if (
       character.pendingMotherHouse
     ) {
@@ -1019,10 +1518,6 @@ async function requestMotherHouse(
         });
     }
 
-
-    // ==============================
-    // Create request
-    // ==============================
 
     const result =
       await Character.updateOne(
@@ -1104,9 +1599,9 @@ async function requestMotherHouse(
 }
 
 
-// ==============================
+// =============================================
 // Delete PC
-// ==============================
+// =============================================
 
 async function deleteCharacter(
   req,
@@ -1128,10 +1623,6 @@ async function deleteCharacter(
       req.body?.currentPassword;
 
 
-    // ==============================
-    // Authentication
-    // ==============================
-
     if (!userId) {
       return res
         .status(401)
@@ -1144,10 +1635,6 @@ async function deleteCharacter(
         });
     }
 
-
-    // ==============================
-    // Character ID
-    // ==============================
 
     if (
       !characterId ||
@@ -1167,10 +1654,6 @@ async function deleteCharacter(
     }
 
 
-    // ==============================
-    // Password
-    // ==============================
-
     if (
       !currentPassword ||
       typeof currentPassword !==
@@ -1187,10 +1670,6 @@ async function deleteCharacter(
         });
     }
 
-
-    // ==============================
-    // Character ownership
-    // ==============================
 
     const character =
       await Character.findOne({
@@ -1220,10 +1699,6 @@ async function deleteCharacter(
     }
 
 
-    // ==============================
-    // Chronicle protection
-    // ==============================
-
     if (
       character.motherHouse
     ) {
@@ -1238,10 +1713,6 @@ async function deleteCharacter(
         });
     }
 
-
-    // ==============================
-    // User
-    // ==============================
 
     const user =
       await User.findById(
@@ -1264,10 +1735,6 @@ async function deleteCharacter(
     }
 
 
-    // ==============================
-    // Verify password
-    // ==============================
-
     const passwordMatches =
       await bcrypt.compare(
         currentPassword,
@@ -1289,10 +1756,6 @@ async function deleteCharacter(
         });
     }
 
-
-    // ==============================
-    // Delete
-    // ==============================
 
     const result =
       await Character.deleteOne({
@@ -1362,15 +1825,18 @@ async function deleteCharacter(
 }
 
 
-// ==============================
+// =============================================
 // Exports
-// ==============================
+// =============================================
 
 module.exports = {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  getCharacterArchetypes,
   updateCharacterConcept,
+  updateCharacterNature,
+  updateCharacterDemeanor,
   requestMotherHouse,
   deleteCharacter,
 };

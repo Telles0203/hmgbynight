@@ -13,7 +13,10 @@ const {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  getCharacterArchetypes,
   updateCharacterConcept,
+  updateCharacterNature,
+  updateCharacterDemeanor,
   requestMotherHouse,
   deleteCharacter,
 } = require(
@@ -33,9 +36,9 @@ const router =
   express.Router();
 
 
-// ==============================
+// =============================================
 // Delete rate limit
-// ==============================
+// =============================================
 
 const characterDeleteLimiter =
   rateLimit({
@@ -64,9 +67,9 @@ const characterDeleteLimiter =
   });
 
 
-// ==============================
+// =============================================
 // Character creation options
-// ==============================
+// =============================================
 
 router.get(
   "/options",
@@ -78,9 +81,9 @@ router.get(
 );
 
 
-// ==============================
+// =============================================
 // List user's PCs
-// ==============================
+// =============================================
 
 router.get(
   "/",
@@ -92,9 +95,9 @@ router.get(
 );
 
 
-// ==============================
+// =============================================
 // Create PC
-// ==============================
+// =============================================
 
 router.post(
   "/",
@@ -106,9 +109,26 @@ router.post(
 );
 
 
-// ==============================
+// =============================================
+// Available Archetypes
+//
+// Futuramente este endpoint resolverá:
+// core + opções da Crônica - desativadas.
+// =============================================
+
+router.get(
+  "/:characterId/archetypes",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  getCharacterArchetypes
+);
+
+
+// =============================================
 // Update Concept
-// ==============================
+// =============================================
 
 router.patch(
   "/:characterId/concept",
@@ -120,9 +140,37 @@ router.patch(
 );
 
 
-// ==============================
-// Request mother House
-// ==============================
+// =============================================
+// Update Nature
+// =============================================
+
+router.patch(
+  "/:characterId/nature",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateCharacterNature
+);
+
+
+// =============================================
+// Update Demeanor
+// =============================================
+
+router.patch(
+  "/:characterId/demeanor",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateCharacterDemeanor
+);
+
+
+// =============================================
+// Request mother Chronicle
+// =============================================
 
 router.post(
   "/:characterId/mother-house-request",
@@ -134,9 +182,9 @@ router.post(
 );
 
 
-// ==============================
+// =============================================
 // Delete PC
-// ==============================
+// =============================================
 
 router.delete(
   "/:characterId",

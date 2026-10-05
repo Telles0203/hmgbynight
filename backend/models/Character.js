@@ -93,6 +93,63 @@ const CharacterSchema =
       },
 
 
+      /*
+       * Natureza.
+       *
+       * Guarda uma REFERÊNCIA para uma opção,
+       * e não uma cópia do nome/descrição.
+       *
+       * Exemplos:
+       *
+       * core:sobrevivente
+       * core:visionario
+       *
+       * Futuramente:
+       *
+       * chronicle:<optionId>
+       *
+       * Isso permite que Crônicas adicionem
+       * opções próprias sem duplicar o catálogo
+       * padrão do sistema.
+       */
+
+      nature: {
+        type:
+          String,
+
+        trim:
+          true,
+
+        maxlength:
+          120,
+
+        default:
+          "",
+      },
+
+
+      /*
+       * Comportamento.
+       *
+       * Utiliza exatamente o mesmo sistema
+       * de referências da Natureza.
+       */
+
+      demeanor: {
+        type:
+          String,
+
+        trim:
+          true,
+
+        maxlength:
+          120,
+
+        default:
+          "",
+      },
+
+
       // ==============================
       // Vampire
       // ==============================
@@ -147,8 +204,16 @@ const CharacterSchema =
 
 
       // ==============================
-      // Approved mother House
+      // Approved mother Chronicle
       // ==============================
+
+      /*
+       * Mantemos internamente o nome
+       * motherHouse por compatibilidade.
+       *
+       * Na interface utilizaremos
+       * o termo Crônica.
+       */
 
       motherHouse: {
         type:
@@ -166,7 +231,7 @@ const CharacterSchema =
 
 
       // ==============================
-      // Pending mother House
+      // Pending mother Chronicle
       // ==============================
 
       pendingMotherHouse: {
@@ -214,7 +279,7 @@ CharacterSchema.pre(
 
 
     // ==============================
-    // NPC must have mother House
+    // NPC must have Chronicle
     // ==============================
 
     if (
@@ -222,7 +287,7 @@ CharacterSchema.pre(
       !this.motherHouse
     ) {
       throw new Error(
-        "Um NPC precisa estar vinculado a uma House."
+        "Um NPC precisa estar vinculado a uma Crônica."
       );
     }
 
@@ -242,7 +307,7 @@ CharacterSchema.pre(
 
 
     // ==============================
-    // NPC cannot have pending House
+    // NPC cannot have pending Chronicle
     // ==============================
 
     if (
@@ -250,7 +315,7 @@ CharacterSchema.pre(
       this.pendingMotherHouse
     ) {
       throw new Error(
-        "Um NPC não pode possuir solicitação pendente de House."
+        "Um NPC não pode possuir solicitação pendente de Crônica."
       );
     }
 
@@ -264,7 +329,7 @@ CharacterSchema.pre(
       this.pendingMotherHouse
     ) {
       throw new Error(
-        "Um personagem não pode possuir House aprovada e solicitação pendente ao mesmo tempo."
+        "Um personagem não pode possuir Crônica aprovada e solicitação pendente ao mesmo tempo."
       );
     }
   }
