@@ -5,6 +5,8 @@
 export function createCharacterSheet({
   characterId,
   concept,
+  natureLabel,
+  demeanorLabel,
   clan,
   sect,
   house,
@@ -12,12 +14,6 @@ export function createCharacterSheet({
   const safeCharacterId =
     escapeSheetHtml(
       characterId
-    );
-
-
-  const safeConcept =
-    escapeSheetHtml(
-      concept || ""
     );
 
 
@@ -44,49 +40,22 @@ export function createCharacterSheet({
               </h4>
 
 
-              <!-- ============================== -->
-              <!-- CONCEITO -->
-              <!-- ============================== -->
+              ${createEditableFieldRow({
+                characterId:
+                  safeCharacterId,
 
-              <div
-                class="character-sheet-row character-editable-row"
-                data-character-id="${safeCharacterId}"
-                data-character-field="concept"
-              >
+                field:
+                  "concept",
 
-                <span class="character-sheet-label">
-                  Conceito
-                </span>
+                label:
+                  "Conceito",
 
+                value:
+                  concept,
 
-                <span
-                  class="character-sheet-value character-editable-value"
-                >
-
-                  <span
-                    class="d-inline-flex align-items-center gap-2 flex-wrap"
-                  >
-
-                    <span class="character-field-display">
-                      ${safeConcept || "—"}
-                    </span>
-
-
-                    <button
-                      type="button"
-                      class="btn btn-link btn-sm text-secondary text-decoration-none p-0 character-inline-edit-button"
-                      data-character-inline-action="edit"
-                      aria-label="Editar conceito"
-                      title="Editar conceito"
-                    >
-                      ✎
-                    </button>
-
-                  </span>
-
-                </span>
-
-              </div>
+                editLabel:
+                  "Editar conceito",
+              })}
 
 
               <!-- ============================== -->
@@ -191,30 +160,40 @@ export function createCharacterSheet({
               </h4>
 
 
-              <div class="character-sheet-row">
+              ${createEditableFieldRow({
+                characterId:
+                  safeCharacterId,
 
-                <span class="character-sheet-label">
-                  Natureza
-                </span>
+                field:
+                  "nature",
 
-                <span class="character-sheet-value">
-                  —
-                </span>
+                label:
+                  "Natureza",
 
-              </div>
+                value:
+                  natureLabel,
+
+                editLabel:
+                  "Editar Natureza",
+              })}
 
 
-              <div class="character-sheet-row">
+              ${createEditableFieldRow({
+                characterId:
+                  safeCharacterId,
 
-                <span class="character-sheet-label">
-                  Comportamento
-                </span>
+                field:
+                  "demeanor",
 
-                <span class="character-sheet-value">
-                  —
-                </span>
+                label:
+                  "Comportamento",
 
-              </div>
+                value:
+                  demeanorLabel,
+
+                editLabel:
+                  "Editar Comportamento",
+              })}
 
 
               <div class="character-sheet-row">
@@ -569,6 +548,83 @@ export function createCharacterSheet({
         </div>
 
       </div>
+
+    </div>
+  `;
+}
+
+
+// =============================================
+// Editable field row
+// =============================================
+
+function createEditableFieldRow({
+  characterId,
+  field,
+  label,
+  value,
+  editLabel,
+}) {
+  const safeField =
+    escapeSheetHtml(
+      field
+    );
+
+
+  const safeLabel =
+    escapeSheetHtml(
+      label
+    );
+
+
+  const safeValue =
+    escapeSheetHtml(
+      value || ""
+    );
+
+
+  const safeEditLabel =
+    escapeSheetHtml(
+      editLabel
+    );
+
+
+  return `
+    <div
+      class="character-sheet-row character-editable-row"
+      data-character-id="${characterId}"
+      data-character-field="${safeField}"
+    >
+
+      <span class="character-sheet-label">
+        ${safeLabel}
+      </span>
+
+
+      <span
+        class="character-sheet-value character-editable-value"
+      >
+
+        <span class="character-inline-display">
+
+          <span class="character-field-display">
+            ${safeValue || "—"}
+          </span>
+
+
+          <button
+            type="button"
+            class="btn btn-link btn-sm text-secondary text-decoration-none p-0 character-inline-edit-button"
+            data-character-inline-action="edit"
+            aria-label="${safeEditLabel}"
+            title="${safeEditLabel}"
+          >
+            ✎
+          </button>
+
+        </span>
+
+      </span>
 
     </div>
   `;

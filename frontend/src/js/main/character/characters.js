@@ -75,7 +75,7 @@ async function loadCharacters() {
     ) {
       throw new Error(
         data?.error ||
-        "Não foi possível carregar os personagens."
+          "Não foi possível carregar os personagens."
       );
     }
 
@@ -392,6 +392,14 @@ function createCharacterCard(
           character.concept ||
           "",
 
+        natureLabel:
+          character.natureLabel ||
+          "",
+
+        demeanorLabel:
+          character.demeanorLabel ||
+          "",
+
         clan,
 
         sect,
@@ -614,10 +622,6 @@ async function handleCharacterListClick(
 
   // =============================================
   // Generation help
-  //
-  // Bootstrap handles the Popover.
-  // We stop here so the click does not
-  // trigger any character action.
   // =============================================
 
   if (

@@ -12,6 +12,12 @@ let activeEditor =
 
 const FIELD_CONFIG = {
   concept: {
+    label:
+      "Conceito",
+
+    editorType:
+      "text",
+
     property:
       "concept",
 
@@ -23,6 +29,48 @@ const FIELD_CONFIG = {
 
     maxLength:
       120,
+  },
+
+
+  nature: {
+    label:
+      "Natureza",
+
+    editorType:
+      "archetype",
+
+    property:
+      "nature",
+
+    labelProperty:
+      "natureLabel",
+
+    endpoint:
+      "nature",
+
+    placeholder:
+      "Selecione a Natureza",
+  },
+
+
+  demeanor: {
+    label:
+      "Comportamento",
+
+    editorType:
+      "archetype",
+
+    property:
+      "demeanor",
+
+    labelProperty:
+      "demeanorLabel",
+
+    endpoint:
+      "demeanor",
+
+    placeholder:
+      "Selecione o Comportamento",
   },
 };
 
@@ -129,7 +177,7 @@ export async function handleCharacterInlineEditClick(
     }
 
 
-    openInlineEditor(
+    await openInlineEditor(
       row,
       characterId,
       field
@@ -187,6 +235,7 @@ export async function saveActiveCharacterInlineEdit() {
     field,
     row,
     originalValue,
+    originalDisplayValue,
   } =
     activeEditor;
 
@@ -233,12 +282,16 @@ export async function saveActiveCharacterInlineEdit() {
 
 
   // =============================================
-  // Validation
+  // Text validation
   // =============================================
 
   if (
+    config.editorType ===
+      "text" &&
+    typeof config.maxLength ===
+      "number" &&
     value.length >
-    config.maxLength
+      config.maxLength
   ) {
     showInlineError(
       row,
@@ -264,12 +317,21 @@ export async function saveActiveCharacterInlineEdit() {
     finishInlineEditor(
       row,
       field,
-      value
+      originalValue,
+      originalDisplayValue
     );
 
 
     return true;
   }
+
+
+  const selectedDisplayValue =
+    getInputDisplayValue(
+      input,
+      config,
+      value
+    );
 
 
   const saveButton =
@@ -360,6 +422,27 @@ export async function saveActiveCharacterInlineEdit() {
       );
 
 
+    let savedDisplayValue =
+      savedValue;
+
+
+    if (
+      config.labelProperty
+    ) {
+      const returnedLabel =
+        data?.character?.[
+          config.labelProperty
+        ];
+
+
+      savedDisplayValue =
+        typeof returnedLabel ===
+          "string"
+          ? returnedLabel
+          : selectedDisplayValue;
+    }
+
+
     // =============================================
     // Update local state
     // =============================================
@@ -375,13 +458,24 @@ export async function saveActiveCharacterInlineEdit() {
         config.property
       ] =
         savedValue;
+
+
+      if (
+        config.labelProperty
+      ) {
+        character[
+          config.labelProperty
+        ] =
+          savedDisplayValue;
+      }
     }
 
 
     finishInlineEditor(
       row,
       field,
-      savedValue
+      savedValue,
+      savedDisplayValue
     );
 
 
@@ -446,6 +540,7 @@ export function cancelActiveCharacterInlineEdit() {
     row,
     field,
     originalValue,
+    originalDisplayValue,
   } =
     activeEditor;
 
@@ -453,7 +548,8 @@ export function cancelActiveCharacterInlineEdit() {
   finishInlineEditor(
     row,
     field,
-    originalValue
+    originalValue,
+    originalDisplayValue
   );
 }
 
@@ -462,7 +558,7 @@ export function cancelActiveCharacterInlineEdit() {
 // Open editor
 // =============================================
 
-function openInlineEditor(
+async function openInlineEditor(
   row,
   characterId,
   field
@@ -485,6 +581,21 @@ function openInlineEditor(
 
 
   if (!character) {
+    return;
+  }
+
+
+  // =============================================
+  // Already editing this field
+  // =============================================
+
+  if (
+    activeEditor &&
+    activeEditor.row ===
+      row &&
+    activeEditor.field ===
+      field
+  ) {
     return;
   }
 
@@ -522,6 +633,48 @@ function openInlineEditor(
     );
 
 
+  const displayValue =
+    getCharacterDisplayValue(
+      character,
+      config
+    );
+
+
+  // =============================================
+  // Load Archetypes before opening select
+  // =============================================
+
+  let archetypes =
+    [];
+
+
+  if (
+    config.editorType ===
+    "archetype"
+  ) {
+    try {
+      archetypes =
+        await loadCharacterArchetypes(
+          characterId
+        );
+
+    } catch (error) {
+      console.error(
+        "[CHARACTER INLINE EDIT] Erro ao carregar arquétipos:",
+        error
+      );
+
+
+      window.alert(
+        "Não foi possível carregar as opções de Natureza e Comportamento."
+      );
+
+
+      return;
+    }
+  }
+
+
   const container =
     row.querySelector(
       ".character-editable-value"
@@ -537,8 +690,12 @@ function openInlineEditor(
     characterId,
     field,
     row,
+
     originalValue:
       value,
+
+    originalDisplayValue:
+      displayValue,
   };
 
 
@@ -562,28 +719,12 @@ function openInlineEditor(
 
 
   const input =
-    document.createElement(
-      "input"
-    );
-
-
-  input.type =
-    "text";
-
-  input.className =
-    "form-control form-control-sm bg-black text-light border-secondary character-inline-input";
-
-  input.value =
-    value;
-
-  input.maxLength =
-    config.maxLength;
-
-  input.placeholder =
-    config.placeholder;
-
-  input.autocomplete =
-    "off";
+    createEditorInput({
+      config,
+      value,
+      displayValue,
+      archetypes,
+    });
 
 
   const actions =
@@ -667,10 +808,15 @@ function openInlineEditor(
   input.focus();
 
 
-  input.setSelectionRange(
-    input.value.length,
-    input.value.length
-  );
+  if (
+    input instanceof
+      HTMLInputElement
+  ) {
+    input.setSelectionRange(
+      input.value.length,
+      input.value.length
+    );
+  }
 
 
   // =============================================
@@ -709,13 +855,302 @@ function openInlineEditor(
 
 
 // =============================================
+// Create editor input
+// =============================================
+
+function createEditorInput({
+  config,
+  value,
+  displayValue,
+  archetypes,
+}) {
+  // =============================================
+  // Archetype select
+  // =============================================
+
+  if (
+    config.editorType ===
+    "archetype"
+  ) {
+    const select =
+      document.createElement(
+        "select"
+      );
+
+
+    select.className =
+      "form-select form-select-sm bg-black text-light border-secondary character-inline-input";
+
+
+    const emptyOption =
+      document.createElement(
+        "option"
+      );
+
+
+    emptyOption.value =
+      "";
+
+    emptyOption.textContent =
+      config.placeholder ||
+      "Selecione uma opção";
+
+
+    select.appendChild(
+      emptyOption
+    );
+
+
+    archetypes.forEach(
+      (archetype) => {
+        const option =
+          document.createElement(
+            "option"
+          );
+
+
+        option.value =
+          archetype.ref;
+
+        option.textContent =
+          archetype.label;
+
+
+        select.appendChild(
+          option
+        );
+      }
+    );
+
+
+    // =============================================
+    // If current value is no longer present,
+    // keep it visible instead of silently
+    // replacing/removing it.
+    // =============================================
+
+    if (
+      value &&
+      !archetypes.some(
+        (archetype) =>
+          archetype.ref ===
+          value
+      )
+    ) {
+      const currentOption =
+        document.createElement(
+          "option"
+        );
+
+
+      currentOption.value =
+        value;
+
+      currentOption.textContent =
+        displayValue ||
+        value;
+
+
+      select.appendChild(
+        currentOption
+      );
+    }
+
+
+    select.value =
+      value;
+
+
+    return select;
+  }
+
+
+  // =============================================
+  // Text input
+  // =============================================
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+
+  input.type =
+    "text";
+
+  input.className =
+    "form-control form-control-sm bg-black text-light border-secondary character-inline-input";
+
+  input.value =
+    value;
+
+  input.placeholder =
+    config.placeholder ||
+    "";
+
+  input.autocomplete =
+    "off";
+
+
+  if (
+    typeof config.maxLength ===
+    "number"
+  ) {
+    input.maxLength =
+      config.maxLength;
+  }
+
+
+  return input;
+}
+
+
+// =============================================
+// Load available Archetypes
+// =============================================
+
+async function loadCharacterArchetypes(
+  characterId
+) {
+  const response =
+    await fetch(
+      `/api/characters/${encodeURIComponent(
+        characterId
+      )}/archetypes`,
+      {
+        method:
+          "GET",
+
+        credentials:
+          "include",
+
+        cache:
+          "no-store",
+      }
+    );
+
+
+  const data =
+    await response
+      .json()
+      .catch(() => ({}));
+
+
+  if (
+    !response.ok ||
+    !data?.ok
+  ) {
+    throw new Error(
+      data?.error ||
+      "Não foi possível carregar os arquétipos."
+    );
+  }
+
+
+  if (
+    !Array.isArray(
+      data.archetypes
+    )
+  ) {
+    return [];
+  }
+
+
+  return data.archetypes
+    .map(
+      (archetype) => ({
+        ref:
+          String(
+            archetype?.ref ||
+            ""
+          ),
+
+        label:
+          String(
+            archetype?.label ||
+            ""
+          ),
+      })
+    )
+    .filter(
+      (archetype) =>
+        archetype.ref &&
+        archetype.label
+    );
+}
+
+
+// =============================================
+// Input display value
+// =============================================
+
+function getInputDisplayValue(
+  input,
+  config,
+  value
+) {
+  if (
+    config.editorType ===
+      "archetype" &&
+    input instanceof
+      HTMLSelectElement
+  ) {
+    if (!value) {
+      return "";
+    }
+
+
+    return (
+      input.options[
+        input.selectedIndex
+      ]?.textContent ||
+      ""
+    );
+  }
+
+
+  return value;
+}
+
+
+// =============================================
+// Character display value
+// =============================================
+
+function getCharacterDisplayValue(
+  character,
+  config
+) {
+  if (
+    config.labelProperty
+  ) {
+    return String(
+      character[
+        config.labelProperty
+      ] ||
+      ""
+    );
+  }
+
+
+  return String(
+    character[
+      config.property
+    ] ||
+    ""
+  );
+}
+
+
+// =============================================
 // Finish editor
 // =============================================
 
 function finishInlineEditor(
   row,
   field,
-  value
+  value,
+  displayValue
 ) {
   activeEditor =
     null;
@@ -729,7 +1164,8 @@ function finishInlineEditor(
   renderFieldDisplay(
     row,
     field,
-    value
+    value,
+    displayValue
   );
 }
 
@@ -741,15 +1177,25 @@ function finishInlineEditor(
 function renderFieldDisplay(
   row,
   field,
-  value
+  value,
+  displayValue
 ) {
+  const config =
+    FIELD_CONFIG[
+      field
+    ];
+
+
   const container =
     row.querySelector(
       ".character-editable-value"
     );
 
 
-  if (!container) {
+  if (
+    !config ||
+    !container
+  ) {
     return;
   }
 
@@ -779,6 +1225,7 @@ function renderFieldDisplay(
 
 
   display.textContent =
+    displayValue ||
     value ||
     "—";
 
@@ -802,13 +1249,13 @@ function renderFieldDisplay(
 
   editButton.setAttribute(
     "aria-label",
-    `Editar ${field}`
+    `Editar ${config.label}`
   );
 
 
   editButton.setAttribute(
     "title",
-    "Editar"
+    `Editar ${config.label}`
   );
 
 
