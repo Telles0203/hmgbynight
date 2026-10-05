@@ -31,30 +31,41 @@ function updateNavbarAuth(user) {
 }
 
 
-function hideCurrentNavbarRoute() {
+function markCurrentNavbarRoute() {
   const currentRoute =
     window.location.pathname
       .replace(/^\/+|\/+$/g, "") ||
     "home";
+
 
   document
     .querySelectorAll(
       "#navbar a.nav-link[data-route]"
     )
     .forEach((link) => {
-      const route =
-        link.dataset.route;
+      const isCurrentRoute =
+        link.dataset.route ===
+        currentRoute;
 
-      const listItem =
-        link.closest("li");
 
-      if (!listItem) {
+      link.classList.toggle(
+        "active-route",
+        isCurrentRoute
+      );
+
+
+      if (isCurrentRoute) {
+        link.setAttribute(
+          "aria-current",
+          "page"
+        );
+
         return;
       }
 
-      listItem.classList.toggle(
-        "route-hidden",
-        route === currentRoute
+
+      link.removeAttribute(
+        "aria-current"
       );
     });
 }
@@ -75,7 +86,7 @@ async function refreshNavbarAuth(
   }
 
   updateNavbarAuth(user);
-  hideCurrentNavbarRoute();
+  markCurrentNavbarRoute();
 
   return user;
 }

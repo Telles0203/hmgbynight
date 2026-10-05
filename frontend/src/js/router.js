@@ -19,19 +19,29 @@ function updateNavbarRoute(route) {
       "#navbar a.nav-link[data-route]"
     )
     .forEach((link) => {
-      const linkRoute =
-        link.dataset.route;
+      const isCurrentRoute =
+        link.dataset.route ===
+        route;
 
-      const listItem =
-        link.closest("li");
 
-      if (!listItem) {
+      link.classList.toggle(
+        "active-route",
+        isCurrentRoute
+      );
+
+
+      if (isCurrentRoute) {
+        link.setAttribute(
+          "aria-current",
+          "page"
+        );
+
         return;
       }
 
-      listItem.classList.toggle(
-        "route-hidden",
-        linkRoute === route
+
+      link.removeAttribute(
+        "aria-current"
       );
     });
 }
