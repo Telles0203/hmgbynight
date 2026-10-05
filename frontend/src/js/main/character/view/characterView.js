@@ -6,10 +6,6 @@ import {
 } from "./characterAnimations.js";
 
 
-// =============================================
-// ByNight Main
-// =============================================
-
 window.ByNightMain =
   window.ByNightMain || {};
 
@@ -20,10 +16,6 @@ window.ByNightMain.character =
   };
 
 
-// =============================================
-// VELOCIDADE DE CADA ETAPA
-// =============================================
-
 const MOTION_DURATION_SECONDS =
   1;
 
@@ -32,17 +24,9 @@ const MOTION_DURATION =
   1000;
 
 
-// =============================================
-// State
-// =============================================
-
 let characterTransitioning =
   false;
 
-
-// =============================================
-// Toggle
-// =============================================
 
 export function toggleCharacterView(
   characterId
@@ -72,10 +56,6 @@ export function toggleCharacterView(
   );
 }
 
-
-// =============================================
-// Open
-// =============================================
 
 export async function openCharacterView(
   characterId
@@ -122,12 +102,6 @@ export async function openCharacterView(
         characterId;
 
 
-    dashboard.style.setProperty(
-      "--character-motion-duration",
-      `${MOTION_DURATION}ms`
-    );
-
-
     selectedCard.classList.add(
       "is-selected"
     );
@@ -143,12 +117,6 @@ export async function openCharacterView(
         )
       );
 
-
-    // =============================================
-    // FASE 1
-    // Recolhe os outros personagens
-    // e deixa somente o selecionado
-    // =============================================
 
     const elementsToCollapse = [
       ...allCards.filter(
@@ -170,11 +138,6 @@ export async function openCharacterView(
     );
 
 
-    // =============================================
-    // FASE 2
-    // Expande para o lado
-    // =============================================
-
     dashboard.classList.add(
       "character-focus"
     );
@@ -190,11 +153,6 @@ export async function openCharacterView(
         MOTION_DURATION,
     });
 
-
-    // =============================================
-    // FASE 3
-    // Expande a ficha para baixo
-    // =============================================
 
     await animateCharacterDetails(
       selectedCard,
@@ -214,10 +172,6 @@ export async function openCharacterView(
   }
 }
 
-
-// =============================================
-// Close
-// =============================================
 
 export async function closeCharacterView() {
   if (
@@ -267,23 +221,12 @@ export async function closeCharacterView() {
 
 
   try {
-
-    // =============================================
-    // FASE 1
-    // Recolhe a ficha para cima
-    // =============================================
-
     await animateCharacterDetails(
       selectedCard,
       false,
       MOTION_DURATION
     );
 
-
-    // =============================================
-    // FASE 2
-    // Retorna para o lado
-    // =============================================
 
     await animateHorizontalPanels({
       panelsContainer,
@@ -300,12 +243,6 @@ export async function closeCharacterView() {
       "character-focus"
     );
 
-
-    // =============================================
-    // FASE 3
-    // Outros personagens expandem
-    // novamente para baixo
-    // =============================================
 
     const elementsToExpand = [
       panelHeader,
@@ -327,10 +264,6 @@ export async function closeCharacterView() {
       MOTION_DURATION
     );
 
-
-    // =============================================
-    // Finish
-    // =============================================
 
     selectedCard.classList.remove(
       "is-selected"
@@ -365,10 +298,6 @@ export async function closeCharacterView() {
   }
 }
 
-
-// =============================================
-// Elements
-// =============================================
 
 function getViewElements(
   characterId
