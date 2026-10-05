@@ -2,12 +2,14 @@
     <br>
 </div>
 
+
 <div
     id="mainPage"
     style="display: none;"
 >
 
     <div id="emailValidationContainer"></div>
+
 
     <div
         id="verifiedMainContent"
@@ -64,6 +66,7 @@
 
                             </div>
 
+
                             <div id="characterListContainer">
 
                                 <p class="text-secondary small">
@@ -115,17 +118,24 @@
 
                             </div>
 
-                            <p class="text-secondary small">
-                                Você ainda não possui nenhuma House cadastrada.
-                            </p>
 
-                            <button
-                                id="createHouseButton"
-                                type="button"
-                                class="btn btn-blood w-100"
-                            >
-                                Criar minha primeira House
-                            </button>
+                            <div id="houseListContainer">
+
+                                <p class="text-secondary small">
+                                    Você ainda não possui nenhuma House cadastrada.
+                                </p>
+
+                                <button
+                                    id="createHouseButton"
+                                    type="button"
+                                    class="btn btn-blood w-100"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#createHouseModal"
+                                >
+                                    Criar minha primeira House
+                                </button>
+
+                            </div>
 
                         </div>
 
@@ -176,6 +186,7 @@
 
             </div>
 
+
             <form id="createCharacterForm">
 
                 <div class="modal-body">
@@ -185,6 +196,7 @@
                         class="alert d-none"
                         role="alert"
                     ></div>
+
 
                     <div class="mb-3">
 
@@ -208,6 +220,7 @@
 
                     </div>
 
+
                     <div class="mb-3">
 
                         <label
@@ -225,6 +238,7 @@
                         ></select>
 
                     </div>
+
 
                     <div
                         id="otherSectContainer"
@@ -246,6 +260,7 @@
 
                     </div>
 
+
                     <div class="mb-3">
 
                         <label
@@ -264,12 +279,14 @@
 
                     </div>
 
+
                     <p class="text-secondary small mb-0">
                         Este personagem será criado como PC e ficará
                         vinculado à sua conta.
                     </p>
 
                 </div>
+
 
                 <div class="modal-footer border-secondary">
 
@@ -334,6 +351,7 @@
 
             </div>
 
+
             <form id="deleteCharacterForm">
 
                 <div class="modal-body">
@@ -344,10 +362,12 @@
                         role="alert"
                     ></div>
 
+
                     <p class="text-light">
                         Você está prestes a excluir
                         <strong id="deleteCharacterName"></strong>.
                     </p>
+
 
                     <div
                         class="alert alert-warning small"
@@ -356,11 +376,13 @@
                         Esta ação é permanente e não poderá ser desfeita.
                     </div>
 
+
                     <p class="text-secondary small">
                         Personagens vinculados a uma House não podem ser
                         excluídos por esta tela. A exclusão deve ser realizada
                         pela própria House.
                     </p>
+
 
                     <div class="mb-2">
 
@@ -384,6 +406,7 @@
 
                 </div>
 
+
                 <div class="modal-footer border-secondary">
 
                     <button
@@ -400,6 +423,112 @@
                         class="btn btn-danger"
                     >
                         Excluir personagem
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================== -->
+<!-- CREATE HOUSE MODAL -->
+<!-- ============================== -->
+
+<div
+    class="modal fade"
+    id="createHouseModal"
+    tabindex="-1"
+    aria-labelledby="createHouseModalLabel"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark border border-danger">
+
+            <div class="modal-header border-secondary">
+
+                <h2
+                    id="createHouseModalLabel"
+                    class="modal-title h5 text-light"
+                >
+                    Criar House
+                </h2>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar"
+                ></button>
+
+            </div>
+
+
+            <form id="createHouseForm">
+
+                <div class="modal-body">
+
+                    <div
+                        id="createHouseAlert"
+                        class="alert d-none"
+                        role="alert"
+                    ></div>
+
+
+                    <div class="mb-3">
+
+                        <label
+                            for="houseName"
+                            class="form-label text-secondary"
+                        >
+                            Nome da House
+                        </label>
+
+                        <input
+                            id="houseName"
+                            name="houseName"
+                            type="text"
+                            class="form-control bg-black text-light border-secondary"
+                            minlength="2"
+                            maxlength="80"
+                            autocomplete="off"
+                            required
+                        >
+
+                    </div>
+
+
+                    <p class="text-secondary small mb-0">
+                        Você será definido como proprietário da House
+                        e terá as permissões administrativas iniciais.
+                    </p>
+
+                </div>
+
+
+                <div class="modal-footer border-secondary">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        id="saveHouseButton"
+                        type="submit"
+                        class="btn btn-blood"
+                    >
+                        Criar House
                     </button>
 
                 </div>

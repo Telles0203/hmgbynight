@@ -1,6 +1,14 @@
-let mainStylesPromise = null;
-let emailValidationModulePromise = null;
-let characterModulesPromise = null;
+let mainStylesPromise =
+  null;
+
+let emailValidationModulePromise =
+  null;
+
+let characterModulesPromise =
+  null;
+
+let houseModulesPromise =
+  null;
 
 
 // ==============================
@@ -12,40 +20,54 @@ function loadMainStyles() {
     return mainStylesPromise;
   }
 
+
   mainStylesPromise =
     new Promise(
-      (resolve, reject) => {
+      (
+        resolve,
+        reject
+      ) => {
+
         const existingLink =
           document.getElementById(
             "mainStylesheet"
           );
 
+
         if (existingLink) {
           resolve();
+
           return;
         }
+
 
         const link =
           document.createElement(
             "link"
           );
 
+
         link.id =
           "mainStylesheet";
+
 
         link.rel =
           "stylesheet";
 
+
         link.href =
           "/src/css/main.css";
+
 
         link.addEventListener(
           "load",
           resolve,
           {
-            once: true,
+            once:
+              true,
           }
         );
+
 
         link.addEventListener(
           "error",
@@ -57,15 +79,18 @@ function loadMainStyles() {
             );
           },
           {
-            once: true,
+            once:
+              true,
           }
         );
+
 
         document.head.appendChild(
           link
         );
       }
     );
+
 
   return mainStylesPromise;
 }
@@ -76,21 +101,27 @@ function loadMainStyles() {
 // ==============================
 
 async function loadEmailValidationModule() {
-  if (!emailValidationModulePromise) {
+  if (
+    !emailValidationModulePromise
+  ) {
     emailValidationModulePromise =
       import(
         "/src/js/main/emailValidation.js"
       );
   }
 
+
   await emailValidationModulePromise;
 }
 
 
 async function loadCharacterModules() {
-  if (!characterModulesPromise) {
+  if (
+    !characterModulesPromise
+  ) {
     characterModulesPromise =
       Promise.all([
+
         import(
           "/src/js/main/character/characterOptions.js"
         ),
@@ -102,10 +133,35 @@ async function loadCharacterModules() {
         import(
           "/src/js/main/character/characterForm.js"
         ),
+
       ]);
   }
 
+
   await characterModulesPromise;
+}
+
+
+async function loadHouseModules() {
+  if (
+    !houseModulesPromise
+  ) {
+    houseModulesPromise =
+      Promise.all([
+
+        import(
+          "/src/js/main/house/houses.js"
+        ),
+
+        import(
+          "/src/js/main/house/houseForm.js"
+        ),
+
+      ]);
+  }
+
+
+  await houseModulesPromise;
 }
 
 
@@ -116,42 +172,54 @@ async function loadCharacterModules() {
 async function loadMainUser(
   forceRefresh = false
 ) {
+
   const greeting =
     document.getElementById(
       "mainGreeting"
     );
+
 
   const loading =
     document.getElementById(
       "loadingScreen"
     );
 
+
   const main =
     document.getElementById(
       "mainPage"
     );
+
 
   const verifiedMainContent =
     document.getElementById(
       "verifiedMainContent"
     );
 
+
   const emailValidationContainer =
     document.getElementById(
       "emailValidationContainer"
     );
 
+
   if (!main) {
     return;
   }
 
-  if (verifiedMainContent) {
+
+  if (
+    verifiedMainContent
+  ) {
     verifiedMainContent.style.display =
       "none";
   }
 
+
   try {
+
     await loadMainStyles();
+
 
     if (
       typeof window.sessionMe !==
@@ -162,15 +230,19 @@ async function loadMainUser(
       );
     }
 
+
     const user =
       await window.sessionMe(
         forceRefresh
       );
 
+
     if (!user) {
       await redirectToLogin();
+
       return;
     }
+
 
     if (greeting) {
       greeting.textContent =
@@ -185,19 +257,24 @@ async function loadMainUser(
     // ==============================
 
     if (
-      user.isEmailValid !== true
+      user.isEmailValid !==
+      true
     ) {
+
       await loadEmailValidationModule();
+
 
       await showEmailValidation(
         user,
         emailValidationContainer
       );
 
+
       showMainPage(
         loading,
         main
       );
+
 
       return;
     }
@@ -214,6 +291,7 @@ async function loadMainUser(
         "";
     }
 
+
     if (
       typeof window.clearEmailResendCountdown ===
       "function"
@@ -221,31 +299,52 @@ async function loadMainUser(
       window.clearEmailResendCountdown();
     }
 
-    if (verifiedMainContent) {
+
+    if (
+      verifiedMainContent
+    ) {
       verifiedMainContent.style.display =
         "block";
     }
 
-    await loadCharacterModules();
+
+    // ==============================
+    // Load Main modules
+    // ==============================
+
+    await Promise.all([
+
+      loadCharacterModules(),
+
+      loadHouseModules(),
+
+    ]);
+
 
     resetMainView();
 
+
     await initializeMainModules();
+
 
     showMainPage(
       loading,
       main
     );
 
+
   } catch (error) {
+
     console.error(
       "[MAIN] Erro ao carregar:",
       error
     );
 
+
     showMainError(
       emailValidationContainer
     );
+
 
     showMainPage(
       loading,
@@ -260,12 +359,18 @@ async function loadMainUser(
 // ==============================
 
 async function initializeMainModules() {
+
+  // ==============================
+  // Characters
+  // ==============================
+
   if (
     typeof window.setupCharacterFormHandlers ===
     "function"
   ) {
     window.setupCharacterFormHandlers();
   }
+
 
   if (
     typeof window.loadCharacterOptions ===
@@ -274,11 +379,32 @@ async function initializeMainModules() {
     await window.loadCharacterOptions();
   }
 
+
   if (
     typeof window.loadCharacters ===
     "function"
   ) {
     await window.loadCharacters();
+  }
+
+
+  // ==============================
+  // Houses
+  // ==============================
+
+  if (
+    typeof window.setupHouseFormHandlers ===
+    "function"
+  ) {
+    window.setupHouseFormHandlers();
+  }
+
+
+  if (
+    typeof window.loadHouses ===
+    "function"
+  ) {
+    await window.loadHouses();
   }
 }
 
@@ -291,17 +417,21 @@ async function showEmailValidation(
   user,
   container
 ) {
+
   if (!container) {
     return;
   }
+
 
   const response =
     await fetch(
       "/src/pages/emailValidationModal.html",
       {
-        cache: "no-store",
+        cache:
+          "no-store",
       }
     );
+
 
   if (!response.ok) {
     throw new Error(
@@ -309,14 +439,17 @@ async function showEmailValidation(
     );
   }
 
+
   container.innerHTML =
     await response.text();
+
 
   const retryAfter =
     Number(
       user.emailVerificationRetryAfter ||
       0
     );
+
 
   if (
     typeof window.setupEmailValidationHandlers ===
@@ -334,27 +467,33 @@ async function showEmailValidation(
 // ==============================
 
 function resetMainView() {
+
   const dashboard =
     document.getElementById(
       "mainDashboard"
     );
+
 
   const overview =
     document.getElementById(
       "characterPanelOverview"
     );
 
+
   const detail =
     document.getElementById(
       "characterPanelDetail"
     );
+
 
   dashboard?.classList.remove(
     "character-focus",
     "house-focus"
   );
 
+
   if (overview) {
+
     overview.classList.remove(
       "d-none",
       "is-leaving",
@@ -362,10 +501,13 @@ function resetMainView() {
     );
   }
 
+
   if (detail) {
+
     detail.classList.add(
       "d-none"
     );
+
 
     detail.classList.remove(
       "is-visible"
@@ -382,10 +524,12 @@ function showMainPage(
   loading,
   main
 ) {
+
   if (loading) {
     loading.style.display =
       "none";
   }
+
 
   if (main) {
     main.style.display =
@@ -397,9 +541,11 @@ function showMainPage(
 function showMainError(
   container
 ) {
+
   if (!container) {
     return;
   }
+
 
   container.innerHTML = `
     <div
@@ -412,21 +558,32 @@ function showMainError(
 }
 
 
+// ==============================
+// Redirect
+// ==============================
+
 async function redirectToLogin() {
+
   if (
     typeof window.loadPage ===
     "function"
   ) {
+
     await window.loadPage(
       "login",
       {
-        checkAuth: false,
-        replaceHistory: true,
+        checkAuth:
+          false,
+
+        replaceHistory:
+          true,
       }
     );
 
+
     return;
   }
+
 
   window.location.href =
     "/login";
