@@ -1118,6 +1118,428 @@ svg {
 
 
 /* ==============================
+   Character creation notice
+   ============================== */
+
+#characterListContainer
+.alert.alert-dark {
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    padding:
+        1rem
+        1rem
+        1rem
+        1.15rem;
+
+    background:
+        linear-gradient(
+            135deg,
+            #171717,
+            #111111
+        ) !important;
+
+    border:
+        1px solid
+        rgba(
+            139,
+            0,
+            0,
+            0.75
+        ) !important;
+
+    border-radius:
+        0.45rem;
+
+    color:
+        #b8b8b8 !important;
+
+    box-shadow:
+        inset
+        0 0 18px
+        rgba(
+            60,
+            0,
+            0,
+            0.08
+        );
+}
+
+#characterListContainer
+.alert.alert-dark::before {
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        0;
+
+    bottom:
+        0;
+
+    left:
+        0;
+
+    width:
+        4px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #a00000,
+            #3c0000
+        );
+}
+
+#characterListContainer
+.alert.alert-dark
+.fw-semibold {
+    color:
+        #f2f2f2 !important;
+
+    letter-spacing:
+        0.15px;
+}
+
+#characterListContainer
+.alert.alert-dark
+.text-secondary {
+    color:
+        #a7a7a7 !important;
+
+    line-height:
+        1.5;
+}
+
+
+/* ==============================
+   Character status
+   ============================== */
+
+.character-status-slot {
+    margin-top:
+        0.1rem;
+
+    margin-bottom:
+        0.45rem !important;
+}
+
+.character-status-slot
+[data-character-status] {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        0.35rem;
+}
+
+.character-status-slot
+[data-character-status]
+> .badge {
+    padding:
+        0.27rem
+        0.5rem;
+
+    border-radius:
+        999px !important;
+
+    background-color:
+        #121212 !important;
+
+    font-size:
+        0.65rem;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.02rem;
+
+    line-height:
+        1.05;
+
+    box-shadow:
+        none !important;
+}
+
+
+/* ==============================
+   Status - building
+   ============================== */
+
+.character-status-slot
+[data-character-status="building"]
+> .badge {
+    color:
+        #a8a8a8 !important;
+
+    border-color:
+        #555555 !important;
+
+    background:
+        linear-gradient(
+            180deg,
+            #191919,
+            #141414
+        ) !important;
+}
+
+
+/* ==============================
+   Status - pending approval
+   ============================== */
+
+.character-status-slot
+[data-character-status="pending"]
+> .badge {
+    color:
+        #efc6c9 !important;
+
+    border-color:
+        #8b0000 !important;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(
+                100,
+                0,
+                0,
+                0.32
+            ),
+            rgba(
+                55,
+                0,
+                0,
+                0.2
+            )
+        ) !important;
+
+    box-shadow:
+        inset
+        0 0 9px
+        rgba(
+            139,
+            0,
+            0,
+            0.12
+        ) !important;
+}
+
+
+/* ==============================
+   Status - approved
+   ============================== */
+
+.character-status-slot
+[data-character-status="approved"]
+> .badge {
+    color:
+        #eeeeee !important;
+
+    border-color:
+        #7a2a31 !important;
+
+    background:
+        linear-gradient(
+            180deg,
+            #211719,
+            #161313
+        ) !important;
+
+    box-shadow:
+        inset
+        0 0 9px
+        rgba(
+            139,
+            0,
+            0,
+            0.1
+        ) !important;
+}
+
+
+/* ==============================
+   Status help button
+   ============================== */
+
+.character-status-help {
+    width:
+        22px;
+
+    height:
+        22px;
+
+    min-width:
+        22px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        0 !important;
+
+    margin:
+        0;
+
+    opacity:
+        0.72;
+
+    cursor:
+        help;
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+.character-status-help:hover,
+.character-status-help:focus {
+    opacity:
+        1;
+
+    transform:
+        scale(1.08);
+
+    outline:
+        none;
+
+    box-shadow:
+        none !important;
+}
+
+.character-status-help
+.badge {
+    width:
+        20px;
+
+    height:
+        20px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        0 !important;
+
+    border-radius:
+        50% !important;
+
+    color:
+        #8e8e8e !important;
+
+    background-color:
+        #151515 !important;
+
+    border-color:
+        #555555 !important;
+
+    font-size:
+        0.67rem;
+
+    font-weight:
+        600;
+}
+
+.character-status-help:hover
+.badge,
+.character-status-help:focus
+.badge {
+    color:
+        #ffffff !important;
+
+    background-color:
+        #491016 !important;
+
+    border-color:
+        #8b0000 !important;
+}
+
+
+/* ==============================
+   Status popover
+   ============================== */
+
+.popover {
+    --bs-popover-bg:
+        #181818;
+
+    --bs-popover-border-color:
+        #5f1c23;
+
+    --bs-popover-header-bg:
+        #211516;
+
+    --bs-popover-header-color:
+        #f2f2f2;
+
+    --bs-popover-body-color:
+        #c4c4c4;
+
+    max-width:
+        320px;
+
+    box-shadow:
+        0 6px 22px
+        rgba(
+            0,
+            0,
+            0,
+            0.45
+        );
+}
+
+.popover-header {
+    margin:
+        0;
+
+    color:
+        #f2f2f2;
+
+    background-color:
+        #211516;
+
+    border-bottom:
+        1px solid
+        #3c0000;
+
+    font-weight:
+        600;
+}
+
+.popover-body {
+    color:
+        #c4c4c4;
+
+    background-color:
+        #181818;
+
+    line-height:
+        1.5;
+}
+
+
+/* ==============================
    Mobile
    ============================== */
 
@@ -1206,6 +1628,23 @@ svg {
                 2rem
             );
     }
+
+    .popover {
+        max-width:
+            calc(
+                100vw -
+                2rem
+            );
+    }
+
+    #characterListContainer
+    .alert.alert-dark {
+        padding:
+            0.9rem
+            0.9rem
+            0.9rem
+            1.05rem;
+    }
 }
 
 
@@ -1223,7 +1662,8 @@ svg {
     .character-open-button,
     .character-open-button::after,
     .character-delete-icon-button,
-    .character-card {
+    .character-card,
+    .character-status-help {
         transition:
             none;
     }

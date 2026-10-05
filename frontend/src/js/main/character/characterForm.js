@@ -593,12 +593,6 @@ function setupCharacterFormHandlers() {
         );
 
 
-      const conceptInput =
-        document.getElementById(
-          "characterConcept"
-        );
-
-
       const primarySectSelect =
         document.getElementById(
           "characterSect"
@@ -625,12 +619,6 @@ function setupCharacterFormHandlers() {
 
       const name =
         nameInput
-          ?.value
-          ?.trim();
-
-
-      const concept =
-        conceptInput
           ?.value
           ?.trim();
 
@@ -666,35 +654,6 @@ function setupCharacterFormHandlers() {
         );
 
         nameInput?.focus();
-
-        return;
-      }
-
-
-      // =============================================
-      // Concept
-      // =============================================
-
-      if (!concept) {
-        showCharacterAlert(
-          "Informe o conceito do personagem."
-        );
-
-        conceptInput?.focus();
-
-        return;
-      }
-
-
-      if (
-        concept.length < 2 ||
-        concept.length > 120
-      ) {
-        showCharacterAlert(
-          "O conceito deve possuir entre 2 e 120 caracteres."
-        );
-
-        conceptInput?.focus();
 
         return;
       }
@@ -779,7 +738,6 @@ function setupCharacterFormHandlers() {
               body:
                 JSON.stringify({
                   name,
-                  concept,
                   sect,
                   clan,
                   requestedMotherHouseId,

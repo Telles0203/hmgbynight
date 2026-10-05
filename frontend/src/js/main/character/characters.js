@@ -149,11 +149,17 @@ function renderCharacters(
   );
 
 
+  // =============================================
+  // Empty
+  // =============================================
+
   if (
     characters.length ===
     0
   ) {
     container.innerHTML = `
+      ${createCharacterCreationNotice()}
+
       <p class="text-secondary small">
         Você ainda não possui personagens cadastrados.
       </p>
@@ -169,9 +175,19 @@ function renderCharacters(
       </button>
     `;
 
+
+    setupCharacterPopovers(
+      container
+    );
+
+
     return;
   }
 
+
+  // =============================================
+  // Cards
+  // =============================================
 
   const cards =
     characters
@@ -185,6 +201,8 @@ function renderCharacters(
 
 
   container.innerHTML = `
+    ${createCharacterCreationNotice()}
+
     <div id="characterList">
       ${cards}
     </div>
@@ -218,6 +236,44 @@ function renderCharacters(
   setupCharacterPopovers(
     container
   );
+}
+
+
+// =============================================
+// Creation notice
+// =============================================
+
+function createCharacterCreationNotice() {
+  return `
+    <div
+      class="
+        alert
+        alert-dark
+        border
+        border-secondary
+        small
+        mb-3
+      "
+      role="note"
+    >
+      <div
+        class="fw-semibold text-light mb-1"
+      >
+        Criação de personagem
+      </div>
+
+      <div
+        class="text-secondary"
+      >
+        Enquanto um personagem não for aprovado
+        por uma Crônica, ele permanece em criação inicial.
+        Monte a ficha utilizando apenas os pontos previstos
+        para a criação do personagem.
+        Pontos de Experiência e evoluções ficam indisponíveis
+        até a aprovação.
+      </div>
+    </div>
+  `;
 }
 
 
@@ -332,6 +388,15 @@ function createCharacterCard(
           </h3>
 
 
+          <div
+            class="character-status-slot mb-2"
+          >
+            ${createCharacterStatus(
+              character
+            )}
+          </div>
+
+
           ${
             clan
               ? `
@@ -428,33 +493,207 @@ function createCharacterCard(
 
 
 // =============================================
+// Character status
+// =============================================
+
+function getCharacterStatus(
+  character
+) {
+  // =============================================
+  // Approved
+  // =============================================
+
+  if (
+    character.motherHouse
+  ) {
+    return {
+      key:
+        "approved",
+
+      label:
+        "APROVADO",
+
+      badgeClass:
+        "border border-success text-success bg-transparent",
+
+      description:
+        "Este personagem foi aprovado pela Crônica. A partir deste estado, XP, evoluções e alterações passam a seguir as regras e aprovações da Narração.",
+    };
+  }
+
+
+  // =============================================
+  // Pending Chronicle approval
+  // =============================================
+
+  if (
+    character.pendingMotherHouse
+  ) {
+    return {
+      key:
+        "pending",
+
+      label:
+        "AGUARDANDO APROVAÇÃO",
+
+      badgeClass:
+        "border border-info text-info bg-transparent",
+
+      description:
+        "Este personagem foi enviado para análise da Crônica. Enquanto aguarda aprovação, ele continua sujeito às regras de criação inicial e não pode receber XP.",
+    };
+  }
+
+
+  // =============================================
+  // Initial construction
+  // =============================================
+
+  return {
+    key:
+      "building",
+
+    label:
+      "EM CONSTRUÇÃO INICIAL",
+
+    badgeClass:
+      "border border-warning text-warning bg-transparent",
+
+    description:
+      "Este personagem ainda está sendo montado. Utilize somente os pontos de criação inicial. Pontos de Experiência e evoluções ainda não estão disponíveis.",
+  };
+}
+
+
+// =============================================
+// Character status markup
+// =============================================
+
+function createCharacterStatus(
+  character
+) {
+  const status =
+    getCharacterStatus(
+      character
+    );
+
+
+  const label =
+    escapeCharacterHtml(
+      status.label
+    );
+
+
+  const description =
+    escapeCharacterHtml(
+      status.description
+    );
+
+
+  return `
+    <div
+      class="
+        d-flex
+        align-items-center
+        flex-wrap
+        gap-1
+      "
+      data-character-status="${status.key}"
+    >
+
+      <span
+        class="
+          badge
+          rounded-pill
+          ${status.badgeClass}
+        "
+      >
+        ${label}
+      </span>
+
+
+      <button
+        type="button"
+        class="
+          btn
+          btn-sm
+          p-0
+          border-0
+          bg-transparent
+          text-secondary
+          character-status-help
+        "
+        data-bs-toggle="popover"
+        data-bs-trigger="focus"
+        data-bs-placement="top"
+        data-bs-title="Status do personagem"
+        data-bs-content="${description}"
+        aria-label="Explicação do status do personagem"
+        title="Explicação do status"
+      >
+        <span
+          class="
+            badge
+            rounded-circle
+            border
+            border-secondary
+            text-secondary
+            bg-transparent
+          "
+        >
+          ?
+        </span>
+      </button>
+
+    </div>
+  `;
+}
+
+
+// =============================================
 // Chronicle summary
 // =============================================
 
 function getCharacterHouseSummary(
   character
 ) {
+  // =============================================
+  // Approved Chronicle
+  // =============================================
+
   if (
     character.motherHouse
   ) {
     return (
       character.motherHouse.name ||
-      "Vinculado"
+      "Crônica vinculada"
     );
   }
 
 
+  // =============================================
+  // Pending Chronicle
+  //
+  // O status já informa que está aguardando.
+  // Aqui mostramos somente qual Crônica foi
+  // escolhida.
+  // =============================================
+
   if (
     character.pendingMotherHouse
   ) {
-    return `${
+    return (
       character
         .pendingMotherHouse
         .name ||
-      "Crônica"
-    } · Aguardando aprovação`;
+      "Crônica selecionada"
+    );
   }
 
+
+  // =============================================
+  // No Chronicle
+  // =============================================
 
   return "Sem Crônica";
 }
@@ -504,12 +743,20 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
+  // =============================================
+  // Update local state
+  // =============================================
+
   character.motherHouse =
     null;
 
   character.pendingMotherHouse =
     pendingMotherHouse;
 
+
+  // =============================================
+  // Find card
+  // =============================================
 
   const card =
     document.querySelector(
@@ -527,6 +774,28 @@ async function handleCharacterHouseRequestCompleted({
     return;
   }
 
+
+  // =============================================
+  // Update status
+  // =============================================
+
+  const statusSlot =
+    card.querySelector(
+      ".character-status-slot"
+    );
+
+
+  if (statusSlot) {
+    statusSlot.innerHTML =
+      createCharacterStatus(
+        character
+      );
+  }
+
+
+  // =============================================
+  // Update Chronicle summary
+  // =============================================
 
   const summary =
     card.querySelector(
@@ -562,6 +831,10 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
+  // =============================================
+  // Update Chronicle field
+  // =============================================
+
   const houseField =
     card.querySelector(
       ".character-house-field"
@@ -573,12 +846,16 @@ async function handleCharacterHouseRequestCompleted({
       createCharacterHouseField(
         character
       );
-
-    return;
   }
 
 
-  await loadCharacters();
+  // =============================================
+  // Reinitialize new popover
+  // =============================================
+
+  setupCharacterPopovers(
+    card
+  );
 }
 
 
@@ -630,6 +907,19 @@ async function handleCharacterListClick(
 
 
   if (!target) {
+    return;
+  }
+
+
+  // =============================================
+  // Status help
+  // =============================================
+
+  if (
+    target.closest(
+      ".character-status-help"
+    )
+  ) {
     return;
   }
 
