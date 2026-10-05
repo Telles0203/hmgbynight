@@ -25,6 +25,14 @@ import {
 
 
 // =============================================
+// Character creation notice
+// =============================================
+
+const CHARACTER_CREATION_NOTICE_KEY =
+  "bynight_character_creation_notice";
+
+
+// =============================================
 // ByNight Main
 // =============================================
 
@@ -176,6 +184,11 @@ function renderCharacters(
     `;
 
 
+    setupCharacterCreationNotice(
+      container
+    );
+
+
     setupCharacterPopovers(
       container
     );
@@ -233,9 +246,61 @@ function renderCharacters(
   `;
 
 
+  setupCharacterCreationNotice(
+    container
+  );
+
+
   setupCharacterPopovers(
     container
   );
+}
+
+
+// =============================================
+// Creation notice preference
+// =============================================
+
+function isCharacterCreationNoticeHidden() {
+  try {
+    return (
+      localStorage.getItem(
+        CHARACTER_CREATION_NOTICE_KEY
+      ) ===
+      "hidden"
+    );
+
+  } catch (error) {
+    console.warn(
+      "[CHARACTER] Não foi possível consultar a preferência do aviso de criação:",
+      error
+    );
+
+
+    return false;
+  }
+}
+
+
+function saveCharacterCreationNoticeHidden() {
+  try {
+    localStorage.setItem(
+      CHARACTER_CREATION_NOTICE_KEY,
+      "hidden"
+    );
+
+
+    return true;
+
+  } catch (error) {
+    console.warn(
+      "[CHARACTER] Não foi possível salvar a preferência do aviso de criação:",
+      error
+    );
+
+
+    return false;
+  }
 }
 
 
@@ -244,11 +309,20 @@ function renderCharacters(
 // =============================================
 
 function createCharacterCreationNotice() {
+  if (
+    isCharacterCreationNoticeHidden()
+  ) {
+    return "";
+  }
+
+
   return `
     <div
+      id="characterCreationNotice"
       class="
         alert
         alert-dark
+        character-creation-notice
         border
         border-secondary
         small
@@ -256,11 +330,13 @@ function createCharacterCreationNotice() {
       "
       role="note"
     >
+
       <div
         class="fw-semibold text-light mb-1"
       >
         Criação de personagem
       </div>
+
 
       <div
         class="text-secondary"
@@ -272,8 +348,121 @@ function createCharacterCreationNotice() {
         Pontos de Experiência e evoluções ficam indisponíveis
         até a aprovação.
       </div>
+
+
+      <div
+        class="character-creation-notice-footer"
+      >
+
+        <label
+          class="character-creation-notice-check"
+          for="characterCreationNoticeConfirm"
+        >
+
+          <input
+            id="characterCreationNoticeConfirm"
+            class="form-check-input"
+            type="checkbox"
+          >
+
+          <span>
+            Entendi este aviso
+          </span>
+
+        </label>
+
+
+        <button
+          id="hideCharacterCreationNotice"
+          type="button"
+          class="
+            btn
+            btn-sm
+            character-creation-notice-hide-button
+          "
+          disabled
+        >
+          Não mostrar mais
+        </button>
+
+      </div>
+
     </div>
   `;
+}
+
+
+// =============================================
+// Creation notice events
+// =============================================
+
+function setupCharacterCreationNotice(
+  container
+) {
+  const notice =
+    container.querySelector(
+      "#characterCreationNotice"
+    );
+
+
+  if (!notice) {
+    return;
+  }
+
+
+  const checkbox =
+    notice.querySelector(
+      "#characterCreationNoticeConfirm"
+    );
+
+
+  const hideButton =
+    notice.querySelector(
+      "#hideCharacterCreationNotice"
+    );
+
+
+  if (
+    !checkbox ||
+    !hideButton
+  ) {
+    return;
+  }
+
+
+  // =============================================
+  // Checkbox
+  // =============================================
+
+  checkbox.addEventListener(
+    "change",
+    () => {
+      hideButton.disabled =
+        !checkbox.checked;
+    }
+  );
+
+
+  // =============================================
+  // Hide permanently
+  // =============================================
+
+  hideButton.addEventListener(
+    "click",
+    () => {
+      if (
+        !checkbox.checked
+      ) {
+        return;
+      }
+
+
+      saveCharacterCreationNoticeHidden();
+
+
+      notice.remove();
+    }
+  );
 }
 
 
@@ -673,10 +862,6 @@ function getCharacterHouseSummary(
 
   // =============================================
   // Pending Chronicle
-  //
-  // O status já informa que está aguardando.
-  // Aqui mostramos somente qual Crônica foi
-  // escolhida.
   // =============================================
 
   if (

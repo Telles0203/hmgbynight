@@ -1218,6 +1218,206 @@ svg {
 
 
 /* ==============================
+   Character creation notice footer
+   ============================== */
+
+.character-creation-notice-footer {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        0.75rem;
+
+    margin-top:
+        0.9rem;
+
+    padding-top:
+        0.75rem;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
+}
+
+
+/* ==============================
+   Character creation notice check
+   ============================== */
+
+.character-creation-notice-check {
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        0.55rem;
+
+    margin:
+        0;
+
+    color:
+        #a5a5a5;
+
+    font-size:
+        0.75rem;
+
+    cursor:
+        pointer;
+
+    user-select:
+        none;
+}
+
+.character-creation-notice-check
+.form-check-input {
+    width:
+        17px;
+
+    height:
+        17px;
+
+    margin:
+        0;
+
+    flex:
+        0 0 17px;
+
+    background-color:
+        #111111;
+
+    border-color:
+        #555555;
+
+    cursor:
+        pointer;
+
+    box-shadow:
+        none;
+}
+
+.character-creation-notice-check
+.form-check-input:hover {
+    border-color:
+        #8b0000;
+}
+
+.character-creation-notice-check
+.form-check-input:focus {
+    border-color:
+        #8b0000;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(
+            139,
+            0,
+            0,
+            0.18
+        );
+}
+
+.character-creation-notice-check
+.form-check-input:checked {
+    background-color:
+        #8b0000;
+
+    border-color:
+        #a50000;
+}
+
+
+/* ==============================
+   Don't show again button
+   ============================== */
+
+.character-creation-notice-hide-button {
+    padding:
+        0.35rem
+        0.7rem;
+
+    color:
+        #d0d0d0;
+
+    background-color:
+        #191919;
+
+    border:
+        1px solid
+        #5a1b20;
+
+    border-radius:
+        0.35rem;
+
+    font-size:
+        0.7rem;
+
+    font-weight:
+        500;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.character-creation-notice-hide-button:hover:not(:disabled) {
+    color:
+        #ffffff;
+
+    background-color:
+        #3c0000;
+
+    border-color:
+        #8b0000;
+}
+
+.character-creation-notice-hide-button:focus {
+    box-shadow:
+        0 0 0 2px
+        rgba(
+            139,
+            0,
+            0,
+            0.18
+        );
+}
+
+.character-creation-notice-hide-button:disabled {
+    color:
+        #777777;
+
+    background-color:
+        #151515;
+
+    border-color:
+        #333333;
+
+    opacity:
+        0.45;
+
+    cursor:
+        not-allowed;
+}
+
+
+/* ==============================
    Character status
    ============================== */
 
@@ -1645,6 +1845,19 @@ svg {
             0.9rem
             1.05rem;
     }
+
+    .character-creation-notice-footer {
+        align-items:
+            stretch;
+
+        flex-direction:
+            column;
+    }
+
+    .character-creation-notice-hide-button {
+        width:
+            100%;
+    }
 }
 
 
@@ -1663,7 +1876,8 @@ svg {
     .character-open-button::after,
     .character-delete-icon-button,
     .character-card,
-    .character-status-help {
+    .character-status-help,
+    .character-creation-notice-hide-button {
         transition:
             none;
     }
