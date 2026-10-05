@@ -198,6 +198,10 @@
                     ></div>
 
 
+                    <!-- ============================== -->
+                    <!-- NAME -->
+                    <!-- ============================== -->
+
                     <div class="mb-3">
 
                         <label
@@ -220,6 +224,10 @@
 
                     </div>
 
+
+                    <!-- ============================== -->
+                    <!-- SECT -->
+                    <!-- ============================== -->
 
                     <div class="mb-3">
 
@@ -261,6 +269,10 @@
                     </div>
 
 
+                    <!-- ============================== -->
+                    <!-- CLAN -->
+                    <!-- ============================== -->
+
                     <div class="mb-3">
 
                         <label
@@ -276,6 +288,86 @@
                             class="form-select bg-black text-light border-secondary"
                             required
                         ></select>
+
+                    </div>
+
+
+                    <!-- ============================== -->
+                    <!-- MOTHER HOUSE -->
+                    <!-- ============================== -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="createCharacterHouseSearch"
+                            class="form-label text-secondary"
+                        >
+                            House mãe
+                        </label>
+
+
+                        <input
+                            id="createCharacterHouseSearch"
+                            type="search"
+                            class="form-control bg-black text-light border-secondary"
+                            placeholder="Buscar House..."
+                            autocomplete="off"
+                        >
+
+
+                        <div
+                            class="border border-secondary rounded p-2 mt-2"
+                        >
+
+                            <label
+                                class="d-flex align-items-center gap-3 p-2"
+                            >
+
+                                <input
+                                    id="createCharacterHouseNone"
+                                    class="form-check-input mt-0"
+                                    type="radio"
+                                    name="createCharacterHouseChoice"
+                                    value=""
+                                    checked
+                                >
+
+                                <span class="text-light">
+                                    Nenhuma House
+                                </span>
+
+                            </label>
+
+
+                            <hr
+                                class="border-secondary my-2"
+                            >
+
+
+                            <div
+                                id="createCharacterHouseCount"
+                                class="text-secondary small mb-2"
+                            ></div>
+
+
+                            <div
+                                id="createCharacterHouseList"
+                                style="
+                                    max-height: 220px;
+                                    overflow-y: auto;
+                                "
+                            ></div>
+
+                        </div>
+
+
+                        <div
+                            class="form-text text-secondary"
+                        >
+                            Opcional. Caso escolha uma House,
+                            será enviada uma solicitação de vínculo.
+                            A House precisará aprovar o personagem.
+                        </div>
 
                     </div>
 

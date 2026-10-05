@@ -1,11 +1,29 @@
+import {
+  escapeHouseHtml,
+  searchAvailableHouses,
+} from "../house/houseSearch.js";
+
+
 // =============================================
-// Character House
+// State
 // =============================================
 
 let selectedCharacterId =
   null;
 
+let selectedHouseId =
+  "";
+
+let availableHouses =
+  [];
+
 let onHouseRequestCompleted =
+  null;
+
+let houseSearchTimer =
+  null;
+
+let houseSearchAbortController =
   null;
 
 
@@ -137,6 +155,16 @@ export function setupCharacterHouseModal(
     );
 
 
+  const searchInput =
+    modalElement.querySelector(
+      "#characterHouseSearch"
+    );
+
+
+  // =============================================
+  // Form
+  // =============================================
+
   if (
     form &&
     form.dataset.bound !==
@@ -152,6 +180,57 @@ export function setupCharacterHouseModal(
     );
   }
 
+
+  // =============================================
+  // Search
+  // =============================================
+
+  if (
+    searchInput &&
+    searchInput.dataset.bound !==
+      "true"
+  ) {
+    searchInput.dataset.bound =
+      "true";
+
+
+    searchInput.addEventListener(
+      "input",
+      () => {
+        selectedHouseId =
+          "";
+
+
+        updateSubmitButton();
+
+
+        if (
+          houseSearchTimer
+        ) {
+          clearTimeout(
+            houseSearchTimer
+          );
+        }
+
+
+        houseSearchTimer =
+          setTimeout(
+            () => {
+              loadAvailableHouses(
+                searchInput.value
+              );
+            },
+
+            250
+          );
+      }
+    );
+  }
+
+
+  // =============================================
+  // Modal reset
+  // =============================================
 
   if (
     modalElement.dataset.bound !==
@@ -245,6 +324,14 @@ async function openCharacterHouseModal(
     characterId;
 
 
+  selectedHouseId =
+    "";
+
+
+  availableHouses =
+    [];
+
+
   resetCharacterHouseModalContent();
 
 
@@ -259,6 +346,7 @@ async function openCharacterHouseModal(
       "[CHARACTER HOUSE] Bootstrap Modal não disponível."
     );
 
+
     return;
   }
 
@@ -266,7 +354,9 @@ async function openCharacterHouseModal(
   modal.show();
 
 
-  await loadAvailableHouses();
+  await loadAvailableHouses(
+    ""
+  );
 }
 
 
@@ -274,16 +364,18 @@ async function openCharacterHouseModal(
 // Load Houses
 // =============================================
 
-async function loadAvailableHouses() {
+async function loadAvailableHouses(
+  query = ""
+) {
   const list =
     document.getElementById(
       "characterHouseList"
     );
 
 
-  const submitButton =
+  const count =
     document.getElementById(
-      "confirmCharacterHouseButton"
+      "characterHouseResultCount"
     );
 
 
@@ -292,72 +384,70 @@ async function loadAvailableHouses() {
   }
 
 
+  // Cancela busca anterior
+
+  houseSearchAbortController
+    ?.abort();
+
+
+  houseSearchAbortController =
+    new AbortController();
+
+
   list.innerHTML = `
     <div
-      class="text-secondary small"
+      class="text-secondary small py-2"
     >
-      Carregando Houses...
+      Pesquisando Houses...
     </div>
   `;
 
 
-  if (submitButton) {
-    submitButton.disabled =
-      true;
+  if (count) {
+    count.textContent =
+      "";
   }
 
 
+  updateSubmitButton();
+
+
   try {
-    const response =
-      await fetch(
-        "/api/houses",
+    availableHouses =
+      await searchAvailableHouses(
+        query,
         {
-          method:
-            "GET",
+          limit:
+            20,
 
-          credentials:
-            "include",
-
-          cache:
-            "no-store",
+          signal:
+            houseSearchAbortController
+              .signal,
         }
       );
 
 
-    const data =
-      await response
-        .json()
-        .catch(() => ({}));
-
-
-    if (
-      !response.ok ||
-      !data?.ok
-    ) {
-      throw new Error(
-        data?.error ||
-        "Não foi possível carregar as Houses."
-      );
-    }
-
-
-    const houses =
-      Array.isArray(
-        data.houses
-      )
-        ? data.houses
-        : [];
-
-
     renderAvailableHouses(
-      houses
+      query
     );
 
   } catch (error) {
+    if (
+      error?.name ===
+      "AbortError"
+    ) {
+      return;
+    }
+
+
     console.error(
-      "[CHARACTER HOUSE] Erro ao carregar Houses:",
+      "[CHARACTER HOUSE] Erro ao pesquisar Houses:",
       error
     );
+
+
+    availableHouses =
+      [];
 
 
     list.innerHTML = `
@@ -368,6 +458,12 @@ async function loadAvailableHouses() {
         Não foi possível carregar as Houses disponíveis.
       </div>
     `;
+
+
+    if (count) {
+      count.textContent =
+        "";
+    }
   }
 }
 
@@ -377,7 +473,7 @@ async function loadAvailableHouses() {
 // =============================================
 
 function renderAvailableHouses(
-  houses
+  query = ""
 ) {
   const list =
     document.getElementById(
@@ -385,9 +481,9 @@ function renderAvailableHouses(
     );
 
 
-  const submitButton =
+  const count =
     document.getElementById(
-      "confirmCharacterHouseButton"
+      "characterHouseResultCount"
     );
 
 
@@ -396,31 +492,46 @@ function renderAvailableHouses(
   }
 
 
+  // =============================================
+  // Empty
+  // =============================================
+
   if (
-    houses.length ===
+    availableHouses.length ===
     0
   ) {
     list.innerHTML = `
       <div
-        class="text-secondary small"
+        class="text-secondary small py-2"
       >
-        Nenhuma House disponível.
+        ${
+          query
+            ? "Nenhuma House encontrada."
+            : "Nenhuma House disponível."
+        }
       </div>
     `;
 
 
-    if (submitButton) {
-      submitButton.disabled =
-        true;
+    if (count) {
+      count.textContent =
+        "0 resultados";
     }
+
+
+    updateSubmitButton();
 
 
     return;
   }
 
 
+  // =============================================
+  // Results
+  // =============================================
+
   list.innerHTML =
-    houses
+    availableHouses
       .map(
         (house) => {
           const id =
@@ -435,6 +546,15 @@ function renderAvailableHouses(
             );
 
 
+          const checked =
+            String(
+              selectedHouseId
+            ) ===
+            String(
+              house.id
+            );
+
+
           return `
             <label
               class="d-flex align-items-center gap-3 border border-secondary rounded p-3 mb-2"
@@ -443,8 +563,13 @@ function renderAvailableHouses(
               <input
                 class="form-check-input mt-0 character-house-radio"
                 type="radio"
-                name="characterHouse"
+                name="characterHouseRequestChoice"
                 value="${id}"
+                ${
+                  checked
+                    ? "checked"
+                    : ""
+                }
               >
 
               <span class="text-light">
@@ -458,6 +583,10 @@ function renderAvailableHouses(
       .join("");
 
 
+  // =============================================
+  // Radio listeners
+  // =============================================
+
   list
     .querySelectorAll(
       ".character-house-radio"
@@ -467,16 +596,37 @@ function renderAvailableHouses(
         radio.addEventListener(
           "change",
           () => {
-            if (
-              submitButton
-            ) {
-              submitButton.disabled =
-                false;
-            }
+            selectedHouseId =
+              String(
+                radio.value ||
+                ""
+              );
+
+
+            updateSubmitButton();
           }
         );
       }
     );
+
+
+  // =============================================
+  // Result counter
+  // =============================================
+
+  if (count) {
+    count.textContent =
+      availableHouses.length === 20
+        ? "Até 20 resultados exibidos"
+        : `${availableHouses.length} ${
+            availableHouses.length === 1
+              ? "resultado"
+              : "resultados"
+          }`;
+  }
+
+
+  updateSubmitButton();
 }
 
 
@@ -497,34 +647,27 @@ async function handleHouseRequestSubmit(
       "Personagem inválido."
     );
 
+
     return;
   }
 
 
-  const selectedHouse =
-    document.querySelector(
-      'input[name="characterHouse"]:checked'
-    );
-
-
-  if (!selectedHouse) {
+  if (!selectedHouseId) {
     showCharacterHouseAlert(
       "Selecione uma House."
     );
 
+
     return;
   }
 
 
-  const houseId =
-    String(
-      selectedHouse.value ||
-      ""
-    ).trim();
-
-
   const characterId =
     selectedCharacterId;
+
+
+  const houseId =
+    selectedHouseId;
 
 
   const submitButton =
@@ -583,12 +726,13 @@ async function handleHouseRequestSubmit(
         "Não foi possível solicitar o vínculo com a House."
       );
 
+
       return;
     }
 
 
     // =============================================
-    // Atualiza somente o personagem alterado
+    // Update only changed character
     // =============================================
 
     if (
@@ -677,6 +821,7 @@ function ensureCharacterHouseModal() {
               Selecionar House mãe
             </h2>
 
+
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -710,8 +855,45 @@ function ensureCharacterHouseModal() {
               </p>
 
 
+              <!-- Search -->
+
+              <div class="mb-3">
+
+                <label
+                  for="characterHouseSearch"
+                  class="form-label text-secondary"
+                >
+                  Buscar House
+                </label>
+
+
+                <input
+                  id="characterHouseSearch"
+                  type="search"
+                  class="form-control bg-black text-light border-secondary"
+                  placeholder="Digite o nome da House..."
+                  autocomplete="off"
+                >
+
+              </div>
+
+
+              <!-- Result count -->
+
+              <div
+                id="characterHouseResultCount"
+                class="text-secondary small mb-2"
+              ></div>
+
+
+              <!-- Results -->
+
               <div
                 id="characterHouseList"
+                style="
+                  max-height: 260px;
+                  overflow-y: auto;
+                "
               ></div>
 
 
@@ -780,6 +962,27 @@ function ensureCharacterHouseModal() {
 
 
 // =============================================
+// Submit button
+// =============================================
+
+function updateSubmitButton() {
+  const submitButton =
+    document.getElementById(
+      "confirmCharacterHouseButton"
+    );
+
+
+  if (!submitButton) {
+    return;
+  }
+
+
+  submitButton.disabled =
+    !selectedHouseId;
+}
+
+
+// =============================================
 // Close modal
 // =============================================
 
@@ -835,6 +1038,35 @@ function resetCharacterHouseModal() {
     null;
 
 
+  selectedHouseId =
+    "";
+
+
+  availableHouses =
+    [];
+
+
+  if (
+    houseSearchTimer
+  ) {
+    clearTimeout(
+      houseSearchTimer
+    );
+
+
+    houseSearchTimer =
+      null;
+  }
+
+
+  houseSearchAbortController
+    ?.abort();
+
+
+  houseSearchAbortController =
+    null;
+
+
   resetCharacterHouseModalContent();
 }
 
@@ -843,9 +1075,21 @@ function resetCharacterHouseModalContent() {
   hideCharacterHouseAlert();
 
 
+  const searchInput =
+    document.getElementById(
+      "characterHouseSearch"
+    );
+
+
   const list =
     document.getElementById(
       "characterHouseList"
+    );
+
+
+  const count =
+    document.getElementById(
+      "characterHouseResultCount"
     );
 
 
@@ -855,8 +1099,20 @@ function resetCharacterHouseModalContent() {
     );
 
 
+  if (searchInput) {
+    searchInput.value =
+      "";
+  }
+
+
   if (list) {
     list.innerHTML =
+      "";
+  }
+
+
+  if (count) {
+    count.textContent =
       "";
   }
 
@@ -864,6 +1120,7 @@ function resetCharacterHouseModalContent() {
   if (submitButton) {
     submitButton.disabled =
       true;
+
 
     submitButton.textContent =
       "Solicitar vínculo";
@@ -884,14 +1141,25 @@ function setHouseRequestLoading(
   }
 
 
-  button.disabled =
-    loading;
+  if (loading) {
+    button.disabled =
+      true;
+
+
+    button.textContent =
+      "Solicitando...";
+
+
+    return;
+  }
 
 
   button.textContent =
-    loading
-      ? "Solicitando..."
-      : "Solicitar vínculo";
+    "Solicitar vínculo";
+
+
+  button.disabled =
+    !selectedHouseId;
 }
 
 
@@ -940,27 +1208,4 @@ function hideCharacterHouseAlert() {
 
   alert.className =
     "alert d-none";
-}
-
-
-// =============================================
-// Escape
-// =============================================
-
-function escapeHouseHtml(
-  value
-) {
-  const element =
-    document.createElement(
-      "div"
-    );
-
-
-  element.textContent =
-    String(
-      value ?? ""
-    );
-
-
-  return element.innerHTML;
 }

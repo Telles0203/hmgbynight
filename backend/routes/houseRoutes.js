@@ -1,42 +1,50 @@
-const express = require(
-  "express"
-);
+const express =
+  require(
+    "express"
+  );
+
 
 const {
   rateLimit,
-} = require(
-  "express-rate-limit"
-);
+} =
+  require(
+    "express-rate-limit"
+  );
 
 
 const {
   createHouse,
   listHouses,
-} = require(
-  "../controllers/houseController"
-);
+  searchHouses,
+} =
+  require(
+    "../controllers/houseController"
+  );
 
 
 const {
   requireAuth,
   requireVerifiedEmail,
-} = require(
-  "../Middlewares/auth"
-);
+} =
+  require(
+    "../Middlewares/auth"
+  );
 
 
 const router =
   express.Router();
 
 
-// ==============================
+// =============================================
 // Create House limiter
-// ==============================
+// =============================================
 
 const houseCreateLimiter =
   rateLimit({
     windowMs:
-      60 * 60 * 1000,
+      60 *
+      60 *
+      1000,
 
     limit:
       10,
@@ -48,7 +56,8 @@ const houseCreateLimiter =
       false,
 
     message: {
-      ok: false,
+      ok:
+        false,
 
       error:
         "Muitas tentativas de criação de House. Tente novamente mais tarde.",
@@ -56,9 +65,23 @@ const houseCreateLimiter =
   });
 
 
-// ==============================
-// List Houses
-// ==============================
+// =============================================
+// Search active Houses
+// =============================================
+
+router.get(
+  "/search",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  searchHouses
+);
+
+
+// =============================================
+// List user's Houses
+// =============================================
 
 router.get(
   "/",
@@ -70,9 +93,9 @@ router.get(
 );
 
 
-// ==============================
+// =============================================
 // Create House
-// ==============================
+// =============================================
 
 router.post(
   "/",

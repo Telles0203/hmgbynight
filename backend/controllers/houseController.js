@@ -1,19 +1,46 @@
-const House = require(
-  "../models/House"
-);
+const House =
+  require(
+    "../models/House"
+  );
 
-const HouseMember = require(
-  "../models/HouseMember"
-);
-
-
-const HOUSE_NAME_MIN_LENGTH = 2;
-const HOUSE_NAME_MAX_LENGTH = 80;
+const HouseMember =
+  require(
+    "../models/HouseMember"
+  );
 
 
-// ==============================
+const HOUSE_NAME_MIN_LENGTH =
+  2;
+
+const HOUSE_NAME_MAX_LENGTH =
+  80;
+
+const HOUSE_SEARCH_DEFAULT_LIMIT =
+  20;
+
+const HOUSE_SEARCH_MAX_LIMIT =
+  20;
+
+
+// =============================================
+// Helpers
+// =============================================
+
+function escapeRegex(
+  value
+) {
+  return String(
+    value || ""
+  ).replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+}
+
+
+// =============================================
 // Create House
-// ==============================
+// =============================================
 
 async function createHouse(
   req,
@@ -22,33 +49,42 @@ async function createHouse(
   let createdHouse =
     null;
 
+
   try {
     const userId =
       req.user?.sub;
 
+
     const name =
       String(
-        req.body?.name || ""
+        req.body?.name ||
+        ""
       ).trim();
 
 
     if (!userId) {
-      return res.status(401).json({
-        ok: false,
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Não autenticado.",
-      });
+          error:
+            "Não autenticado.",
+        });
     }
 
 
     if (!name) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Informe o nome da House.",
-      });
+          error:
+            "Informe o nome da House.",
+        });
     }
 
 
@@ -58,18 +94,21 @@ async function createHouse(
       name.length >
         HOUSE_NAME_MAX_LENGTH
     ) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          `O nome da House deve possuir entre ${HOUSE_NAME_MIN_LENGTH} e ${HOUSE_NAME_MAX_LENGTH} caracteres.`,
-      });
+          error:
+            `O nome da House deve possuir entre ${HOUSE_NAME_MIN_LENGTH} e ${HOUSE_NAME_MAX_LENGTH} caracteres.`,
+        });
     }
 
 
-    // ==============================
+    // =============================================
     // Create House
-    // ==============================
+    // =============================================
 
     createdHouse =
       await House.create({
@@ -86,9 +125,9 @@ async function createHouse(
       });
 
 
-    // ==============================
+    // =============================================
     // Creator becomes owner
-    // ==============================
+    // =============================================
 
     await HouseMember.create({
       house:
@@ -119,29 +158,32 @@ async function createHouse(
     });
 
 
-    return res.status(201).json({
-      ok: true,
+    return res
+      .status(201)
+      .json({
+        ok:
+          true,
 
-      house: {
-        id:
-          createdHouse._id,
+        house: {
+          id:
+            createdHouse._id,
 
-        name:
-          createdHouse.name,
+          name:
+            createdHouse.name,
 
-        role:
-          "owner",
+          role:
+            "owner",
 
-        plan:
-          createdHouse.plan,
+          plan:
+            createdHouse.plan,
 
-        isActive:
-          createdHouse.isActive,
+          isActive:
+            createdHouse.isActive,
 
-        createdAt:
-          createdHouse.createdAt,
-      },
-    });
+          createdAt:
+            createdHouse.createdAt,
+        },
+      });
 
   } catch (error) {
     console.error(
@@ -150,11 +192,13 @@ async function createHouse(
     );
 
 
-    // ==============================
+    // =============================================
     // Prevent orphan House
-    // ==============================
+    // =============================================
 
-    if (createdHouse?._id) {
+    if (
+      createdHouse?._id
+    ) {
       try {
         await House.deleteOne({
           _id:
@@ -172,19 +216,24 @@ async function createHouse(
     }
 
 
-    return res.status(500).json({
-      ok: false,
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
 
-      error:
-        "Não foi possível criar a House.",
-    });
+        error:
+          "Não foi possível criar a House.",
+      });
   }
 }
 
 
-// ==============================
+// =============================================
 // List user's Houses
-// ==============================
+//
+// Usado no painel "Minhas Houses".
+// =============================================
 
 async function listHouses(
   req,
@@ -196,12 +245,15 @@ async function listHouses(
 
 
     if (!userId) {
-      return res.status(401).json({
-        ok: false,
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Não autenticado.",
-      });
+          error:
+            "Não autenticado.",
+        });
     }
 
 
@@ -213,6 +265,7 @@ async function listHouses(
         isActive:
           true,
       })
+
         .populate({
           path:
             "house",
@@ -225,19 +278,23 @@ async function listHouses(
           select:
             "name createdBy plan isActive createdAt updatedAt",
         })
+
         .sort({
           createdAt:
             -1,
         })
+
         .lean();
 
 
     const houses =
       memberships
+
         .filter(
           (membership) =>
             membership.house
         )
+
         .map(
           (membership) => ({
             id:
@@ -280,7 +337,8 @@ async function listHouses(
 
 
     return res.json({
-      ok: true,
+      ok:
+        true,
 
       houses,
     });
@@ -291,21 +349,167 @@ async function listHouses(
       error
     );
 
-    return res.status(500).json({
-      ok: false,
 
-      error:
-        "Não foi possível carregar suas Houses.",
-    });
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível carregar suas Houses.",
+      });
   }
 }
 
 
-// ==============================
+// =============================================
+// Search active Houses
+//
+// Usado ao escolher House mãe.
+// =============================================
+
+async function searchHouses(
+  req,
+  res
+) {
+  try {
+    const userId =
+      req.user?.sub;
+
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Não autenticado.",
+        });
+    }
+
+
+    const query =
+      String(
+        req.query?.q ||
+        ""
+      ).trim();
+
+
+    const requestedLimit =
+      Number.parseInt(
+        req.query?.limit,
+        10
+      );
+
+
+    const limit =
+      Number.isFinite(
+        requestedLimit
+      )
+        ? Math.min(
+            Math.max(
+              requestedLimit,
+              1
+            ),
+            HOUSE_SEARCH_MAX_LIMIT
+          )
+        : HOUSE_SEARCH_DEFAULT_LIMIT;
+
+
+    const filter = {
+      isActive:
+        true,
+    };
+
+
+    // =============================================
+    // Search by name
+    // =============================================
+
+    if (query) {
+      filter.name = {
+        $regex:
+          escapeRegex(
+            query
+          ),
+
+        $options:
+          "i",
+      };
+    }
+
+
+    const houses =
+      await House.find(
+        filter
+      )
+
+        .select(
+          "_id name"
+        )
+
+        .sort({
+          name:
+            1,
+
+          _id:
+            1,
+        })
+
+        .limit(
+          limit
+        )
+
+        .lean();
+
+
+    return res.json({
+      ok:
+        true,
+
+      query,
+
+      houses:
+        houses.map(
+          (house) => ({
+            id:
+              house._id,
+
+            name:
+              house.name,
+          })
+        ),
+    });
+
+  } catch (error) {
+    console.error(
+      "[HOUSE] Erro ao pesquisar Houses:",
+      error
+    );
+
+
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível pesquisar as Houses.",
+      });
+  }
+}
+
+
+// =============================================
 // Exports
-// ==============================
+// =============================================
 
 module.exports = {
   createHouse,
   listHouses,
+  searchHouses,
 };
