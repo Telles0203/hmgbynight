@@ -217,6 +217,13 @@ export function createCharacterSheet({
                 character-sheet-section
                 character-virtues-section
               "
+              data-character-id="${safeCharacterId}"
+              data-virtues-editable="${
+                canEditVirtues
+                  ? "true"
+                  : "false"
+              }"
+              data-editing="false"
             >
 
               ${createVirtueTitle({
@@ -226,15 +233,77 @@ export function createCharacterSheet({
 
 
               ${createVirtueRows({
-                characterId:
-                  safeCharacterId,
-
                 activeVirtues,
-
-                virtuePoints,
-
                 canEditVirtues,
               })}
+
+
+              ${
+                canEditVirtues
+                  ? `
+                    <div
+                      class="
+                        character-virtue-edit-footer
+                        d-none
+                        mt-3
+                        pt-2
+                        border-top
+                        border-secondary
+                      "
+                    >
+
+                      <div
+                        class="
+                          character-virtue-draft-message
+                          text-secondary
+                          small
+                          mb-2
+                        "
+                      >
+                        Modo de edição.
+                      </div>
+
+
+                      <div
+                        class="
+                          d-flex
+                          justify-content-end
+                          gap-2
+                        "
+                      >
+
+                        <button
+                          type="button"
+                          class="
+                            btn
+                            btn-outline-secondary
+                            btn-sm
+                          "
+                          data-character-virtue-action="cancel"
+                        >
+                          Cancelar
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="
+                            btn
+                            btn-blood
+                            btn-sm
+                          "
+                          data-character-virtue-action="save"
+                          disabled
+                        >
+                          OK
+                        </button>
+
+                      </div>
+
+                    </div>
+                  `
+                  : ""
+              }
 
 
               <div
@@ -291,10 +360,6 @@ export function createCharacterSheet({
 
             </section>
 
-
-            <!-- ============================== -->
-            <!-- MORALIDADE -->
-            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section character-sheet-resource"
@@ -381,11 +446,6 @@ export function createCharacterSheet({
             class="character-sheet-grid character-sheet-main-grid"
           >
 
-
-            <!-- ============================== -->
-            <!-- HABILIDADES -->
-            <!-- ============================== -->
-
             <section
               class="character-section-card character-sheet-section"
             >
@@ -417,10 +477,6 @@ export function createCharacterSheet({
 
             </section>
 
-
-            <!-- ============================== -->
-            <!-- DISCIPLINAS -->
-            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -466,10 +522,6 @@ export function createCharacterSheet({
 
             </section>
 
-
-            <!-- ============================== -->
-            <!-- ANTECEDENTES -->
-            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -560,17 +612,6 @@ function createVirtueTitle({
   virtuePoints,
   canEditVirtues,
 }) {
-  if (
-    !canEditVirtues
-  ) {
-    return `
-      <h4 class="character-sheet-title">
-        Virtudes
-      </h4>
-    `;
-  }
-
-
   const spent =
     Number.isFinite(
       virtuePoints?.spent
@@ -602,24 +643,55 @@ function createVirtueTitle({
         Virtudes
       </span>
 
+
       <span
         class="
-          badge
-          rounded-pill
-          border
-          border-secondary
-          text-secondary
-          bg-transparent
+          d-inline-flex
+          align-items-center
+          gap-2
         "
-        data-virtue-points
-        data-complete="${
-          spent === total
-            ? "true"
-            : "false"
-        }"
-        title="Pontos de Virtude distribuídos na criação"
       >
-        ${spent}/${total}
+
+        ${
+          canEditVirtues
+            ? `
+              <span
+                class="
+                  badge
+                  rounded-pill
+                  border
+                  border-secondary
+                  text-secondary
+                  bg-transparent
+                "
+                data-virtue-points
+                title="Pontos de Virtude distribuídos na criação"
+              >
+                ${spent}/${total}
+              </span>
+
+
+              <button
+                type="button"
+                class="
+                  btn
+                  btn-link
+                  btn-sm
+                  text-secondary
+                  text-decoration-none
+                  p-0
+                  character-virtue-edit-button
+                "
+                data-character-virtue-action="edit"
+                aria-label="Editar Virtudes"
+                title="Editar Virtudes"
+              >
+                ✎
+              </button>
+            `
+            : ""
+        }
+
       </span>
 
     </h4>
@@ -628,13 +700,11 @@ function createVirtueTitle({
 
 
 // =============================================
-// Virtues
+// Virtue rows
 // =============================================
 
 function createVirtueRows({
-  characterId,
   activeVirtues,
-  virtuePoints,
   canEditVirtues,
 }) {
   if (
@@ -650,14 +720,6 @@ function createVirtueRows({
       </div>
     `;
   }
-
-
-  const remaining =
-    Number.isFinite(
-      virtuePoints?.remaining
-    )
-      ? virtuePoints.remaining
-      : 7;
 
 
   return activeVirtues
@@ -704,11 +766,8 @@ function createVirtueRows({
         return `
           <div
             class="character-sheet-row character-virtue-row"
-            data-character-id="${characterId}"
             data-virtue-key="${safeKey}"
-            data-virtue-value="${value}"
-            data-virtue-minimum="${minimum}"
-            data-virtue-maximum="${maximum}"
+            data-saved-value="${value}"
           >
 
             <span class="character-sheet-label">
@@ -716,21 +775,77 @@ function createVirtueRows({
             </span>
 
 
+            <span
+              class="
+                character-sheet-value
+                character-virtue-view
+              "
+            >
+              <span
+                class="character-virtue-view-value"
+              >
+                ${value}
+              </span>
+            </span>
+
+
             ${
               canEditVirtues
-                ? createVirtueControls({
-                    value,
-                    minimum,
-                    maximum,
-                    remaining,
-                  })
-                : `
+                ? `
                   <span
-                    class="character-sheet-value character-virtue-value"
+                    class="
+                      character-sheet-value
+                      character-virtue-edit-controls
+                      d-inline-flex
+                      align-items-center
+                      justify-content-end
+                      gap-2
+                      d-none
+                    "
                   >
-                    ${value}
+
+                    <button
+                      type="button"
+                      class="
+                        btn
+                        btn-outline-secondary
+                        btn-sm
+                        py-0
+                        px-2
+                      "
+                      data-character-virtue-action="decrease"
+                    >
+                      −
+                    </button>
+
+
+                    <span
+                      class="
+                        character-virtue-edit-value
+                        fw-semibold
+                      "
+                    >
+                      ${value}
+                    </span>
+
+
+                    <button
+                      type="button"
+                      class="
+                        btn
+                        btn-outline-secondary
+                        btn-sm
+                        py-0
+                        px-2
+                      "
+                      data-character-virtue-action="increase"
+                    >
+                      +
+                    </button>
+
                   </span>
                 `
+                : ""
             }
 
           </div>
@@ -738,96 +853,6 @@ function createVirtueRows({
       }
     )
     .join("");
-}
-
-
-// =============================================
-// Virtue controls
-// =============================================
-
-function createVirtueControls({
-  value,
-  minimum,
-  maximum,
-  remaining,
-}) {
-  const decreaseDisabled =
-    value <=
-    minimum;
-
-
-  const increaseDisabled =
-    value >=
-      maximum ||
-    remaining <=
-      0;
-
-
-  return `
-    <span
-      class="
-        character-sheet-value
-        d-inline-flex
-        align-items-center
-        justify-content-end
-        gap-2
-      "
-    >
-
-      <button
-        type="button"
-        class="
-          btn
-          btn-outline-secondary
-          btn-sm
-          py-0
-          px-2
-          character-virtue-control
-        "
-        data-character-virtue-action="decrease"
-        aria-label="Diminuir Virtude"
-        title="Diminuir"
-        ${
-          decreaseDisabled
-            ? "disabled"
-            : ""
-        }
-      >
-        −
-      </button>
-
-
-      <span
-        class="character-virtue-value"
-      >
-        ${value}
-      </span>
-
-
-      <button
-        type="button"
-        class="
-          btn
-          btn-outline-secondary
-          btn-sm
-          py-0
-          px-2
-          character-virtue-control
-        "
-        data-character-virtue-action="increase"
-        aria-label="Aumentar Virtude"
-        title="Aumentar"
-        ${
-          increaseDisabled
-            ? "disabled"
-            : ""
-        }
-      >
-        +
-      </button>
-
-    </span>
-  `;
 }
 
 

@@ -25,6 +25,7 @@ import {
 
 import {
   handleCharacterVirtueClick,
+  restoreCharacterVirtueDrafts,
 } from "./characterVirtues.js";
 
 
@@ -161,10 +162,6 @@ function renderCharacters(
   );
 
 
-  // =============================================
-  // Empty
-  // =============================================
-
   if (
     characters.length ===
     0
@@ -201,10 +198,6 @@ function renderCharacters(
     return;
   }
 
-
-  // =============================================
-  // Cards
-  // =============================================
 
   const cards =
     characters
@@ -256,6 +249,11 @@ function renderCharacters(
 
 
   setupCharacterPopovers(
+    container
+  );
+
+
+  restoreCharacterVirtueDrafts(
     container
   );
 }
@@ -1038,10 +1036,6 @@ async function handleCharacterListClick(
     event.currentTarget;
 
 
-  // =============================================
-  // Inline fields
-  // =============================================
-
   if (
     await handleCharacterInlineEditClick(
       event,
@@ -1063,10 +1057,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Virtues
-  // =============================================
-
   if (
     await handleCharacterVirtueClick(
       event,
@@ -1077,10 +1067,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Status help
-  // =============================================
-
   if (
     target.closest(
       ".character-status-help"
@@ -1090,10 +1076,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Generation help
-  // =============================================
-
   if (
     target.closest(
       ".character-generation-help"
@@ -1102,10 +1084,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Delete
-  // =============================================
 
   const deleteAction =
     target.closest(
@@ -1144,10 +1122,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Chronicle
-  // =============================================
-
   const houseAction =
     target.closest(
       ".character-house-select-button"
@@ -1182,10 +1156,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Open / close character
-  // =============================================
 
   const openButton =
     target.closest(

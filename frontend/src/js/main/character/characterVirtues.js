@@ -2,6 +2,12 @@
 // Character Virtues
 // =============================================
 
+const VIRTUE_DRAFT_PREFIX =
+  "bynight_character_virtues_draft_";
+
+const VIRTUE_DRAFT_VERSION =
+  1;
+
 
 // =============================================
 // Public click handler
@@ -41,61 +47,39 @@ export async function handleCharacterVirtueClick(
   event.preventDefault();
 
 
-  const row =
+  const section =
     button.closest(
-      ".character-virtue-row"
+      ".character-virtues-section"
     );
 
 
-  const card =
-    button.closest(
-      ".character-card"
-    );
-
-
-  if (
-    !row ||
-    !card
-  ) {
+  if (!section) {
     return true;
   }
 
 
   const characterId =
     String(
-      row.dataset
+      section.dataset
         .characterId ||
       ""
     );
 
 
-  const virtueKey =
-    String(
-      row.dataset
-        .virtueKey ||
-      ""
+  if (!characterId) {
+    return true;
+  }
+
+
+  const character =
+    getCharacterById(
+      characterId
     );
 
 
-  const currentValue =
-    Number(
-      row.dataset
-        .virtueValue
-    );
-
-
-  const minimum =
-    Number(
-      row.dataset
-        .virtueMinimum
-    );
-
-
-  const maximum =
-    Number(
-      row.dataset
-        .virtueMaximum
-    );
+  if (!character) {
+    return true;
+  }
 
 
   const action =
@@ -107,74 +91,63 @@ export async function handleCharacterVirtueClick(
 
 
   if (
-    !characterId ||
-    !virtueKey ||
-    !Number.isFinite(
-      currentValue
-    )
+    action ===
+    "edit"
   ) {
+    startVirtueEdit(
+      section,
+      character
+    );
+
     return true;
   }
-
-
-  let nextValue =
-    currentValue;
 
 
   if (
     action ===
-    "increase"
+    "cancel"
   ) {
-    nextValue +=
-      1;
+    cancelVirtueEdit(
+      section,
+      character
+    );
 
-  } else if (
+    return true;
+  }
+
+
+  if (
     action ===
-    "decrease"
+    "save"
   ) {
-    nextValue -=
-      1;
+    await saveVirtueDraft(
+      section,
+      character
+    );
 
-  } else {
-    return true;
-  }
-
-
-  // =============================================
-  // Client-side convenience checks
-  //
-  // Backend remains authoritative.
-  // =============================================
-
-  if (
-    Number.isFinite(
-      minimum
-    ) &&
-    nextValue <
-      minimum
-  ) {
     return true;
   }
 
 
   if (
-    Number.isFinite(
-      maximum
-    ) &&
-    nextValue >
-      maximum
+    action ===
+      "increase" ||
+    action ===
+      "decrease"
   ) {
+    changeVirtueDraft({
+      section,
+      character,
+      button,
+      direction:
+        action ===
+        "increase"
+          ? 1
+          : -1,
+    });
+
     return true;
   }
-
-
-  await updateCharacterVirtue({
-    characterId,
-    virtueKey,
-    value:
-      nextValue,
-    card,
-  });
 
 
   return true;
@@ -182,23 +155,360 @@ export async function handleCharacterVirtueClick(
 
 
 // =============================================
-// Update Virtue
+// Restore drafts after render
 // =============================================
 
-async function updateCharacterVirtue({
-  characterId,
-  virtueKey,
-  value,
-  card,
-}) {
-  const section =
-    card.querySelector(
+export function restoreCharacterVirtueDrafts(
+  container
+) {
+  const sections =
+    container.querySelectorAll(
       ".character-virtues-section"
     );
 
 
+  sections.forEach(
+    (section) => {
+      const characterId =
+        String(
+          section.dataset
+            .characterId ||
+          ""
+        );
+
+
+      if (!characterId) {
+        return;
+      }
+
+
+      const editable =
+        section.dataset
+          .virtuesEditable ===
+        "true";
+
+
+      if (!editable) {
+        return;
+      }
+
+
+      const character =
+        getCharacterById(
+          characterId
+        );
+
+
+      if (!character) {
+        return;
+      }
+
+
+      const draft =
+        loadVirtueDraft(
+          characterId
+        );
+
+
+      if (!draft) {
+        renderSavedState(
+          section,
+          character
+        );
+
+        return;
+      }
+
+
+      if (
+        !isValidDraft(
+          character,
+          draft.values
+        )
+      ) {
+        removeVirtueDraft(
+          characterId
+        );
+
+
+        renderSavedState(
+          section,
+          character
+        );
+
+        return;
+      }
+
+
+      renderEditState(
+        section,
+        character,
+        draft.values
+      );
+    }
+  );
+}
+
+
+// =============================================
+// Start editing
+// =============================================
+
+function startVirtueEdit(
+  section,
+  character
+) {
+  if (
+    section.dataset
+      .virtuesEditable !==
+    "true"
+  ) {
+    return;
+  }
+
+
+  let draft =
+    loadVirtueDraft(
+      character.id
+    );
+
+
+  if (
+    !draft ||
+    !isValidDraft(
+      character,
+      draft.values
+    )
+  ) {
+    const values =
+      getSavedActiveVirtueValues(
+        character
+      );
+
+
+    draft = {
+      version:
+        VIRTUE_DRAFT_VERSION,
+
+      values,
+
+      updatedAt:
+        Date.now(),
+    };
+
+
+    saveVirtueDraftLocal(
+      character.id,
+      draft
+    );
+  }
+
+
+  renderEditState(
+    section,
+    character,
+    draft.values
+  );
+}
+
+
+// =============================================
+// Change draft
+// =============================================
+
+function changeVirtueDraft({
+  section,
+  character,
+  button,
+  direction,
+}) {
+  const row =
+    button.closest(
+      ".character-virtue-row"
+    );
+
+
+  if (!row) {
+    return;
+  }
+
+
+  const virtueKey =
+    String(
+      row.dataset
+        .virtueKey ||
+      ""
+    );
+
+
+  if (!virtueKey) {
+    return;
+  }
+
+
+  const draft =
+    loadVirtueDraft(
+      character.id
+    );
+
+
+  if (!draft) {
+    return;
+  }
+
+
+  const virtue =
+    getActiveVirtue(
+      character,
+      virtueKey
+    );
+
+
+  if (!virtue) {
+    return;
+  }
+
+
+  const minimum =
+    Number.isFinite(
+      virtue.minimum
+    )
+      ? virtue.minimum
+      : 0;
+
+
+  const maximum =
+    Number.isFinite(
+      virtue.maximum
+    )
+      ? virtue.maximum
+      : 5;
+
+
+  const current =
+    Number.isFinite(
+      draft.values[
+        virtueKey
+      ]
+    )
+      ? draft.values[
+          virtueKey
+        ]
+      : minimum;
+
+
+  const next =
+    current +
+    direction;
+
+
+  if (
+    next <
+      minimum ||
+    next >
+      maximum
+  ) {
+    return;
+  }
+
+
+  const proposed = {
+    ...draft.values,
+
+    [
+      virtueKey
+    ]:
+      next,
+  };
+
+
+  const progress =
+    calculateDraftProgress(
+      character,
+      proposed
+    );
+
+
+  if (
+    progress.spent >
+    progress.total
+  ) {
+    return;
+  }
+
+
+  const nextDraft = {
+    version:
+      VIRTUE_DRAFT_VERSION,
+
+    values:
+      proposed,
+
+    updatedAt:
+      Date.now(),
+  };
+
+
+  saveVirtueDraftLocal(
+    character.id,
+    nextDraft
+  );
+
+
+  renderEditState(
+    section,
+    character,
+    proposed
+  );
+}
+
+
+// =============================================
+// Save draft to server
+// =============================================
+
+async function saveVirtueDraft(
+  section,
+  character
+) {
+  const draft =
+    loadVirtueDraft(
+      character.id
+    );
+
+
+  if (!draft) {
+    renderSavedState(
+      section,
+      character
+    );
+
+    return;
+  }
+
+
+  if (
+    !hasDraftChanges(
+      character,
+      draft.values
+    )
+  ) {
+    removeVirtueDraft(
+      character.id
+    );
+
+
+    renderSavedState(
+      section,
+      character
+    );
+
+    return;
+  }
+
+
   const errorElement =
-    section?.querySelector(
+    section.querySelector(
       ".character-virtue-error"
     );
 
@@ -208,7 +518,7 @@ async function updateCharacterVirtue({
   );
 
 
-  setVirtueControlsBusy(
+  setVirtueBusy(
     section,
     true
   );
@@ -218,10 +528,8 @@ async function updateCharacterVirtue({
     const response =
       await fetch(
         `/api/characters/${encodeURIComponent(
-          characterId
-        )}/virtues/${encodeURIComponent(
-          virtueKey
-        )}`,
+          character.id
+        )}/virtues`,
         {
           method:
             "PATCH",
@@ -236,7 +544,8 @@ async function updateCharacterVirtue({
 
           body:
             JSON.stringify({
-              value,
+              virtues:
+                draft.values,
             }),
         }
       );
@@ -254,38 +563,39 @@ async function updateCharacterVirtue({
     ) {
       throw new Error(
         data?.error ||
-        "Não foi possível alterar a Virtude."
+        "Não foi possível salvar as Virtudes."
       );
     }
-
-
-    const updatedCharacter =
-      data.character;
 
 
     if (
-      !updatedCharacter
+      !data.character
     ) {
       throw new Error(
-        "O servidor não retornou os dados atualizados da Virtude."
+        "O servidor não retornou as Virtudes atualizadas."
       );
     }
 
 
-    updateCharacterVirtueLocalState(
-      characterId,
-      updatedCharacter
+    updateCharacterLocalState(
+      character,
+      data.character
     );
 
 
-    renderCharacterVirtueState(
-      card,
-      updatedCharacter
+    removeVirtueDraft(
+      character.id
+    );
+
+
+    renderSavedState(
+      section,
+      character
     );
 
   } catch (error) {
     console.error(
-      "[CHARACTER] Erro ao alterar Virtude:",
+      "[CHARACTER] Erro ao salvar Virtudes:",
       error
     );
 
@@ -293,248 +603,312 @@ async function updateCharacterVirtue({
     showVirtueError(
       errorElement,
       error?.message ||
-      "Não foi possível alterar a Virtude."
+      "Não foi possível salvar as Virtudes."
     );
 
 
-    restoreCharacterVirtueState(
-      card,
-      characterId
+    renderEditState(
+      section,
+      character,
+      draft.values
     );
 
   } finally {
-    setVirtueControlsBusy(
+    setVirtueBusy(
       section,
       false
     );
-
-
-    restoreCharacterVirtueState(
-      card,
-      characterId
-    );
   }
 }
 
 
 // =============================================
-// Update local character
+// Cancel editing
 // =============================================
 
-function updateCharacterVirtueLocalState(
-  characterId,
-  updatedCharacter
+function cancelVirtueEdit(
+  section,
+  character
 ) {
-  const characters =
-    window.ByNightMain
-      ?.character
-      ?.characters;
+  removeVirtueDraft(
+    character.id
+  );
 
 
-  if (
-    !Array.isArray(
-      characters
+  clearVirtueError(
+    section.querySelector(
+      ".character-virtue-error"
     )
-  ) {
-    return;
-  }
+  );
 
 
-  const character =
-    characters.find(
-      (item) =>
-        String(
-          item.id
-        ) ===
-        String(
-          characterId
-        )
-    );
-
-
-  if (!character) {
-    return;
-  }
-
-
-  if (
-    updatedCharacter.virtues &&
-    typeof updatedCharacter.virtues ===
-      "object"
-  ) {
-    character.virtues =
-      updatedCharacter.virtues;
-  }
-
-
-  if (
-    Array.isArray(
-      updatedCharacter.activeVirtues
-    )
-  ) {
-    character.activeVirtues =
-      updatedCharacter.activeVirtues;
-  }
-
-
-  if (
-    updatedCharacter.virtuePoints &&
-    typeof updatedCharacter.virtuePoints ===
-      "object"
-  ) {
-    character.virtuePoints =
-      updatedCharacter.virtuePoints;
-  }
+  renderSavedState(
+    section,
+    character
+  );
 }
 
 
 // =============================================
-// Restore from local state
+// Saved state
 // =============================================
 
-function restoreCharacterVirtueState(
-  card,
-  characterId
+function renderSavedState(
+  section,
+  character
 ) {
-  const characters =
-    window.ByNightMain
-      ?.character
-      ?.characters;
+  section.dataset.editing =
+    "false";
 
 
-  if (
-    !Array.isArray(
-      characters
-    )
-  ) {
-    return;
-  }
-
-
-  const character =
-    characters.find(
-      (item) =>
-        String(
-          item.id
-        ) ===
-        String(
-          characterId
-        )
+  const editButton =
+    section.querySelector(
+      '[data-character-virtue-action="edit"]'
     );
 
 
-  if (!character) {
-    return;
+  if (editButton) {
+    editButton.classList.remove(
+      "d-none"
+    );
   }
 
 
-  renderCharacterVirtueState(
-    card,
-    {
-      virtues:
-        character.virtues,
+  const footer =
+    section.querySelector(
+      ".character-virtue-edit-footer"
+    );
 
-      activeVirtues:
-        character.activeVirtues,
 
-      virtuePoints:
-        character.virtuePoints,
+  if (footer) {
+    footer.classList.add(
+      "d-none"
+    );
+  }
+
+
+  const progress =
+    character.virtuePoints ||
+    calculateDraftProgress(
+      character,
+      getSavedActiveVirtueValues(
+        character
+      )
+    );
+
+
+  updateCounter(
+    section,
+    progress,
+    false
+  );
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
+    (virtue) => {
+      const row =
+        findVirtueRow(
+          section,
+          virtue.key
+        );
+
+
+      if (!row) {
+        return;
+      }
+
+
+      const value =
+        Number.isFinite(
+          virtue.value
+        )
+          ? virtue.value
+          : (
+              Number.isFinite(
+                virtue.minimum
+              )
+                ? virtue.minimum
+                : 0
+            );
+
+
+      const view =
+        row.querySelector(
+          ".character-virtue-view"
+        );
+
+
+      const controls =
+        row.querySelector(
+          ".character-virtue-edit-controls"
+        );
+
+
+      const viewValue =
+        row.querySelector(
+          ".character-virtue-view-value"
+        );
+
+
+      const editValue =
+        row.querySelector(
+          ".character-virtue-edit-value"
+        );
+
+
+      if (view) {
+        view.classList.remove(
+          "d-none"
+        );
+      }
+
+
+      if (controls) {
+        controls.classList.add(
+          "d-none"
+        );
+      }
+
+
+      if (viewValue) {
+        viewValue.textContent =
+          String(
+            value
+          );
+      }
+
+
+      if (editValue) {
+        editValue.textContent =
+          String(
+            value
+          );
+
+
+        editValue.classList.remove(
+          "text-danger"
+        );
+      }
+
+
+      row.dataset
+        .savedValue =
+          String(
+            value
+          );
     }
   );
 }
 
 
 // =============================================
-// Render current Virtue state
+// Edit state
 // =============================================
 
-function renderCharacterVirtueState(
-  card,
-  character
+function renderEditState(
+  section,
+  character,
+  values
 ) {
-  if (!card) {
-    return;
-  }
+  section.dataset.editing =
+    "true";
 
 
-  const activeVirtues =
-    Array.isArray(
-      character
-        ?.activeVirtues
-    )
-      ? character.activeVirtues
-      : [];
-
-
-  const points =
-    character
-      ?.virtuePoints;
-
-
-  // =============================================
-  // Counter
-  // =============================================
-
-  const counter =
-    card.querySelector(
-      "[data-virtue-points]"
+  const editButton =
+    section.querySelector(
+      '[data-character-virtue-action="edit"]'
     );
 
 
-  if (
-    counter &&
-    points
-  ) {
-    const spent =
-      Number.isFinite(
-        points.spent
-      )
-        ? points.spent
-        : 0;
-
-
-    const total =
-      Number.isFinite(
-        points.total
-      )
-        ? points.total
-        : 7;
-
-
-    counter.textContent =
-      `${spent}/${total}`;
-
-
-    counter.dataset.complete =
-      points.complete
-        ? "true"
-        : "false";
+  if (editButton) {
+    editButton.classList.add(
+      "d-none"
+    );
   }
 
 
-  // =============================================
-  // Rows
-  // =============================================
+  const footer =
+    section.querySelector(
+      ".character-virtue-edit-footer"
+    );
 
-  activeVirtues.forEach(
+
+  if (footer) {
+    footer.classList.remove(
+      "d-none"
+    );
+  }
+
+
+  const progress =
+    calculateDraftProgress(
+      character,
+      values
+    );
+
+
+  const dirty =
+    hasDraftChanges(
+      character,
+      values
+    );
+
+
+  updateCounter(
+    section,
+    progress,
+    dirty
+  );
+
+
+  const message =
+    section.querySelector(
+      ".character-virtue-draft-message"
+    );
+
+
+  if (message) {
+    message.textContent =
+      dirty
+        ? "Alterações ainda não salvas."
+        : "Modo de edição.";
+
+
+    message.classList.toggle(
+      "text-danger",
+      dirty
+    );
+
+
+    message.classList.toggle(
+      "text-secondary",
+      !dirty
+    );
+  }
+
+
+  const saveButton =
+    section.querySelector(
+      '[data-character-virtue-action="save"]'
+    );
+
+
+  if (saveButton) {
+    saveButton.disabled =
+      !dirty;
+  }
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
     (virtue) => {
-      const key =
-        String(
-          virtue?.key ||
-          ""
-        );
-
-
-      if (!key) {
-        return;
-      }
-
-
       const row =
-        card.querySelector(
-          `.character-virtue-row[data-virtue-key="${CSS.escape(
-            key
-          )}"]`
+        findVirtueRow(
+          section,
+          virtue.key
         );
 
 
@@ -559,7 +933,7 @@ function renderCharacterVirtueState(
           : 5;
 
 
-      const value =
+      const savedValue =
         Number.isFinite(
           virtue.value
         )
@@ -567,79 +941,94 @@ function renderCharacterVirtueState(
           : minimum;
 
 
-      row.dataset
-        .virtueValue =
-          String(
-            value
-          );
+      const currentValue =
+        Number.isFinite(
+          values[
+            virtue.key
+          ]
+        )
+          ? values[
+              virtue.key
+            ]
+          : savedValue;
 
 
-      row.dataset
-        .virtueMinimum =
-          String(
-            minimum
-          );
+      const changed =
+        currentValue !==
+        savedValue;
 
 
-      row.dataset
-        .virtueMaximum =
-          String(
-            maximum
-          );
-
-
-      const valueElement =
+      const view =
         row.querySelector(
-          ".character-virtue-value"
+          ".character-virtue-view"
         );
 
 
-      if (
-        valueElement
-      ) {
-        valueElement.textContent =
-          String(
-            value
-          );
-      }
+      const controls =
+        row.querySelector(
+          ".character-virtue-edit-controls"
+        );
 
 
-      const decreaseButton =
+      const editValue =
+        row.querySelector(
+          ".character-virtue-edit-value"
+        );
+
+
+      const decrease =
         row.querySelector(
           '[data-character-virtue-action="decrease"]'
         );
 
 
-      const increaseButton =
+      const increase =
         row.querySelector(
           '[data-character-virtue-action="increase"]'
         );
 
 
-      if (
-        decreaseButton
-      ) {
-        decreaseButton.disabled =
-          value <=
+      if (view) {
+        view.classList.add(
+          "d-none"
+        );
+      }
+
+
+      if (controls) {
+        controls.classList.remove(
+          "d-none"
+        );
+      }
+
+
+      if (editValue) {
+        editValue.textContent =
+          String(
+            currentValue
+          );
+
+
+        editValue.classList.toggle(
+          "text-danger",
+          changed
+        );
+      }
+
+
+      if (decrease) {
+        decrease.disabled =
+          currentValue <=
           minimum;
       }
 
 
-      if (
-        increaseButton
-      ) {
-        const noPointsRemaining =
-          Number.isFinite(
-            points?.remaining
-          ) &&
-          points.remaining <=
-            0;
-
-
-        increaseButton.disabled =
-          value >=
+      if (increase) {
+        increase.disabled =
+          currentValue >=
             maximum ||
-          noPointsRemaining;
+          progress.remaining <=
+            0;
       }
     }
   );
@@ -647,18 +1036,553 @@ function renderCharacterVirtueState(
 
 
 // =============================================
-// Busy state
+// Counter
 // =============================================
 
-function setVirtueControlsBusy(
+function updateCounter(
   section,
-  busy
+  progress,
+  dirty
 ) {
-  if (!section) {
+  const counter =
+    section.querySelector(
+      "[data-virtue-points]"
+    );
+
+
+  if (!counter) {
     return;
   }
 
 
+  const spent =
+    Number.isFinite(
+      progress?.spent
+    )
+      ? progress.spent
+      : 0;
+
+
+  const total =
+    Number.isFinite(
+      progress?.total
+    )
+      ? progress.total
+      : 7;
+
+
+  counter.textContent =
+    `${spent}/${total}`;
+
+
+  counter.classList.toggle(
+    "text-danger",
+    dirty
+  );
+
+
+  counter.classList.toggle(
+    "border-danger",
+    dirty
+  );
+
+
+  counter.classList.toggle(
+    "text-secondary",
+    !dirty
+  );
+
+
+  counter.classList.toggle(
+    "border-secondary",
+    !dirty
+  );
+}
+
+
+// =============================================
+// Calculate draft progress
+// =============================================
+
+function calculateDraftProgress(
+  character,
+  values
+) {
+  const total =
+    Number.isFinite(
+      character
+        ?.virtuePoints
+        ?.total
+    )
+      ? character
+          .virtuePoints
+          .total
+      : 7;
+
+
+  let spent =
+    0;
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
+    (virtue) => {
+      const minimum =
+        Number.isFinite(
+          virtue.minimum
+        )
+          ? virtue.minimum
+          : 0;
+
+
+      const value =
+        Number.isFinite(
+          values[
+            virtue.key
+          ]
+        )
+          ? values[
+              virtue.key
+            ]
+          : minimum;
+
+
+      spent +=
+        Math.max(
+          0,
+          value -
+            minimum
+        );
+    }
+  );
+
+
+  return {
+    total,
+
+    spent,
+
+    remaining:
+      Math.max(
+        0,
+        total -
+          spent
+      ),
+
+    complete:
+      spent ===
+      total,
+  };
+}
+
+
+// =============================================
+// Draft validation
+// =============================================
+
+function isValidDraft(
+  character,
+  values
+) {
+  if (
+    !values ||
+    typeof values !==
+      "object"
+  ) {
+    return false;
+  }
+
+
+  const virtues =
+    getActiveVirtues(
+      character
+    );
+
+
+  for (
+    const virtue
+    of virtues
+  ) {
+    const minimum =
+      Number.isFinite(
+        virtue.minimum
+      )
+        ? virtue.minimum
+        : 0;
+
+
+    const maximum =
+      Number.isFinite(
+        virtue.maximum
+      )
+        ? virtue.maximum
+        : 5;
+
+
+    const value =
+      values[
+        virtue.key
+      ];
+
+
+    if (
+      !Number.isInteger(
+        value
+      ) ||
+      value <
+        minimum ||
+      value >
+        maximum
+    ) {
+      return false;
+    }
+  }
+
+
+  const progress =
+    calculateDraftProgress(
+      character,
+      values
+    );
+
+
+  return (
+    progress.spent <=
+    progress.total
+  );
+}
+
+
+// =============================================
+// Detect changes
+// =============================================
+
+function hasDraftChanges(
+  character,
+  values
+) {
+  return getActiveVirtues(
+    character
+  ).some(
+    (virtue) => {
+      const minimum =
+        Number.isFinite(
+          virtue.minimum
+        )
+          ? virtue.minimum
+          : 0;
+
+
+      const saved =
+        Number.isFinite(
+          virtue.value
+        )
+          ? virtue.value
+          : minimum;
+
+
+      const draft =
+        Number.isFinite(
+          values[
+            virtue.key
+          ]
+        )
+          ? values[
+              virtue.key
+            ]
+          : saved;
+
+
+      return (
+        saved !==
+        draft
+      );
+    }
+  );
+}
+
+
+// =============================================
+// Saved values
+// =============================================
+
+function getSavedActiveVirtueValues(
+  character
+) {
+  const values = {};
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
+    (virtue) => {
+      const minimum =
+        Number.isFinite(
+          virtue.minimum
+        )
+          ? virtue.minimum
+          : 0;
+
+
+      values[
+        virtue.key
+      ] =
+        Number.isFinite(
+          virtue.value
+        )
+          ? virtue.value
+          : minimum;
+    }
+  );
+
+
+  return values;
+}
+
+
+// =============================================
+// Character local state
+// =============================================
+
+function updateCharacterLocalState(
+  character,
+  updated
+) {
+  if (
+    updated.virtues &&
+    typeof updated.virtues ===
+      "object"
+  ) {
+    character.virtues =
+      updated.virtues;
+  }
+
+
+  if (
+    Array.isArray(
+      updated.activeVirtues
+    )
+  ) {
+    character.activeVirtues =
+      updated.activeVirtues;
+  }
+
+
+  if (
+    updated.virtuePoints &&
+    typeof updated.virtuePoints ===
+      "object"
+  ) {
+    character.virtuePoints =
+      updated.virtuePoints;
+  }
+}
+
+
+// =============================================
+// Get active Virtues
+// =============================================
+
+function getActiveVirtues(
+  character
+) {
+  return Array.isArray(
+    character
+      ?.activeVirtues
+  )
+    ? character
+        .activeVirtues
+    : [];
+}
+
+
+function getActiveVirtue(
+  character,
+  virtueKey
+) {
+  return getActiveVirtues(
+    character
+  ).find(
+    (virtue) =>
+      String(
+        virtue.key
+      ) ===
+      String(
+        virtueKey
+      )
+  ) || null;
+}
+
+
+// =============================================
+// Character lookup
+// =============================================
+
+function getCharacterById(
+  characterId
+) {
+  const characters =
+    window.ByNightMain
+      ?.character
+      ?.characters;
+
+
+  if (
+    !Array.isArray(
+      characters
+    )
+  ) {
+    return null;
+  }
+
+
+  return (
+    characters.find(
+      (character) =>
+        String(
+          character.id
+        ) ===
+        String(
+          characterId
+        )
+    ) ||
+    null
+  );
+}
+
+
+// =============================================
+// Find row
+// =============================================
+
+function findVirtueRow(
+  section,
+  virtueKey
+) {
+  return section.querySelector(
+    `.character-virtue-row[data-virtue-key="${CSS.escape(
+      String(
+        virtueKey
+      )
+    )}"]`
+  );
+}
+
+
+// =============================================
+// LocalStorage
+// =============================================
+
+function getVirtueDraftKey(
+  characterId
+) {
+  return (
+    VIRTUE_DRAFT_PREFIX +
+    String(
+      characterId
+    )
+  );
+}
+
+
+function loadVirtueDraft(
+  characterId
+) {
+  try {
+    const raw =
+      localStorage.getItem(
+        getVirtueDraftKey(
+          characterId
+        )
+      );
+
+
+    if (!raw) {
+      return null;
+    }
+
+
+    const parsed =
+      JSON.parse(
+        raw
+      );
+
+
+    if (
+      parsed?.version !==
+        VIRTUE_DRAFT_VERSION ||
+      !parsed?.values
+    ) {
+      return null;
+    }
+
+
+    return parsed;
+
+  } catch (error) {
+    console.warn(
+      "[CHARACTER] Não foi possível restaurar o rascunho de Virtudes:",
+      error
+    );
+
+
+    return null;
+  }
+}
+
+
+function saveVirtueDraftLocal(
+  characterId,
+  draft
+) {
+  try {
+    localStorage.setItem(
+      getVirtueDraftKey(
+        characterId
+      ),
+
+      JSON.stringify(
+        draft
+      )
+    );
+
+  } catch (error) {
+    console.warn(
+      "[CHARACTER] Não foi possível salvar o rascunho de Virtudes:",
+      error
+    );
+  }
+}
+
+
+function removeVirtueDraft(
+  characterId
+) {
+  try {
+    localStorage.removeItem(
+      getVirtueDraftKey(
+        characterId
+      )
+    );
+
+  } catch (error) {
+    console.warn(
+      "[CHARACTER] Não foi possível remover o rascunho de Virtudes:",
+      error
+    );
+  }
+}
+
+
+// =============================================
+// Busy
+// =============================================
+
+function setVirtueBusy(
+  section,
+  busy
+) {
   section.dataset.busy =
     busy
       ? "true"
@@ -671,17 +1595,15 @@ function setVirtueControlsBusy(
     )
     .forEach(
       (button) => {
-        if (busy) {
-          button.disabled =
-            true;
-        }
+        button.disabled =
+          busy;
       }
     );
 }
 
 
 // =============================================
-// Errors
+// Error
 // =============================================
 
 function showVirtueError(

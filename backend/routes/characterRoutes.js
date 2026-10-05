@@ -17,6 +17,7 @@ const {
   updateCharacterConcept,
   updateCharacterNature,
   updateCharacterDemeanor,
+  updateCharacterVirtues,
   updateCharacterVirtue,
   requestMotherHouse,
   deleteCharacter,
@@ -167,7 +168,21 @@ router.patch(
 
 
 // =============================================
-// Update Virtue
+// Save all active Virtues
+// =============================================
+
+router.patch(
+  "/:characterId/virtues",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateCharacterVirtues
+);
+
+
+// =============================================
+// Legacy: Update one Virtue
 // =============================================
 
 router.patch(
