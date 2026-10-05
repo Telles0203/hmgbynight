@@ -44,6 +44,10 @@ const houseRoutes = require(
   "./routes/houseRoutes"
 );
 
+const originProtection = require(
+  "./Middlewares/originProtection"
+);
+
 
 const app =
   express();
@@ -88,58 +92,155 @@ const indexPath =
 // Environment validation
 // ==============================
 
-function validateApplicationUrl() {
-  const rawApplicationUrl =
+function validateConfiguredUrl(
+  variableName,
+  options = {}
+) {
+  const {
+    requireHttps = false,
+    requireLocalhost = false,
+  } = options;
+
+
+  const rawValue =
     String(
-      process.env.APP_URL || ""
+      process.env[
+        variableName
+      ] || ""
     ).trim();
 
-  if (!rawApplicationUrl) {
+
+  if (!rawValue) {
     throw new Error(
-      "APP_URL não configurado."
+      `${variableName} não configurado.`
     );
   }
 
 
-  let applicationUrl;
+  let configuredUrl;
 
   try {
-    applicationUrl =
+    configuredUrl =
       new URL(
-        rawApplicationUrl
+        rawValue
       );
+
   } catch {
     throw new Error(
-      "APP_URL inválido."
+      `${variableName} inválido.`
     );
   }
-
-
-  const isLocalhost =
-    applicationUrl.hostname ===
-      "localhost" ||
-    applicationUrl.hostname ===
-      "127.0.0.1";
 
 
   if (
-    applicationUrl.protocol !==
-      "https:" &&
-    !isLocalhost
+    configuredUrl.username ||
+    configuredUrl.password ||
+    configuredUrl.search ||
+    configuredUrl.hash
   ) {
     throw new Error(
-      "APP_URL deve utilizar HTTPS fora do ambiente local."
+      `${variableName} contém componentes não permitidos.`
     );
   }
 
 
-  process.env.APP_URL =
-    applicationUrl
-      .toString()
-      .replace(
-        /\/+$/,
-        ""
+  if (
+    configuredUrl.pathname !==
+      "/" &&
+    configuredUrl.pathname !==
+      ""
+  ) {
+    throw new Error(
+      `${variableName} não deve conter caminho.`
+    );
+  }
+
+
+  if (
+    requireHttps &&
+    configuredUrl.protocol !==
+      "https:"
+  ) {
+    throw new Error(
+      `${variableName} deve utilizar HTTPS.`
+    );
+  }
+
+
+  if (
+    !requireHttps &&
+    configuredUrl.protocol !==
+      "http:" &&
+    configuredUrl.protocol !==
+      "https:"
+  ) {
+    throw new Error(
+      `${variableName} deve utilizar HTTP ou HTTPS.`
+    );
+  }
+
+
+  if (requireLocalhost) {
+    const hostname =
+      configuredUrl.hostname
+        .toLowerCase();
+
+
+    const isLocalhost =
+      hostname ===
+        "localhost" ||
+      hostname ===
+        "127.0.0.1" ||
+      hostname ===
+        "::1";
+
+
+    if (!isLocalhost) {
+      throw new Error(
+        `${variableName} deve apontar para localhost.`
       );
+    }
+  }
+
+
+  return configuredUrl.origin;
+}
+
+
+function validateApplicationUrls() {
+  const productionUrl =
+    validateConfiguredUrl(
+      "APP_URL",
+      {
+        requireHttps: true,
+      }
+    );
+
+
+  const localUrl =
+    validateConfiguredUrl(
+      "APP_URL_LOCAL",
+      {
+        requireLocalhost:
+          true,
+      }
+    );
+
+
+  process.env.APP_URL =
+    productionUrl;
+
+  process.env.APP_URL_LOCAL =
+    localUrl;
+
+
+  console.log(
+    `[SERVER] APP_URL: ${productionUrl}.`
+  );
+
+  console.log(
+    `[SERVER] APP_URL_LOCAL: ${localUrl}.`
+  );
 }
 
 
@@ -229,6 +330,15 @@ app.use(
       },
     },
   })
+);
+
+
+// ==============================
+// Origin protection
+// ==============================
+
+app.use(
+  originProtection
 );
 
 
@@ -397,7 +507,7 @@ async function startServer() {
     }
 
 
-    validateApplicationUrl();
+    validateApplicationUrls();
 
 
     await mongoose.connect(
