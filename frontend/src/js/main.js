@@ -97,7 +97,7 @@ async function loadCharacterModules() {
         ),
 
         import(
-          "/src/js/main/character/characterView.js"
+          "/src/js/main/character/view/characterView.js"
         ),
 
         import(
