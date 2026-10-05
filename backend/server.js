@@ -44,6 +44,10 @@ const houseRoutes = require(
   "./routes/houseRoutes"
 );
 
+const diagnosticRoutes = require(
+  "./routes/diagnosticRoutes"
+);
+
 const originProtection = require(
   "./Middlewares/originProtection"
 );
@@ -399,6 +403,16 @@ app.use(
 app.use(
   "/api/houses",
   houseRoutes
+);
+
+
+// ==============================
+// Temporary proxy diagnostics
+// ==============================
+
+app.use(
+  "/api/diagnostics",
+  diagnosticRoutes
 );
 
 
