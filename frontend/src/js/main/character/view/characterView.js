@@ -41,7 +41,7 @@ let characterTransitioning = false;
 // Toggle
 // =============================================
 
-function toggleCharacterView(
+export function toggleCharacterView(
   characterId
 ) {
   const selectedId =
@@ -67,7 +67,7 @@ function toggleCharacterView(
 // Open
 // =============================================
 
-async function openCharacterView(
+export async function openCharacterView(
   characterId
 ) {
   if (characterTransitioning) {
@@ -191,7 +191,7 @@ async function openCharacterView(
 // Close
 // =============================================
 
-async function closeCharacterView() {
+export async function closeCharacterView() {
   if (characterTransitioning) {
     return;
   }
@@ -395,6 +395,7 @@ function getViewElements(
 
 // =============================================
 // Globals
+// Mantidos temporariamente por compatibilidade
 // =============================================
 
 window.toggleCharacterView =
