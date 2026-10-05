@@ -2,10 +2,6 @@ const bcrypt = require(
   "bcryptjs"
 );
 
-const jwt = require(
-  "jsonwebtoken"
-);
-
 const crypto = require(
   "crypto"
 );
@@ -40,19 +36,26 @@ const {
 );
 
 
+const {
+  signAuthToken,
+  setAuthCookie,
+  clearAuthCookie,
+} = require(
+  "../utils/authSession"
+);
+
+
 const PASSWORD_RESET_EXPIRATION_MINUTES =
   15;
 
 const PASSWORD_MIN_LENGTH =
   6;
 
-
 const PASSWORD_RECOVERY_MIN_RESPONSE_MS =
   700;
 
 const PASSWORD_RECOVERY_JITTER_MS =
   300;
-
 
 const PRIVACY_POLICY_VERSION =
   "2026-10-01";
@@ -68,108 +71,6 @@ const DUMMY_PASSWORD_HASH =
 // ==============================
 // Helpers
 // ==============================
-
-function getCookieName() {
-  return (
-    process.env.COOKIE_NAME ||
-    "bn_session"
-  );
-}
-
-
-function getCookieOptions() {
-  const isProduction =
-    process.env.NODE_ENV ===
-    "production";
-
-
-  return {
-    httpOnly: true,
-
-    secure:
-      isProduction,
-
-    sameSite:
-      "lax",
-
-    path:
-      "/",
-
-    maxAge:
-      7 *
-      24 *
-      60 *
-      60 *
-      1000,
-  };
-}
-
-
-function getCookieClearOptions() {
-  const cookieOptions =
-    getCookieOptions();
-
-
-  return {
-    httpOnly:
-      cookieOptions.httpOnly,
-
-    secure:
-      cookieOptions.secure,
-
-    sameSite:
-      cookieOptions.sameSite,
-
-    path:
-      cookieOptions.path,
-  };
-}
-
-
-function signToken(
-  user
-) {
-  if (
-    !process.env.JWT_SECRET
-  ) {
-    throw new Error(
-      "JWT_SECRET não configurado."
-    );
-  }
-
-
-  return jwt.sign(
-    {
-      sub:
-        String(
-          user._id
-        ),
-
-      email:
-        user.email,
-
-      name:
-        user.name,
-
-      authVersion:
-        Number(
-          user.authVersion ??
-          0
-        ),
-    },
-
-    process.env.JWT_SECRET,
-
-    {
-      algorithm:
-        "HS256",
-
-      expiresIn:
-        "7d",
-    }
-  );
-}
-
 
 function normalizeEmail(
   email
@@ -204,8 +105,7 @@ function createPasswordResetExpiration() {
 function getApplicationUrl() {
   const applicationUrl =
     String(
-      process.env.APP_URL ||
-      ""
+      process.env.APP_URL || ""
     )
       .trim()
       .replace(
@@ -229,9 +129,7 @@ function wait(
   milliseconds
 ) {
   return new Promise(
-    (
-      resolve
-    ) => {
+    (resolve) => {
       setTimeout(
         resolve,
         milliseconds
@@ -247,8 +145,7 @@ async function waitForPasswordRecoveryResponse(
   const jitter =
     crypto.randomInt(
       0,
-      PASSWORD_RECOVERY_JITTER_MS +
-        1
+      PASSWORD_RECOVERY_JITTER_MS + 1
     );
 
 
@@ -267,9 +164,7 @@ async function waitForPasswordRecoveryResponse(
     elapsed;
 
 
-  if (
-    remaining > 0
-  ) {
+  if (remaining > 0) {
     await wait(
       remaining
     );
@@ -305,13 +200,11 @@ async function sendPasswordResetInBackground(
     try {
       await User.updateOne(
         {
-          _id:
-            user._id,
+          _id: user._id,
 
           resetPasswordTokenHash:
             tokenHash,
         },
-
         {
           $set: {
             resetPasswordTokenHash:
@@ -323,9 +216,7 @@ async function sendPasswordResetInBackground(
         }
       );
 
-    } catch (
-      databaseError
-    ) {
+    } catch (databaseError) {
       console.error(
         "[PASSWORD RESET] Erro ao invalidar token após falha de e-mail:",
         databaseError
@@ -369,29 +260,24 @@ async function register(
       !cleanEmail ||
       !password
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "Nome, e-mail e senha são obrigatórios.",
-        });
+        error:
+          "Nome, e-mail e senha são obrigatórios.",
+      });
     }
 
 
     if (
-      privacyPolicyAccepted !==
-      true
+      privacyPolicyAccepted !== true
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "É necessário aceitar a Política de Privacidade para criar a conta.",
-        });
+        error:
+          "É necessário aceitar a Política de Privacidade para criar a conta.",
+      });
     }
 
 
@@ -399,14 +285,12 @@ async function register(
       cleanName.length < 2 ||
       cleanName.length > 40
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "O nome deve possuir entre 2 e 40 caracteres.",
-        });
+        error:
+          "O nome deve possuir entre 2 e 40 caracteres.",
+      });
     }
 
 
@@ -415,52 +299,42 @@ async function register(
         cleanEmail
       )
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
-
-          error:
-            "E-mail inválido.",
-        });
+      return res.status(400).json({
+        ok: false,
+        error: "E-mail inválido.",
+      });
     }
 
 
     if (
-      typeof password !==
-        "string" ||
+      typeof password !== "string" ||
       password.length <
         PASSWORD_MIN_LENGTH
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            `A senha deve possuir pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`,
-        });
+        error:
+          `A senha deve possuir pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`,
+      });
     }
 
 
     const existingUser =
       await User.findOne({
-        email:
-          cleanEmail,
+        email: cleanEmail,
       }).select(
         "_id"
       );
 
 
     if (existingUser) {
-      return res
-        .status(409)
-        .json({
-          ok: false,
+      return res.status(409).json({
+        ok: false,
 
-          error:
-            "E-mail já cadastrado.",
-        });
+        error:
+          "E-mail já cadastrado.",
+      });
     }
 
 
@@ -487,26 +361,13 @@ async function register(
 
     const user =
       await User.create({
-        name:
-          cleanName,
-
-        email:
-          cleanEmail,
-
+        name: cleanName,
+        email: cleanEmail,
         passwordHash,
 
-        isEmailValid:
-          false,
+        isEmailValid: false,
+        authVersion: 0,
 
-        authVersion:
-          0,
-
-        /*
-         * Este campo mantém o nome
-         * histórico para compatibilidade,
-         * mas passa a armazenar SOMENTE
-         * o hash SHA-256 do token.
-         */
         emailVerificationToken:
           emailVerificationTokenHash,
 
@@ -523,8 +384,7 @@ async function register(
       });
 
 
-    let emailSent =
-      false;
+    let emailSent = false;
 
 
     try {
@@ -534,9 +394,7 @@ async function register(
       );
 
 
-      emailSent =
-        true;
-
+      emailSent = true;
 
       user.emailVerificationLastSentAt =
         new Date();
@@ -553,61 +411,49 @@ async function register(
 
 
     const authToken =
-      signToken(
+      signAuthToken(
         user
       );
 
 
-    res.cookie(
-      getCookieName(),
-      authToken,
-      getCookieOptions()
+    setAuthCookie(
+      res,
+      authToken
     );
 
 
-    return res
-      .status(201)
-      .json({
-        ok: true,
+    return res.status(201).json({
+      ok: true,
 
-        user: {
-          id:
-            user._id,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
 
-          name:
-            user.name,
+        isEmailValid:
+          user.isEmailValid,
+      },
 
-          email:
-            user.email,
+      emailVerification: {
+        sent: emailSent,
 
-          isEmailValid:
-            user.isEmailValid,
-        },
-
-        emailVerification: {
-          sent:
-            emailSent,
-
-          retryAfter:
-            emailSent
-              ? EMAIL_TOKEN_RESEND_SECONDS
-              : 0,
-        },
-      });
+        retryAfter:
+          emailSent
+            ? EMAIL_TOKEN_RESEND_SECONDS
+            : 0,
+      },
+    });
 
   } catch (error) {
     if (
-      error?.code ===
-      11000
+      error?.code === 11000
     ) {
-      return res
-        .status(409)
-        .json({
-          ok: false,
+      return res.status(409).json({
+        ok: false,
 
-          error:
-            "E-mail já cadastrado.",
-        });
+        error:
+          "E-mail já cadastrado.",
+      });
     }
 
 
@@ -617,14 +463,12 @@ async function register(
     );
 
 
-    return res
-      .status(500)
-      .json({
-        ok: false,
+    return res.status(500).json({
+      ok: false,
 
-        error:
-          "Erro interno ao realizar cadastro.",
-      });
+      error:
+        "Erro interno ao realizar cadastro.",
+    });
   }
 }
 
@@ -652,25 +496,21 @@ async function login(
 
     if (
       !cleanEmail ||
-      typeof password !==
-        "string" ||
+      typeof password !== "string" ||
       !password
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "E-mail e senha são obrigatórios.",
-        });
+        error:
+          "E-mail e senha são obrigatórios.",
+      });
     }
 
 
     const user =
       await User.findOne({
-        email:
-          cleanEmail,
+        email: cleanEmail,
       }).select(
         "+passwordHash authVersion"
       );
@@ -692,27 +532,24 @@ async function login(
       !user ||
       !passwordMatches
     ) {
-      return res
-        .status(401)
-        .json({
-          ok: false,
+      return res.status(401).json({
+        ok: false,
 
-          error:
-            "Credenciais inválidas.",
-        });
+        error:
+          "Credenciais inválidas.",
+      });
     }
 
 
     const authToken =
-      signToken(
+      signAuthToken(
         user
       );
 
 
-    res.cookie(
-      getCookieName(),
-      authToken,
-      getCookieOptions()
+    setAuthCookie(
+      res,
+      authToken
     );
 
 
@@ -720,14 +557,9 @@ async function login(
       ok: true,
 
       user: {
-        id:
-          user._id,
-
-        name:
-          user.name,
-
-        email:
-          user.email,
+        id: user._id,
+        name: user.name,
+        email: user.email,
 
         isEmailValid:
           user.isEmailValid,
@@ -741,14 +573,12 @@ async function login(
     );
 
 
-    return res
-      .status(500)
-      .json({
-        ok: false,
+    return res.status(500).json({
+      ok: false,
 
-        error:
-          "Erro interno ao realizar login.",
-      });
+      error:
+        "Erro interno ao realizar login.",
+    });
   }
 }
 
@@ -781,14 +611,12 @@ async function forgotPassword(
 
 
     if (!cleanEmail) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "Informe o endereço de e-mail.",
-        });
+        error:
+          "Informe o endereço de e-mail.",
+      });
     }
 
 
@@ -797,14 +625,10 @@ async function forgotPassword(
         cleanEmail
       )
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
-
-          error:
-            "E-mail inválido.",
-        });
+      return res.status(400).json({
+        ok: false,
+        error: "E-mail inválido.",
+      });
     }
 
 
@@ -817,8 +641,7 @@ async function forgotPassword(
 
     const user =
       await User.findOne({
-        email:
-          cleanEmail,
+        email: cleanEmail,
       });
 
 
@@ -863,14 +686,12 @@ async function forgotPassword(
     );
 
 
-    return res
-      .status(500)
-      .json({
-        ok: false,
+    return res.status(500).json({
+      ok: false,
 
-        error:
-          "Erro interno ao processar recuperação de senha.",
-      });
+      error:
+        "Erro interno ao processar recuperação de senha.",
+    });
   }
 }
 
@@ -892,34 +713,28 @@ async function resetPassword(
 
     if (
       !token ||
-      typeof token !==
-        "string"
+      typeof token !== "string"
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "Token de recuperação obrigatório.",
-        });
+        error:
+          "Token de recuperação obrigatório.",
+      });
     }
 
 
     if (
-      typeof password !==
-        "string" ||
+      typeof password !== "string" ||
       password.length <
         PASSWORD_MIN_LENGTH
     ) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            `A senha deve possuir pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`,
-        });
+        error:
+          `A senha deve possuir pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`,
+      });
     }
 
 
@@ -929,15 +744,9 @@ async function resetPassword(
 
     const tokenHash =
       crypto
-        .createHash(
-          "sha256"
-        )
-        .update(
-          cleanToken
-        )
-        .digest(
-          "hex"
-        );
+        .createHash("sha256")
+        .update(cleanToken)
+        .digest("hex");
 
 
     const user =
@@ -946,8 +755,7 @@ async function resetPassword(
           tokenHash,
 
         resetPasswordExpires: {
-          $gt:
-            new Date(),
+          $gt: new Date(),
         },
       }).select(
         "+passwordHash +resetPasswordTokenHash +resetPasswordExpires authVersion"
@@ -955,14 +763,12 @@ async function resetPassword(
 
 
     if (!user) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
+      return res.status(400).json({
+        ok: false,
 
-          error:
-            "Link de recuperação inválido ou expirado.",
-        });
+        error:
+          "Link de recuperação inválido ou expirado.",
+      });
     }
 
 
@@ -976,10 +782,8 @@ async function resetPassword(
     user.passwordHash =
       passwordHash;
 
-
     user.resetPasswordTokenHash =
       null;
-
 
     user.resetPasswordExpires =
       null;
@@ -987,17 +791,15 @@ async function resetPassword(
 
     user.authVersion =
       Number(
-        user.authVersion ??
-        0
+        user.authVersion ?? 0
       ) + 1;
 
 
     await user.save();
 
 
-    res.clearCookie(
-      getCookieName(),
-      getCookieClearOptions()
+    clearAuthCookie(
+      res
     );
 
 
@@ -1015,14 +817,12 @@ async function resetPassword(
     );
 
 
-    return res
-      .status(500)
-      .json({
-        ok: false,
+    return res.status(500).json({
+      ok: false,
 
-        error:
-          "Erro interno ao redefinir senha.",
-      });
+      error:
+        "Erro interno ao redefinir senha.",
+    });
   }
 }
 
@@ -1045,14 +845,12 @@ async function me(
 
 
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          ok: false,
+      return res.status(404).json({
+        ok: false,
 
-          error:
-            "Usuário não encontrado.",
-        });
+        error:
+          "Usuário não encontrado.",
+      });
     }
 
 
@@ -1068,14 +866,12 @@ async function me(
     );
 
 
-    return res
-      .status(500)
-      .json({
-        ok: false,
+    return res.status(500).json({
+      ok: false,
 
-        error:
-          "Erro interno ao buscar usuário.",
-      });
+      error:
+        "Erro interno ao buscar usuário.",
+    });
   }
 }
 
@@ -1088,9 +884,8 @@ function logout(
   req,
   res
 ) {
-  res.clearCookie(
-    getCookieName(),
-    getCookieClearOptions()
+  clearAuthCookie(
+    res
   );
 
 
