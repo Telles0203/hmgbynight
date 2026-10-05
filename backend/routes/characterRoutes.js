@@ -20,6 +20,7 @@ const {
   updateCharacterVirtues,
   updateCharacterVirtue,
   requestMotherHouse,
+  cancelMotherHouseRequest,
   deleteCharacter,
 } = require(
   "../controllers/characterController"
@@ -196,7 +197,7 @@ router.patch(
 
 
 // =============================================
-// Request mother Chronicle
+// Request / change Chronicle
 // =============================================
 
 router.post(
@@ -206,6 +207,20 @@ router.post(
   requireVerifiedEmail,
 
   requestMotherHouse
+);
+
+
+// =============================================
+// Cancel pending Chronicle request
+// =============================================
+
+router.delete(
+  "/:characterId/mother-house-request",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  cancelMotherHouseRequest
 );
 
 

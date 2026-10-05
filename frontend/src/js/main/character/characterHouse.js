@@ -14,6 +14,9 @@ let selectedCharacterId =
 let selectedHouseId =
   "";
 
+let currentPendingHouseId =
+  "";
+
 let availableHouses =
   [];
 
@@ -28,7 +31,7 @@ let houseSearchAbortController =
 
 
 // =============================================
-// Character House field
+// Character Chronicle field
 // =============================================
 
 export function createCharacterHouseField(
@@ -49,14 +52,14 @@ export function createCharacterHouseField(
 
 
   // =============================================
-  // Approved House
+  // Approved Chronicle
   // =============================================
 
   if (motherHouse) {
     const houseName =
       escapeHouseHtml(
         motherHouse.name ||
-        "House vinculada"
+        "Crônica vinculada"
       );
 
 
@@ -71,30 +74,71 @@ export function createCharacterHouseField(
 
 
   // =============================================
-  // Pending House
+  // Pending Chronicle
   // =============================================
 
   if (pendingMotherHouse) {
     const houseName =
       escapeHouseHtml(
         pendingMotherHouse.name ||
-        "House"
+        "Crônica"
       );
 
 
     return `
       <span
-        class="character-house-field d-flex flex-column gap-1"
+        class="character-house-field"
       >
 
-        <span class="text-light">
-          ${houseName}
+        <span
+          class="character-house-pending-info"
+        >
+
+          <span class="text-light">
+            ${houseName}
+          </span>
+
+
+          <span
+            class="text-secondary small"
+          >
+            Vínculo pendente
+          </span>
+
         </span>
 
+
         <span
-          class="text-warning small"
+          class="character-house-actions"
         >
-          Aguardando aprovação
+
+          <button
+            type="button"
+            class="
+              btn
+              btn-outline-light
+              btn-sm
+              character-house-change-button
+            "
+            data-character-id="${characterId}"
+          >
+            Alterar Crônica
+          </button>
+
+
+          <button
+            type="button"
+            class="
+              btn
+              btn-outline-danger
+              btn-sm
+              character-house-remove-button
+            "
+            data-character-id="${characterId}"
+          >
+            Remover solicitação
+          </button>
+
         </span>
 
       </span>
@@ -103,7 +147,7 @@ export function createCharacterHouseField(
 
 
   // =============================================
-  // No House
+  // No Chronicle
   // =============================================
 
   return `
@@ -113,10 +157,15 @@ export function createCharacterHouseField(
 
       <button
         type="button"
-        class="btn btn-outline-light btn-sm character-house-select-button"
+        class="
+          btn
+          btn-outline-light
+          btn-sm
+          character-house-select-button
+        "
         data-character-id="${characterId}"
       >
-        Selecionar House
+        Selecionar Crônica
       </button>
 
     </span>
@@ -267,40 +316,124 @@ export function handleCharacterHouseClick(
   }
 
 
-  const button =
+  // =============================================
+  // Select / change Chronicle
+  // =============================================
+
+  const selectButton =
     target.closest(
-      ".character-house-select-button"
+      `
+        .character-house-select-button,
+        .character-house-change-button
+      `
     );
 
 
   if (
-    !button ||
-    !container.contains(
-      button
+    selectButton &&
+    container.contains(
+      selectButton
     )
   ) {
-    return false;
-  }
+    const characterId =
+      String(
+        selectButton.dataset
+          .characterId ||
+        ""
+      ).trim();
 
 
-  const characterId =
-    String(
-      button.dataset.characterId ||
-      ""
-    ).trim();
+    if (!characterId) {
+      return true;
+    }
 
 
-  if (!characterId) {
+    openCharacterHouseModal(
+      characterId
+    );
+
+
     return true;
   }
 
 
-  openCharacterHouseModal(
-    characterId
+  // =============================================
+  // Remove pending request
+  // =============================================
+
+  const removeButton =
+    target.closest(
+      ".character-house-remove-button"
+    );
+
+
+  if (
+    removeButton &&
+    container.contains(
+      removeButton
+    )
+  ) {
+    const characterId =
+      String(
+        removeButton.dataset
+          .characterId ||
+        ""
+      ).trim();
+
+
+    if (!characterId) {
+      return true;
+    }
+
+
+    removePendingHouseRequest(
+      characterId,
+      removeButton
+    );
+
+
+    return true;
+  }
+
+
+  return false;
+}
+
+
+// =============================================
+// Character lookup
+// =============================================
+
+function getCharacterById(
+  characterId
+) {
+  const characters =
+    window.ByNightMain
+      ?.character
+      ?.characters;
+
+
+  if (
+    !Array.isArray(
+      characters
+    )
+  ) {
+    return null;
+  }
+
+
+  return (
+    characters.find(
+      (character) =>
+        String(
+          character.id
+        ) ===
+        String(
+          characterId
+        )
+    ) ||
+    null
   );
-
-
-  return true;
 }
 
 
@@ -320,6 +453,12 @@ async function openCharacterHouseModal(
   }
 
 
+  const character =
+    getCharacterById(
+      characterId
+    );
+
+
   selectedCharacterId =
     characterId;
 
@@ -328,11 +467,23 @@ async function openCharacterHouseModal(
     "";
 
 
+  currentPendingHouseId =
+    String(
+      character
+        ?.pendingMotherHouse
+        ?.id ||
+      ""
+    );
+
+
   availableHouses =
     [];
 
 
   resetCharacterHouseModalContent();
+
+
+  updateCharacterHouseModalMode();
 
 
   const modal =
@@ -361,7 +512,61 @@ async function openCharacterHouseModal(
 
 
 // =============================================
-// Load Houses
+// Modal mode
+// =============================================
+
+function updateCharacterHouseModalMode() {
+  const title =
+    document.getElementById(
+      "characterHouseModalLabel"
+    );
+
+
+  const description =
+    document.getElementById(
+      "characterHouseDescription"
+    );
+
+
+  const submitButton =
+    document.getElementById(
+      "confirmCharacterHouseButton"
+    );
+
+
+  const changing =
+    Boolean(
+      currentPendingHouseId
+    );
+
+
+  if (title) {
+    title.textContent =
+      changing
+        ? "Alterar Crônica"
+        : "Selecionar Crônica";
+  }
+
+
+  if (description) {
+    description.textContent =
+      changing
+        ? "Selecione a nova Crônica que deverá receber a solicitação de vínculo deste personagem."
+        : "Selecione a Crônica que deverá receber a solicitação de vínculo deste personagem.";
+  }
+
+
+  if (submitButton) {
+    submitButton.textContent =
+      changing
+        ? "Alterar vínculo"
+        : "Solicitar vínculo";
+  }
+}
+
+
+// =============================================
+// Load Chronicles
 // =============================================
 
 async function loadAvailableHouses(
@@ -384,7 +589,9 @@ async function loadAvailableHouses(
   }
 
 
-  // Cancela busca anterior
+  // =============================================
+  // Cancel previous search
+  // =============================================
 
   houseSearchAbortController
     ?.abort();
@@ -398,7 +605,7 @@ async function loadAvailableHouses(
     <div
       class="text-secondary small py-2"
     >
-      Pesquisando Houses...
+      Pesquisando Crônicas...
     </div>
   `;
 
@@ -441,7 +648,7 @@ async function loadAvailableHouses(
 
 
     console.error(
-      "[CHARACTER HOUSE] Erro ao pesquisar Houses:",
+      "[CHARACTER HOUSE] Erro ao pesquisar Crônicas:",
       error
     );
 
@@ -455,7 +662,7 @@ async function loadAvailableHouses(
         class="alert alert-danger mb-0"
         role="alert"
       >
-        Não foi possível carregar as Houses disponíveis.
+        Não foi possível carregar as Crônicas disponíveis.
       </div>
     `;
 
@@ -469,7 +676,7 @@ async function loadAvailableHouses(
 
 
 // =============================================
-// Render Houses
+// Render Chronicles
 // =============================================
 
 function renderAvailableHouses(
@@ -506,8 +713,8 @@ function renderAvailableHouses(
       >
         ${
           query
-            ? "Nenhuma House encontrada."
-            : "Nenhuma House disponível."
+            ? "Nenhuma Crônica encontrada."
+            : "Nenhuma Crônica disponível."
         }
       </div>
     `;
@@ -546,6 +753,15 @@ function renderAvailableHouses(
             );
 
 
+          const isCurrent =
+            String(
+              currentPendingHouseId
+            ) ===
+            String(
+              house.id
+            );
+
+
           const checked =
             String(
               selectedHouseId
@@ -557,11 +773,29 @@ function renderAvailableHouses(
 
           return `
             <label
-              class="d-flex align-items-center gap-3 border border-secondary rounded p-3 mb-2"
+              class="
+                d-flex
+                align-items-center
+                gap-3
+                border
+                border-secondary
+                rounded
+                p-3
+                mb-2
+                ${
+                  isCurrent
+                    ? "opacity-75"
+                    : ""
+                }
+              "
             >
 
               <input
-                class="form-check-input mt-0 character-house-radio"
+                class="
+                  form-check-input
+                  mt-0
+                  character-house-radio
+                "
                 type="radio"
                 name="characterHouseRequestChoice"
                 value="${id}"
@@ -570,11 +804,38 @@ function renderAvailableHouses(
                     ? "checked"
                     : ""
                 }
+                ${
+                  isCurrent
+                    ? "disabled"
+                    : ""
+                }
               >
 
-              <span class="text-light">
+
+              <span
+                class="text-light flex-grow-1"
+              >
                 ${name}
               </span>
+
+
+              ${
+                isCurrent
+                  ? `
+                    <span
+                      class="
+                        badge
+                        border
+                        border-secondary
+                        text-secondary
+                        bg-transparent
+                      "
+                    >
+                      Atual
+                    </span>
+                  `
+                  : ""
+              }
 
             </label>
           `;
@@ -589,7 +850,7 @@ function renderAvailableHouses(
 
   list
     .querySelectorAll(
-      ".character-house-radio"
+      ".character-house-radio:not(:disabled)"
     )
     .forEach(
       (radio) => {
@@ -616,7 +877,8 @@ function renderAvailableHouses(
 
   if (count) {
     count.textContent =
-      availableHouses.length === 20
+      availableHouses.length ===
+      20
         ? "Até 20 resultados exibidos"
         : `${availableHouses.length} ${
             availableHouses.length === 1
@@ -631,7 +893,7 @@ function renderAvailableHouses(
 
 
 // =============================================
-// Submit House request
+// Submit Chronicle request
 // =============================================
 
 async function handleHouseRequestSubmit(
@@ -654,7 +916,7 @@ async function handleHouseRequestSubmit(
 
   if (!selectedHouseId) {
     showCharacterHouseAlert(
-      "Selecione uma House."
+      "Selecione uma Crônica."
     );
 
 
@@ -723,7 +985,7 @@ async function handleHouseRequestSubmit(
     ) {
       showCharacterHouseAlert(
         data?.error ||
-        "Não foi possível solicitar o vínculo com a House."
+        "Não foi possível solicitar o vínculo com a Crônica."
       );
 
 
@@ -732,7 +994,7 @@ async function handleHouseRequestSubmit(
 
 
     // =============================================
-    // Update only changed character
+    // Update changed character
     // =============================================
 
     if (
@@ -753,7 +1015,7 @@ async function handleHouseRequestSubmit(
 
   } catch (error) {
     console.error(
-      "[CHARACTER HOUSE] Erro ao solicitar House:",
+      "[CHARACTER HOUSE] Erro ao solicitar Crônica:",
       error
     );
 
@@ -767,6 +1029,115 @@ async function handleHouseRequestSubmit(
       submitButton,
       false
     );
+  }
+}
+
+
+// =============================================
+// Remove pending request
+// =============================================
+
+async function removePendingHouseRequest(
+  characterId,
+  button
+) {
+  const confirmed =
+    window.confirm(
+      "Remover a solicitação de vínculo com esta Crônica?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  const originalText =
+    button?.textContent ||
+    "Remover solicitação";
+
+
+  try {
+    if (button) {
+      button.disabled =
+        true;
+
+
+      button.textContent =
+        "Removendo...";
+    }
+
+
+    const response =
+      await fetch(
+        `/api/characters/${encodeURIComponent(
+          characterId
+        )}/mother-house-request`,
+        {
+          method:
+            "DELETE",
+
+          credentials:
+            "include",
+        }
+      );
+
+
+    const data =
+      await response
+        .json()
+        .catch(() => ({}));
+
+
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
+      window.alert(
+        data?.error ||
+        "Não foi possível remover a solicitação."
+      );
+
+
+      return;
+    }
+
+
+    if (
+      typeof onHouseRequestCompleted ===
+      "function"
+    ) {
+      await onHouseRequestCompleted({
+        characterId,
+
+        pendingMotherHouse:
+          null,
+      });
+    }
+
+  } catch (error) {
+    console.error(
+      "[CHARACTER HOUSE] Erro ao remover solicitação:",
+      error
+    );
+
+
+    window.alert(
+      "Erro de conexão com o servidor."
+    );
+
+  } finally {
+    if (
+      button &&
+      button.isConnected
+    ) {
+      button.disabled =
+        false;
+
+
+      button.textContent =
+        originalText;
+    }
   }
 }
 
@@ -803,22 +1174,33 @@ function ensureCharacterHouseModal() {
     >
 
       <div
-        class="modal-dialog modal-dialog-centered"
+        class="
+          modal-dialog
+          modal-dialog-centered
+        "
       >
 
         <div
-          class="modal-content bg-dark border border-danger"
+          class="
+            modal-content
+            bg-dark
+            border
+            border-danger
+          "
         >
 
           <div
-            class="modal-header border-secondary"
+            class="
+              modal-header
+              border-secondary
+            "
           >
 
             <h2
               id="characterHouseModalLabel"
               class="modal-title h5 text-light"
             >
-              Selecionar House mãe
+              Selecionar Crônica
             </h2>
 
 
@@ -848,14 +1230,17 @@ function ensureCharacterHouseModal() {
 
 
               <p
+                id="characterHouseDescription"
                 class="text-secondary small"
               >
-                Selecione a House que deverá receber
+                Selecione a Crônica que deverá receber
                 a solicitação de vínculo deste personagem.
               </p>
 
 
+              <!-- ============================== -->
               <!-- Search -->
+              <!-- ============================== -->
 
               <div class="mb-3">
 
@@ -863,22 +1248,29 @@ function ensureCharacterHouseModal() {
                   for="characterHouseSearch"
                   class="form-label text-secondary"
                 >
-                  Buscar House
+                  Buscar Crônica
                 </label>
 
 
                 <input
                   id="characterHouseSearch"
                   type="search"
-                  class="form-control bg-black text-light border-secondary"
-                  placeholder="Digite o nome da House..."
+                  class="
+                    form-control
+                    bg-black
+                    text-light
+                    border-secondary
+                  "
+                  placeholder="Digite o nome da Crônica..."
                   autocomplete="off"
                 >
 
               </div>
 
 
+              <!-- ============================== -->
               <!-- Result count -->
+              <!-- ============================== -->
 
               <div
                 id="characterHouseResultCount"
@@ -886,7 +1278,9 @@ function ensureCharacterHouseModal() {
               ></div>
 
 
+              <!-- ============================== -->
               <!-- Results -->
+              <!-- ============================== -->
 
               <div
                 id="characterHouseList"
@@ -898,17 +1292,26 @@ function ensureCharacterHouseModal() {
 
 
               <p
-                class="text-secondary small mb-0 mt-3"
+                class="
+                  text-secondary
+                  small
+                  mb-0
+                  mt-3
+                "
               >
-                O personagem somente será vinculado
-                após a House aceitar a solicitação.
+                Até a aprovação, você poderá alterar
+                ou remover esta solicitação e continuar
+                editando normalmente o personagem.
               </p>
 
             </div>
 
 
             <div
-              class="modal-footer border-secondary"
+              class="
+                modal-footer
+                border-secondary
+              "
             >
 
               <button
@@ -1042,6 +1445,10 @@ function resetCharacterHouseModal() {
     "";
 
 
+  currentPendingHouseId =
+    "";
+
+
   availableHouses =
     [];
 
@@ -1120,10 +1527,6 @@ function resetCharacterHouseModalContent() {
   if (submitButton) {
     submitButton.disabled =
       true;
-
-
-    submitButton.textContent =
-      "Solicitar vínculo";
   }
 }
 
@@ -1141,13 +1544,21 @@ function setHouseRequestLoading(
   }
 
 
+  const changing =
+    Boolean(
+      currentPendingHouseId
+    );
+
+
   if (loading) {
     button.disabled =
       true;
 
 
     button.textContent =
-      "Solicitando...";
+      changing
+        ? "Alterando..."
+        : "Solicitando...";
 
 
     return;
@@ -1155,7 +1566,9 @@ function setHouseRequestLoading(
 
 
   button.textContent =
-    "Solicitar vínculo";
+    changing
+      ? "Alterar vínculo"
+      : "Solicitar vínculo";
 
 
   button.disabled =

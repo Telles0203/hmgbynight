@@ -50,6 +50,7 @@ const {
 
 const {
   requestMotherHouse,
+  cancelMotherHouseRequest,
 } = require(
   "./character/characterChronicleController"
 );
@@ -81,5 +82,6 @@ module.exports = {
   updateCharacterVirtues,
   updateCharacterVirtue,
   requestMotherHouse,
+  cancelMotherHouseRequest,
   deleteCharacter,
 };

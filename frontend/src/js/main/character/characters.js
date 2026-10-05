@@ -162,6 +162,10 @@ function renderCharacters(
   );
 
 
+  // =============================================
+  // Empty
+  // =============================================
+
   if (
     characters.length ===
     0
@@ -198,6 +202,10 @@ function renderCharacters(
     return;
   }
 
+
+  // =============================================
+  // Cards
+  // =============================================
 
   const cards =
     characters
@@ -701,6 +709,10 @@ function createCharacterCard(
 function getCharacterStatus(
   character
 ) {
+  // =============================================
+  // Approved
+  // =============================================
+
   if (
     character.motherHouse
   ) {
@@ -720,6 +732,10 @@ function getCharacterStatus(
   }
 
 
+  // =============================================
+  // Pending Chronicle link
+  // =============================================
+
   if (
     character.pendingMotherHouse
   ) {
@@ -728,16 +744,20 @@ function getCharacterStatus(
         "pending",
 
       label:
-        "AGUARDANDO APROVAÇÃO",
+        "VÍNCULO PENDENTE",
 
       badgeClass:
         "border border-info text-info bg-transparent",
 
       description:
-        "Este personagem foi enviado para análise da Crônica. Enquanto aguarda aprovação, ele continua sujeito às regras de criação inicial e não pode receber XP.",
+        "Este personagem solicitou vínculo com uma Crônica, mas ainda não foi aprovado. Até a aprovação, ele continua em criação inicial e pode ter sua ficha e a própria Crônica solicitada alteradas livremente.",
     };
   }
 
+
+  // =============================================
+  // Initial construction
+  // =============================================
 
   return {
     key:
@@ -750,7 +770,7 @@ function getCharacterStatus(
       "border border-warning text-warning bg-transparent",
 
     description:
-      "Este personagem ainda está sendo montado. Utilize somente os pontos de criação inicial. Pontos de Experiência e evoluções ainda não estão disponíveis.",
+      "Este personagem ainda está sendo montado. Enquanto não for aprovado por uma Crônica, sua ficha pode ser alterada livremente utilizando os pontos de criação inicial. Pontos de Experiência e evoluções ainda não estão disponíveis.",
   };
 }
 
@@ -847,6 +867,10 @@ function createCharacterStatus(
 function getCharacterHouseSummary(
   character
 ) {
+  // =============================================
+  // Approved Chronicle
+  // =============================================
+
   if (
     character.motherHouse
   ) {
@@ -857,6 +881,10 @@ function getCharacterHouseSummary(
   }
 
 
+  // =============================================
+  // Pending Chronicle
+  // =============================================
+
   if (
     character.pendingMotherHouse
   ) {
@@ -864,10 +892,14 @@ function getCharacterHouseSummary(
       character
         .pendingMotherHouse
         .name ||
-      "Crônica selecionada"
+      "Crônica solicitada"
     );
   }
 
+
+  // =============================================
+  // No Chronicle
+  // =============================================
 
   return "Sem Crônica";
 }
@@ -917,12 +949,20 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
+  // =============================================
+  // Update local state
+  // =============================================
+
   character.motherHouse =
     null;
 
   character.pendingMotherHouse =
     pendingMotherHouse;
 
+
+  // =============================================
+  // Find card
+  // =============================================
 
   const card =
     document.querySelector(
@@ -941,6 +981,10 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
+  // =============================================
+  // Update status
+  // =============================================
+
   const statusSlot =
     card.querySelector(
       ".character-status-slot"
@@ -954,6 +998,10 @@ async function handleCharacterHouseRequestCompleted({
       );
   }
 
+
+  // =============================================
+  // Update Chronicle summary
+  // =============================================
 
   const summary =
     card.querySelector(
@@ -989,6 +1037,10 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
+  // =============================================
+  // Update Chronicle field
+  // =============================================
+
   const houseField =
     card.querySelector(
       ".character-house-field"
@@ -1002,6 +1054,10 @@ async function handleCharacterHouseRequestCompleted({
       );
   }
 
+
+  // =============================================
+  // Reinitialize new popover
+  // =============================================
 
   setupCharacterPopovers(
     card
@@ -1036,6 +1092,10 @@ async function handleCharacterListClick(
     event.currentTarget;
 
 
+  // =============================================
+  // Inline fields
+  // =============================================
+
   if (
     await handleCharacterInlineEditClick(
       event,
@@ -1057,6 +1117,10 @@ async function handleCharacterListClick(
   }
 
 
+  // =============================================
+  // Virtues
+  // =============================================
+
   if (
     await handleCharacterVirtueClick(
       event,
@@ -1067,6 +1131,10 @@ async function handleCharacterListClick(
   }
 
 
+  // =============================================
+  // Status help
+  // =============================================
+
   if (
     target.closest(
       ".character-status-help"
@@ -1076,6 +1144,10 @@ async function handleCharacterListClick(
   }
 
 
+  // =============================================
+  // Generation help
+  // =============================================
+
   if (
     target.closest(
       ".character-generation-help"
@@ -1084,6 +1156,10 @@ async function handleCharacterListClick(
     return;
   }
 
+
+  // =============================================
+  // Delete
+  // =============================================
 
   const deleteAction =
     target.closest(
@@ -1122,13 +1198,23 @@ async function handleCharacterListClick(
   }
 
 
+  // =============================================
+  // Chronicle
+  // =============================================
+
   const houseAction =
     target.closest(
-      ".character-house-select-button"
+      `
+        .character-house-select-button,
+        .character-house-change-button,
+        .character-house-remove-button
+      `
     );
 
 
-  if (houseAction) {
+  if (
+    houseAction
+  ) {
     const saved =
       await saveActiveCharacterInlineEdit();
 
@@ -1156,6 +1242,10 @@ async function handleCharacterListClick(
     return;
   }
 
+
+  // =============================================
+  // Open / close character
+  // =============================================
 
   const openButton =
     target.closest(
