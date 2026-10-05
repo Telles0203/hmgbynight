@@ -1,20 +1,28 @@
 const COOKIE_NOTICE_KEY =
   "bynight_cookie_notice";
 
+
 async function loadCookieNotice() {
   const alreadyAccepted =
     localStorage.getItem(
       COOKIE_NOTICE_KEY
     );
 
-  if (alreadyAccepted === "accepted") {
+
+  if (
+    alreadyAccepted ===
+    "accepted"
+  ) {
     return;
   }
 
+
   try {
-    const response = await fetch(
-      "/src/components/cookieNotice.html"
-    );
+    const response =
+      await fetch(
+        "/src/components/cookieNotice.html"
+      );
+
 
     if (!response.ok) {
       throw new Error(
@@ -22,36 +30,56 @@ async function loadCookieNotice() {
       );
     }
 
+
     const html =
       await response.text();
 
+
     const container =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
+
 
     container.id =
       "cookieNoticeContainer";
 
-    container.innerHTML = html;
+
+    container.innerHTML =
+      html;
+
 
     document.body.appendChild(
       container
     );
+
 
     const notice =
       document.getElementById(
         "cookieNotice"
       );
 
+
     const acceptButton =
       document.getElementById(
         "acceptCookieNotice"
       );
 
-    if (!notice || !acceptButton) {
+
+    if (
+      !notice ||
+      !acceptButton
+    ) {
+      container.remove();
+
       return;
     }
 
-    notice.style.display = "block";
+
+    notice.classList.remove(
+      "d-none"
+    );
+
 
     acceptButton.addEventListener(
       "click",
@@ -61,9 +89,11 @@ async function loadCookieNotice() {
           "accepted"
         );
 
-        notice.remove();
+
+        container.remove();
       }
     );
+
   } catch (error) {
     console.error(
       "[COOKIE NOTICE] Erro:",
@@ -71,6 +101,7 @@ async function loadCookieNotice() {
     );
   }
 }
+
 
 document.addEventListener(
   "DOMContentLoaded",

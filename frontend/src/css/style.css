@@ -14,25 +14,6 @@ p {
     text-align: justify;
 }
 
-.text-blood {
-    font-family: 'Cinzel', serif;
-    color: #8b0000 !important;
-    text-shadow:
-        1px 1px 0 #300000,
-        2px 2px 1px #200000;
-    font-weight: 600;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-}
-
-.text-blood:hover {
-    color: #a30000 !important;
-    text-shadow:
-        0 0 5px #3c0000,
-        1px 1px 2px #1a0000;
-    cursor: pointer;
-}
-
 .content-conteiner {
     width: 70vw;
 }
@@ -47,6 +28,10 @@ p {
     letter-spacing: 0.5px;
 }
 
+.navbar-subtitle {
+    font-size: 0.65rem;
+}
+
 .nav-link:hover {
     color: #c1121f !important;
     transition: color 0.2s ease;
@@ -56,28 +41,19 @@ p {
     border: none;
 }
 
-
-/* ==============================
-   Offcanvas
-   ============================== */
-
 .offcanvas .nav-link {
     position: relative;
-    padding-left: 1rem;
+    padding: 15px;
+    display: block;
+
     transition:
         background-color 0.3s ease,
         color 0.3s ease;
-    display: block;
-    padding: 15px;
 }
 
 .offcanvas .nav-link:hover {
     background-color: #1c1c1c !important;
     color: #ff4c4c !important;
-
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease;
 }
 
 .offcanvas .nav-link::before {
@@ -97,28 +73,15 @@ p {
         background-color 0.3s ease;
 }
 
-.offcanvas .nav-link:hover::before {
-    background-color: #ff4c4c !important;
-}
-
+.offcanvas .nav-link:hover::before,
 .offcanvas .nav-link:focus::before {
     background-color: #ff4c4c !important;
 }
-
-
-/* ==============================
-   Cards
-   ============================== */
 
 .card-transparent {
     background-color:
         rgba(245, 245, 245, 0.6);
 }
-
-
-/* ==============================
-   Blood text
-   ============================== */
 
 .text-blood {
     font-family: 'Cinzel', serif;
@@ -131,11 +94,11 @@ p {
         2px 2px 1px #200000;
 
     font-weight: 600;
-
     letter-spacing: 1px;
 
     transition:
-        all 0.3s ease;
+        color 0.3s ease,
+        text-shadow 0.3s ease;
 }
 
 .text-blood:hover {
@@ -152,11 +115,6 @@ p {
 .text-smoke {
     color: #3c0000;
 }
-
-
-/* ==============================
-   Blood button
-   ============================== */
 
 .btn-blood {
     color: #fff;
@@ -199,10 +157,13 @@ p {
     opacity: 0.65;
 }
 
+.cookie-notice {
+    z-index: 1080;
+}
 
-/* ==============================
-   Footer
-   ============================== */
+.cookie-notice-container {
+    max-width: 900px;
+}
 
 .footer-fixed {
     position: fixed;
@@ -215,27 +176,19 @@ p {
     z-index: 1030;
 }
 
-
-/* ==============================
-   Responsive
-   ============================== */
-
 @media (min-width: 768px) and (max-width: 991.98px) {
-
     .content-conteiner {
         width: 80vw;
     }
 }
 
 @media (min-width: 576px) and (max-width: 767.98px) {
-
     .content-conteiner {
         width: 90vw;
     }
 }
 
 @media (max-width: 575.98px) {
-
     .content-conteiner {
         width: 95vw;
     }
