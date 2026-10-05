@@ -97,89 +97,93 @@ async function openCharacterView(
   characterTransitioning =
     true;
 
-  window.ByNightMain
-    .character
-    .selectedCharacterId =
-      characterId;
+  try {
+    window.ByNightMain
+      .character
+      .selectedCharacterId =
+        characterId;
 
-  dashboard.style.setProperty(
-    "--character-motion-duration",
-    `${MOTION_DURATION}ms`
-  );
+    dashboard.style.setProperty(
+      "--character-motion-duration",
+      `${MOTION_DURATION}ms`
+    );
 
-  selectedCard.classList.add(
-    "is-selected"
-  );
+    selectedCard.classList.add(
+      "is-selected"
+    );
 
-  selectedCard
-    .querySelector(
-      ".character-open-button"
-    )
-    ?.replaceChildren(
-      document.createTextNode(
-        "← Voltar"
+    selectedCard
+      .querySelector(
+        ".character-open-button"
       )
+      ?.replaceChildren(
+        document.createTextNode(
+          "← Voltar"
+        )
+      );
+
+
+    // =============================================
+    // FASE 1
+    // Recolhe os outros personagens
+    // e deixa somente o selecionado
+    // =============================================
+
+    const elementsToCollapse = [
+      ...allCards.filter(
+        (card) =>
+          card !== selectedCard
+      ),
+
+      panelHeader,
+      createArea,
+    ].filter(Boolean);
+
+    await collapseElements(
+      elementsToCollapse,
+      MOTION_DURATION
     );
 
 
-  // =============================================
-  // FASE 1
-  // Recolhe os outros personagens
-  // e deixa somente o selecionado
-  // =============================================
+    // =============================================
+    // FASE 2
+    // Expande para o lado
+    // =============================================
 
-  const elementsToCollapse = [
-    ...allCards.filter(
-      (card) =>
-        card !== selectedCard
-    ),
+    dashboard.classList.add(
+      "character-focus"
+    );
 
-    panelHeader,
-    createArea,
-  ].filter(Boolean);
-
-  await collapseElements(
-    elementsToCollapse,
-    MOTION_DURATION
-  );
+    await animateHorizontalPanels({
+      panelsContainer,
+      characterPanel,
+      housePanel,
+      opening: true,
+      duration: MOTION_DURATION,
+    });
 
 
-  // =============================================
-  // FASE 2
-  // Expande para o lado
-  // =============================================
+    // =============================================
+    // FASE 3
+    // Expande a ficha para baixo
+    // =============================================
 
-  dashboard.classList.add(
-    "character-focus"
-  );
+    await animateCharacterDetails(
+      selectedCard,
+      true,
+      MOTION_DURATION
+    );
 
-  await animateHorizontalPanels({
-    panelsContainer,
-    characterPanel,
-    housePanel,
-    opening: true,
-    duration: MOTION_DURATION,
-  });
+  } catch (error) {
+    console.error(
+      "[CHARACTER VIEW] Erro ao abrir personagem:",
+      error
+    );
 
-
-  // =============================================
-  // FASE 3
-  // Expande a ficha para baixo
-  // =============================================
-
-  await animateCharacterDetails(
-    selectedCard,
-    true,
-    MOTION_DURATION
-  );
-
-
-  // =============================================
-  // Finish
-  // =============================================
-
-  characterTransitioning =
-    false;
+  } finally {
+    characterTransitioning =
+      false;
+  }
 }
 
 
@@ -224,85 +228,94 @@ async function closeCharacterView() {
   characterTransitioning =
     true;
 
+  try {
 
-  // =============================================
-  // FASE 1
-  // Recolhe a ficha para cima
-  // =============================================
+    // =============================================
+    // FASE 1
+    // Recolhe a ficha para cima
+    // =============================================
 
-  await animateCharacterDetails(
-    selectedCard,
-    false,
-    MOTION_DURATION
-  );
-
-
-  // =============================================
-  // FASE 2
-  // Retorna para o lado
-  // =============================================
-
-  await animateHorizontalPanels({
-    panelsContainer,
-    characterPanel,
-    housePanel,
-    opening: false,
-    duration: MOTION_DURATION,
-  });
-
-  dashboard.classList.remove(
-    "character-focus"
-  );
-
-
-  // =============================================
-  // FASE 3
-  // Outros personagens expandem
-  // novamente para baixo
-  // =============================================
-
-  const elementsToExpand = [
-    panelHeader,
-
-    ...allCards.filter(
-      (card) =>
-        card !== selectedCard
-    ),
-
-    createArea,
-  ].filter(Boolean);
-
-  await expandElements(
-    elementsToExpand,
-    MOTION_DURATION
-  );
-
-
-  // =============================================
-  // Finish
-  // =============================================
-
-  selectedCard.classList.remove(
-    "is-selected"
-  );
-
-  selectedCard
-    .querySelector(
-      ".character-open-button"
-    )
-    ?.replaceChildren(
-      document.createTextNode(
-        "Abrir →"
-      )
+    await animateCharacterDetails(
+      selectedCard,
+      false,
+      MOTION_DURATION
     );
 
-  window.ByNightMain
-    .character
-    .selectedCharacterId =
-      null;
 
-  characterTransitioning =
-    false;
+    // =============================================
+    // FASE 2
+    // Retorna para o lado
+    // =============================================
+
+    await animateHorizontalPanels({
+      panelsContainer,
+      characterPanel,
+      housePanel,
+      opening: false,
+      duration: MOTION_DURATION,
+    });
+
+    dashboard.classList.remove(
+      "character-focus"
+    );
+
+
+    // =============================================
+    // FASE 3
+    // Outros personagens expandem
+    // novamente para baixo
+    // =============================================
+
+    const elementsToExpand = [
+      panelHeader,
+
+      ...allCards.filter(
+        (card) =>
+          card !== selectedCard
+      ),
+
+      createArea,
+    ].filter(Boolean);
+
+    await expandElements(
+      elementsToExpand,
+      MOTION_DURATION
+    );
+
+
+    // =============================================
+    // Finish
+    // =============================================
+
+    selectedCard.classList.remove(
+      "is-selected"
+    );
+
+    selectedCard
+      .querySelector(
+        ".character-open-button"
+      )
+      ?.replaceChildren(
+        document.createTextNode(
+          "Abrir →"
+        )
+      );
+
+    window.ByNightMain
+      .character
+      .selectedCharacterId =
+        null;
+
+  } catch (error) {
+    console.error(
+      "[CHARACTER VIEW] Erro ao fechar personagem:",
+      error
+    );
+
+  } finally {
+    characterTransitioning =
+      false;
+  }
 }
 
 
