@@ -161,6 +161,14 @@ p {
     max-width: 520px;
 }
 
+.page-account-container {
+    max-width: 720px;
+}
+
+.page-wide-container {
+    max-width: 900px;
+}
+
 .cookie-notice {
     z-index: 1080;
 }
