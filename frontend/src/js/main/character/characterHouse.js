@@ -94,22 +94,57 @@ export function createCharacterHouseField(
           class="character-house-pending-info"
         >
 
-          <span class="text-light">
-            ${houseName}
-          </span>
-
-
           <span
-            class="text-secondary small"
+            class="
+              d-flex
+              flex-column
+              align-items-start
+              gap-1
+            "
           >
-            Vínculo pendente
+
+            <span class="text-light">
+              ${houseName}
+            </span>
+
+
+            <span
+              class="text-secondary small"
+            >
+              Vínculo pendente
+            </span>
+
           </span>
+
+
+          <button
+            type="button"
+            class="
+              btn
+              btn-link
+              btn-sm
+              text-secondary
+              text-decoration-none
+              p-0
+              character-inline-edit-button
+              character-house-edit-button
+            "
+            data-character-id="${characterId}"
+            aria-label="Editar vínculo com a Crônica"
+            title="Editar vínculo com a Crônica"
+            aria-expanded="false"
+          >
+            ✎
+          </button>
 
         </span>
 
 
         <span
-          class="character-house-actions"
+          class="
+            character-house-actions
+            d-none
+          "
         >
 
           <button
@@ -137,6 +172,20 @@ export function createCharacterHouseField(
             data-character-id="${characterId}"
           >
             Remover solicitação
+          </button>
+
+
+          <button
+            type="button"
+            class="
+              btn
+              btn-outline-secondary
+              btn-sm
+              character-house-edit-cancel-button
+            "
+            data-character-id="${characterId}"
+          >
+            Cancelar
           </button>
 
         </span>
@@ -317,6 +366,70 @@ export function handleCharacterHouseClick(
 
 
   // =============================================
+  // Open pending Chronicle controls
+  // =============================================
+
+  const editButton =
+    target.closest(
+      ".character-house-edit-button"
+    );
+
+
+  if (
+    editButton &&
+    container.contains(
+      editButton
+    )
+  ) {
+    const field =
+      editButton.closest(
+        ".character-house-field"
+      );
+
+
+    setPendingHouseActionsOpen(
+      field,
+      true
+    );
+
+
+    return true;
+  }
+
+
+  // =============================================
+  // Close pending Chronicle controls
+  // =============================================
+
+  const cancelEditButton =
+    target.closest(
+      ".character-house-edit-cancel-button"
+    );
+
+
+  if (
+    cancelEditButton &&
+    container.contains(
+      cancelEditButton
+    )
+  ) {
+    const field =
+      cancelEditButton.closest(
+        ".character-house-field"
+      );
+
+
+    setPendingHouseActionsOpen(
+      field,
+      false
+    );
+
+
+    return true;
+  }
+
+
+  // =============================================
   // Select / change Chronicle
   // =============================================
 
@@ -346,6 +459,18 @@ export function handleCharacterHouseClick(
     if (!characterId) {
       return true;
     }
+
+
+    const field =
+      selectButton.closest(
+        ".character-house-field"
+      );
+
+
+    setPendingHouseActionsOpen(
+      field,
+      false
+    );
 
 
     openCharacterHouseModal(
@@ -397,6 +522,56 @@ export function handleCharacterHouseClick(
 
 
   return false;
+}
+
+
+// =============================================
+// Pending Chronicle controls
+// =============================================
+
+function setPendingHouseActionsOpen(
+  field,
+  open
+) {
+  if (!field) {
+    return;
+  }
+
+
+  const actions =
+    field.querySelector(
+      ".character-house-actions"
+    );
+
+
+  const editButton =
+    field.querySelector(
+      ".character-house-edit-button"
+    );
+
+
+  if (actions) {
+    actions.classList.toggle(
+      "d-none",
+      !open
+    );
+  }
+
+
+  if (editButton) {
+    editButton.classList.toggle(
+      "d-none",
+      open
+    );
+
+
+    editButton.setAttribute(
+      "aria-expanded",
+      open
+        ? "true"
+        : "false"
+    );
+  }
 }
 
 
