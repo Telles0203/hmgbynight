@@ -1,12 +1,23 @@
-const express = require("express");
+const express = require(
+  "express"
+);
+
+const {
+  rateLimit,
+} = require(
+  "express-rate-limit"
+);
+
 
 const {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  deleteCharacter,
 } = require(
   "../controllers/characterController"
 );
+
 
 const {
   requireAuth,
@@ -15,7 +26,40 @@ const {
   "../Middlewares/auth"
 );
 
-const router = express.Router();
+
+const router =
+  express.Router();
+
+
+// ==============================
+// Delete rate limit
+// ==============================
+
+const characterDeleteLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
+
+    limit:
+      5,
+
+    standardHeaders:
+      "draft-7",
+
+    legacyHeaders:
+      false,
+
+    skipSuccessfulRequests:
+      true,
+
+    message: {
+      ok: false,
+
+      error:
+        "Muitas tentativas de exclusão de personagem. Aguarde alguns minutos.",
+    },
+  });
+
 
 // ==============================
 // Character creation options
@@ -23,10 +67,13 @@ const router = express.Router();
 
 router.get(
   "/options",
+
   requireAuth,
   requireVerifiedEmail,
+
   getCharacterOptions
 );
+
 
 // ==============================
 // List user's PCs
@@ -34,10 +81,13 @@ router.get(
 
 router.get(
   "/",
+
   requireAuth,
   requireVerifiedEmail,
+
   listCharacters
 );
+
 
 // ==============================
 // Create PC
@@ -45,9 +95,29 @@ router.get(
 
 router.post(
   "/",
+
   requireAuth,
   requireVerifiedEmail,
+
   createCharacter
 );
 
-module.exports = router;
+
+// ==============================
+// Delete PC
+// ==============================
+
+router.delete(
+  "/:characterId",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  characterDeleteLimiter,
+
+  deleteCharacter
+);
+
+
+module.exports =
+  router;

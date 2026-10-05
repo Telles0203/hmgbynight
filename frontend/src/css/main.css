@@ -78,11 +78,34 @@
         var(--bs-secondary);
 
     border-radius: 0.5rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .character-card.is-selected {
     border-color:
         var(--bs-secondary);
+}
+
+.character-card.is-delete-selected {
+    border-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.85
+        );
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(
+            220,
+            53,
+            69,
+            0.08
+        );
 }
 
 
@@ -99,6 +122,193 @@
 .character-card-identity {
     min-width: 0;
     flex: 1;
+}
+
+
+/* ==============================
+   Character delete controls
+   ============================== */
+
+.character-delete-controls {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+
+    gap: 0.45rem;
+
+    margin-right:
+        0.15rem;
+}
+
+
+/* ==============================
+   Trash button
+   ============================== */
+
+.character-delete-icon-button {
+    width: 38px;
+    height: 38px;
+
+    flex:
+        0 0 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background-color:
+        #121212;
+
+    border:
+        1px solid #3d3d3d;
+
+    border-radius:
+        0.4rem;
+
+    color:
+        #777777;
+
+    cursor:
+        pointer;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.character-delete-icon-button svg {
+    width: 19px;
+    height: 19px;
+
+    pointer-events: none;
+}
+
+.character-delete-icon-button:hover {
+    color:
+        #dc3545;
+
+    border-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.55
+        );
+
+    background-color:
+        #1a1213;
+}
+
+.character-delete-icon-button:focus {
+    outline: none;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(
+            220,
+            53,
+            69,
+            0.15
+        );
+}
+
+
+/* ==============================
+   Trash selected
+   ============================== */
+
+.character-delete-controls
+.character-delete-icon-button[aria-pressed="true"] {
+    color:
+        #ffffff;
+
+    background-color:
+        #7a101a;
+
+    border-color:
+        #dc3545;
+
+    box-shadow:
+        0 0 10px
+        rgba(
+            220,
+            53,
+            69,
+            0.35
+        );
+
+    transform:
+        scale(1.05);
+}
+
+.character-delete-controls
+.character-delete-icon-button[aria-pressed="true"]
+svg {
+    filter:
+        drop-shadow(
+            0 0 2px
+            rgba(
+                255,
+                255,
+                255,
+                0.25
+            )
+        );
+}
+
+
+/* ==============================
+   Delete button
+   ============================== */
+
+.character-delete-button {
+    min-width:
+        62px;
+
+    padding:
+        0.3rem 0.45rem;
+
+    font-size:
+        0.7rem;
+
+    line-height:
+        1.15;
+}
+
+.character-delete-button:disabled {
+    opacity:
+        0.25;
+
+    cursor:
+        not-allowed;
+}
+
+
+/* ==============================
+   Character deletion note
+   ============================== */
+
+.character-delete-note {
+    margin:
+        0.65rem 0 0;
+
+    color:
+        #777777;
+
+    font-size:
+        0.72rem;
+
+    line-height:
+        1.4;
+
+    text-align:
+        left;
 }
 
 
@@ -136,7 +346,12 @@
 
     box-shadow:
         0 0 8px
-        rgba(220, 53, 69, 0.12) !important;
+        rgba(
+            220,
+            53,
+            69,
+            0.12
+        ) !important;
 
     color:
         transparent !important;
@@ -194,7 +409,12 @@
 
     box-shadow:
         0 0 12px
-        rgba(220, 53, 69, 0.35) !important;
+        rgba(
+            220,
+            53,
+            69,
+            0.35
+        ) !important;
 
     transform:
         translateY(-50%)
@@ -219,13 +439,17 @@
 
     box-shadow:
         0 0 0 2px
-        rgba(220, 53, 69, 0.18) !important;
+        rgba(
+            220,
+            53,
+            69,
+            0.18
+        ) !important;
 }
 
 
 /* ==============================
    Character details
-   JS controla SOMENTE a altura
    ============================== */
 
 .character-card-details {
@@ -244,7 +468,6 @@
 
 /* ==============================
    Character details inner
-   CSS controla o movimento
    ============================== */
 
 .character-card-details-inner {
@@ -258,7 +481,12 @@
     transition:
         transform
         var(--character-motion-duration)
-        cubic-bezier(0.45, 0, 0.55, 1);
+        cubic-bezier(
+            0.45,
+            0,
+            0.55,
+            1
+        );
 }
 
 .character-card.is-open
@@ -283,12 +511,14 @@
 
     padding: 1rem;
 
-    background-color: #111;
+    background-color:
+        #111;
 
     border:
         1px solid #4b4b4b;
 
-    border-radius: 0.5rem;
+    border-radius:
+        0.5rem;
 
     opacity: 0;
 
@@ -302,7 +532,12 @@
 
         transform
         var(--character-motion-duration)
-        cubic-bezier(0.45, 0, 0.55, 1);
+        cubic-bezier(
+            0.45,
+            0,
+            0.55,
+            1
+        );
 }
 
 .character-card.is-open
@@ -332,7 +567,8 @@
 
     gap: 0.75rem;
 
-    padding-top: 1.5rem;
+    padding-top:
+        1.5rem;
 }
 
 
@@ -346,10 +582,14 @@
     grid-template-columns:
         repeat(
             3,
-            minmax(0, 1fr)
+            minmax(
+                0,
+                1fr
+            )
         );
 
-    gap: 0.75rem;
+    gap:
+        0.75rem;
 }
 
 
@@ -359,7 +599,8 @@
 
 .character-sheet
 .character-sheet-section {
-    padding: 0.85rem 1rem;
+    padding:
+        0.85rem 1rem;
 
     background:
         #101010;
@@ -372,7 +613,12 @@
 
     box-shadow:
         inset 0 1px 0
-        rgba(255, 255, 255, 0.025);
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
 }
 
 
@@ -399,14 +645,20 @@
     letter-spacing:
         0.055rem;
 
-    text-align: center;
+    text-align:
+        center;
 
     text-transform:
         uppercase;
 
     border-bottom:
         1px solid
-        rgba(220, 53, 69, 0.55);
+        rgba(
+            220,
+            53,
+            69,
+            0.55
+        );
 }
 
 .character-sheet-subtitle {
@@ -428,7 +680,8 @@
     letter-spacing:
         0.04rem;
 
-    text-align: center;
+    text-align:
+        center;
 
     text-transform:
         uppercase;
@@ -445,25 +698,36 @@
 .character-sheet-row {
     display: flex;
 
-    align-items: baseline;
-    justify-content: space-between;
+    align-items:
+        baseline;
 
-    gap: 0.75rem;
+    justify-content:
+        space-between;
+
+    gap:
+        0.75rem;
 
     padding:
         0.23rem 0;
 
     border-bottom:
         1px solid
-        rgba(255, 255, 255, 0.035);
+        rgba(
+            255,
+            255,
+            255,
+            0.035
+        );
 }
 
 .character-sheet-row:last-child {
-    border-bottom: 0;
+    border-bottom:
+        0;
 }
 
 .character-sheet-label {
-    min-width: 0;
+    min-width:
+        0;
 
     color:
         #8e8e8e;
@@ -473,7 +737,8 @@
 }
 
 .character-sheet-value {
-    min-width: 0;
+    min-width:
+        0;
 
     color:
         #e0e0e0;
@@ -481,7 +746,8 @@
     font-size:
         0.76rem;
 
-    text-align: right;
+    text-align:
+        right;
 
     overflow-wrap:
         anywhere;
@@ -493,27 +759,39 @@
    ============================== */
 
 .character-sheet-resource {
-    text-align: center;
+    text-align:
+        center;
 }
 
 .character-sheet-pips {
-    display: flex;
+    display:
+        flex;
 
-    align-items: center;
-    justify-content: center;
+    align-items:
+        center;
 
-    flex-wrap: wrap;
+    justify-content:
+        center;
 
-    gap: 0.32rem;
+    flex-wrap:
+        wrap;
 
-    min-height: 18px;
+    gap:
+        0.32rem;
+
+    min-height:
+        18px;
 }
 
 .character-sheet-pip {
-    width: 9px;
-    height: 9px;
+    width:
+        9px;
 
-    display: block;
+    height:
+        9px;
+
+    display:
+        block;
 
     border:
         1px solid #858585;
@@ -532,7 +810,8 @@
 
 .character-sheet-group +
 .character-sheet-group {
-    margin-top: 1rem;
+    margin-top:
+        1rem;
 }
 
 
@@ -541,7 +820,8 @@
    ============================== */
 
 .character-sheet-empty {
-    min-height: 1.4rem;
+    min-height:
+        1.4rem;
 
     color:
         #666666;
@@ -552,7 +832,8 @@
     font-style:
         italic;
 
-    text-align: center;
+    text-align:
+        center;
 }
 
 
@@ -562,7 +843,8 @@
 
 .character-sheet-main-grid
 .character-sheet-section {
-    min-height: 250px;
+    min-height:
+        250px;
 }
 
 
@@ -570,22 +852,28 @@
    Mobile
    ============================== */
 
-@media (max-width: 991.98px) {
+@media (
+    max-width: 991.98px
+) {
 
     .main-dashboard-panels {
-        flex-direction: column;
+        flex-direction:
+            column;
     }
 
     .main-dashboard-panel {
-        width: 100%;
+        width:
+            100%;
     }
 
     .character-card-header {
-        align-items: center;
+        align-items:
+            center;
     }
 
     .character-open-button {
-        right: -39px;
+        right:
+            -39px;
     }
 
     .character-sheet-grid {
@@ -595,7 +883,51 @@
 
     .character-sheet-main-grid
     .character-sheet-section {
-        min-height: auto;
+        min-height:
+            auto;
+    }
+}
+
+
+@media (
+    max-width: 575.98px
+) {
+
+    .character-card-header {
+        gap:
+            0.6rem;
+    }
+
+    .character-delete-controls {
+        gap:
+            0.3rem;
+    }
+
+    .character-delete-icon-button {
+        width:
+            34px;
+
+        height:
+            34px;
+
+        flex-basis:
+            34px;
+    }
+
+    .character-delete-icon-button svg {
+        width:
+            17px;
+
+        height:
+            17px;
+    }
+
+    .character-delete-button {
+        min-width:
+            55px;
+
+        font-size:
+            0.62rem;
     }
 }
 
@@ -604,12 +936,18 @@
    Reduced motion
    ============================== */
 
-@media (prefers-reduced-motion: reduce) {
+@media (
+    prefers-reduced-motion:
+        reduce
+) {
 
     .character-card-details-inner,
     .character-section-card,
     .character-open-button,
-    .character-open-button::after {
-        transition: none;
+    .character-open-button::after,
+    .character-delete-icon-button,
+    .character-card {
+        transition:
+            none;
     }
 }

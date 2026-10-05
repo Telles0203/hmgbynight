@@ -2,7 +2,10 @@
     <br>
 </div>
 
-<div id="mainPage" style="display: none;">
+<div
+    id="mainPage"
+    style="display: none;"
+>
 
     <div id="emailValidationContainer"></div>
 
@@ -295,5 +298,119 @@
     </div>
 
 </div>
+
+
+<!-- ============================== -->
+<!-- DELETE CHARACTER MODAL -->
+<!-- ============================== -->
+
+<div
+    class="modal fade"
+    id="deleteCharacterModal"
+    tabindex="-1"
+    aria-labelledby="deleteCharacterModalLabel"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark border border-danger">
+
+            <div class="modal-header border-danger">
+
+                <h2
+                    id="deleteCharacterModalLabel"
+                    class="modal-title h5 text-light"
+                >
+                    Excluir personagem
+                </h2>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar"
+                ></button>
+
+            </div>
+
+            <form id="deleteCharacterForm">
+
+                <div class="modal-body">
+
+                    <div
+                        id="deleteCharacterAlert"
+                        class="alert d-none"
+                        role="alert"
+                    ></div>
+
+                    <p class="text-light">
+                        Você está prestes a excluir
+                        <strong id="deleteCharacterName"></strong>.
+                    </p>
+
+                    <div
+                        class="alert alert-warning small"
+                        role="alert"
+                    >
+                        Esta ação é permanente e não poderá ser desfeita.
+                    </div>
+
+                    <p class="text-secondary small">
+                        Personagens vinculados a uma House não podem ser
+                        excluídos por esta tela. A exclusão deve ser realizada
+                        pela própria House.
+                    </p>
+
+                    <div class="mb-2">
+
+                        <label
+                            for="deleteCharacterPassword"
+                            class="form-label text-secondary"
+                        >
+                            Confirme sua senha
+                        </label>
+
+                        <input
+                            id="deleteCharacterPassword"
+                            name="currentPassword"
+                            type="password"
+                            class="form-control bg-black text-light border-secondary"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-secondary">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        id="confirmDeleteCharacterButton"
+                        type="submit"
+                        class="btn btn-danger"
+                    >
+                        Excluir personagem
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
 
 <div id="overlay-root"></div>
