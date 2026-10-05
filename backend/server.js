@@ -14,6 +14,10 @@ const cookieParser = require(
   "cookie-parser"
 );
 
+const helmet = require(
+  "helmet"
+);
+
 const dotenv = require(
   "dotenv"
 );
@@ -155,6 +159,14 @@ app.set(
 
 app.disable(
   "x-powered-by"
+);
+
+
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      false,
+  })
 );
 
 
