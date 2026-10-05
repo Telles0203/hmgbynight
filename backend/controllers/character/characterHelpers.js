@@ -6,6 +6,15 @@ const {
 );
 
 
+const {
+  DEFAULT_MORALITY_PATH,
+  getCoreMoralityPathLabel,
+  isCoreMoralityPathRef,
+} = require(
+  "../../data/vampire/moralityPaths"
+);
+
+
 // =============================================
 // Character constants
 // =============================================
@@ -81,10 +90,6 @@ function serializeArchetype(
   }
 
 
-  // =============================================
-  // Core archetype
-  // =============================================
-
   if (
     isCoreArchetypeRef(
       ref
@@ -101,14 +106,47 @@ function serializeArchetype(
   }
 
 
+  return {
+    ref,
+
+    label:
+      ref,
+  };
+}
+
+
+// =============================================
+// Morality Path serializer
+// =============================================
+
+function serializeMoralityPath(
+  value
+) {
+  const ref =
+    String(
+      value ||
+      DEFAULT_MORALITY_PATH
+    );
+
+
+  if (
+    isCoreMoralityPathRef(
+      ref
+    )
+  ) {
+    return {
+      ref,
+
+      label:
+        getCoreMoralityPathLabel(
+          ref
+        ),
+    };
+  }
+
+
   // =============================================
-  // Chronicle archetype
-  //
-  // Ainda não implementado.
-  //
-  // Mantemos a referência desconhecida
-  // intacta para evitar perda de dados
-  // quando esse suporte for implementado.
+  // Future Chronicle custom path
   // =============================================
 
   return {
@@ -130,4 +168,5 @@ module.exports = {
   CHARACTER_CONCEPT_MAX_LENGTH,
   serializeHouse,
   serializeArchetype,
+  serializeMoralityPath,
 };

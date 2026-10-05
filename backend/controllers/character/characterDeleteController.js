@@ -1,3 +1,7 @@
+const bcrypt = require(
+  "bcryptjs"
+);
+
 const mongoose = require(
   "mongoose"
 );
@@ -6,16 +10,16 @@ const Character = require(
   "../../models/Character"
 );
 
-const House = require(
-  "../../models/House"
+const User = require(
+  "../../models/User"
 );
 
 
 // =============================================
-// Request mother Chronicle
+// Delete PC
 // =============================================
 
-async function requestMotherHouse(
+async function deleteCharacter(
   req,
   res
 ) {
@@ -31,11 +35,8 @@ async function requestMotherHouse(
       ).trim();
 
 
-    const houseId =
-      String(
-        req.body?.houseId ||
-          ""
-      ).trim();
+    const currentPassword =
+      req.body?.currentPassword;
 
 
     // =============================================
@@ -78,14 +79,13 @@ async function requestMotherHouse(
 
 
     // =============================================
-    // Chronicle ID
+    // Password
     // =============================================
 
     if (
-      !houseId ||
-      !mongoose.isValidObjectId(
-        houseId
-      )
+      !currentPassword ||
+      typeof currentPassword !==
+        "string"
     ) {
       return res
         .status(400)
@@ -94,36 +94,7 @@ async function requestMotherHouse(
             false,
 
           error:
-            "Selecione uma Crônica válida.",
-        });
-    }
-
-
-    // =============================================
-    // Chronicle
-    // =============================================
-
-    const house =
-      await House.findOne({
-        _id:
-          houseId,
-
-        isActive:
-          true,
-      }).select(
-        "name"
-      );
-
-
-    if (!house) {
-      return res
-        .status(404)
-        .json({
-          ok:
-            false,
-
-          error:
-            "A Crônica selecionada não foi encontrada ou está inativa.",
+            "Informe sua senha atual.",
         });
     }
 
@@ -143,7 +114,7 @@ async function requestMotherHouse(
         type:
           "PC",
       }).select(
-        "_id motherHouse pendingMotherHouse"
+        "name motherHouse"
       );
 
 
@@ -161,7 +132,13 @@ async function requestMotherHouse(
 
 
     // =============================================
-    // Already approved
+    // Approved Chronicle protection
+    //
+    // Pending Chronicle NÃO bloqueia exclusão.
+    //
+    // Somente personagem já aprovado em uma
+    // Crônica deixa de poder ser excluído
+    // diretamente pelo jogador.
     // =============================================
 
     if (
@@ -174,64 +151,88 @@ async function requestMotherHouse(
             false,
 
           error:
-            "Este personagem já pertence a uma Crônica.",
+            "Personagens vinculados a uma Crônica não podem ser excluídos por aqui. A exclusão deve ser realizada pela própria Crônica.",
         });
     }
 
 
     // =============================================
-    // Already pending
+    // User
     // =============================================
 
-    if (
-      character.pendingMotherHouse
-    ) {
+    const user =
+      await User.findById(
+        userId
+      ).select(
+        "+passwordHash"
+      );
+
+
+    if (!user) {
       return res
-        .status(409)
+        .status(404)
         .json({
           ok:
             false,
 
           error:
-            "Este personagem já possui uma solicitação de Crônica aguardando aprovação.",
+            "Usuário não encontrado.",
         });
     }
 
 
     // =============================================
-    // Atomic request
+    // Verify password
     // =============================================
 
-    const result =
-      await Character.updateOne(
-        {
-          _id:
-            characterId,
-
-          ownerUser:
-            userId,
-
-          type:
-            "PC",
-
-          motherHouse:
-            null,
-
-          pendingMotherHouse:
-            null,
-        },
-
-        {
-          $set: {
-            pendingMotherHouse:
-              house._id,
-          },
-        }
+    const passwordMatches =
+      await bcrypt.compare(
+        currentPassword,
+        user.passwordHash
       );
 
 
     if (
-      result.modifiedCount !==
+      !passwordMatches
+    ) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
+
+          error:
+            "A senha atual está incorreta.",
+        });
+    }
+
+
+    // =============================================
+    // Atomic delete
+    //
+    // Revalidamos motherHouse no momento exato
+    // da exclusão para evitar corrida entre
+    // aprovação da Crônica e delete.
+    // =============================================
+
+    const result =
+      await Character.deleteOne({
+        _id:
+          character._id,
+
+        ownerUser:
+          userId,
+
+        type:
+          "PC",
+
+        motherHouse:
+          null,
+      });
+
+
+    if (
+      result.deletedCount !==
       1
     ) {
       return res
@@ -241,7 +242,7 @@ async function requestMotherHouse(
             false,
 
           error:
-            "Não foi possível registrar a solicitação. O estado do personagem pode ter sido alterado.",
+            "O personagem não pôde ser excluído. Verifique se ele foi vinculado a uma Crônica.",
         });
     }
 
@@ -251,20 +252,20 @@ async function requestMotherHouse(
         true,
 
       message:
-        "Solicitação enviada para a Crônica.",
+        "Personagem excluído com sucesso.",
 
-      pendingMotherHouse: {
+      deletedCharacter: {
         id:
-          house._id,
+          character._id,
 
         name:
-          house.name,
+          character.name,
       },
     });
 
   } catch (error) {
     console.error(
-      "[CHARACTER] Erro ao solicitar Crônica:",
+      "[CHARACTER] Erro ao excluir personagem:",
       error
     );
 
@@ -276,7 +277,7 @@ async function requestMotherHouse(
           false,
 
         error:
-          "Não foi possível solicitar o vínculo com a Crônica.",
+          "Não foi possível excluir o personagem.",
       });
   }
 }
@@ -287,5 +288,5 @@ async function requestMotherHouse(
 // =============================================
 
 module.exports = {
-  requestMotherHouse,
+  deleteCharacter,
 };

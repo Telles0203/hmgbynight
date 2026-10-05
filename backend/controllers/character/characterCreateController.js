@@ -33,9 +33,17 @@ const {
 
 
 const {
+  DEFAULT_MORALITY_PATH,
+} = require(
+  "../../data/vampire/moralityPaths"
+);
+
+
+const {
   CHARACTER_NAME_MIN_LENGTH,
   CHARACTER_NAME_MAX_LENGTH,
   serializeHouse,
+  serializeMoralityPath,
 } = require(
   "./characterHelpers"
 );
@@ -266,6 +274,12 @@ async function createCharacter(
         demeanor:
           "",
 
+        moralityPath:
+          DEFAULT_MORALITY_PATH,
+
+        moralityRating:
+          null,
+
         sect:
           cleanSect,
 
@@ -282,6 +296,12 @@ async function createCharacter(
           requestedHouse?._id ||
           null,
       });
+
+
+    const moralityPath =
+      serializeMoralityPath(
+        character.moralityPath
+      );
 
 
     return res
@@ -311,6 +331,15 @@ async function createCharacter(
 
           demeanorLabel:
             "",
+
+          moralityPath:
+            moralityPath.ref,
+
+          moralityPathLabel:
+            moralityPath.label,
+
+          moralityRating:
+            null,
 
           type:
             character.type,

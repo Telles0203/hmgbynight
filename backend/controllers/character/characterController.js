@@ -2,11 +2,12 @@
 // Character Controller
 //
 // Agregador dos controllers de personagem.
-// As rotas continuam importando somente este
-// arquivo, enquanto a implementação fica
-// separada por responsabilidade.
 // =============================================
 
+
+// =============================================
+// Read
+// =============================================
 
 const {
   getCharacterOptions,
@@ -17,12 +18,20 @@ const {
 );
 
 
+// =============================================
+// Create
+// =============================================
+
 const {
   createCharacter,
 } = require(
   "./character/characterCreateController"
 );
 
+
+// =============================================
+// Edit
+// =============================================
 
 const {
   updateCharacterConcept,
@@ -33,12 +42,20 @@ const {
 );
 
 
+// =============================================
+// Chronicle
+// =============================================
+
 const {
   requestMotherHouse,
 } = require(
   "./character/characterChronicleController"
 );
 
+
+// =============================================
+// Delete
+// =============================================
 
 const {
   deleteCharacter,

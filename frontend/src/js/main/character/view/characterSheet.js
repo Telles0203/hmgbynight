@@ -7,6 +7,8 @@ export function createCharacterSheet({
   concept,
   natureLabel,
   demeanorLabel,
+  moralityPathLabel,
+  moralityRating,
   clan,
   sect,
   house,
@@ -14,6 +16,13 @@ export function createCharacterSheet({
   const safeCharacterId =
     escapeSheetHtml(
       characterId
+    );
+
+
+  const safeMoralityPathLabel =
+    escapeSheetHtml(
+      moralityPathLabel ||
+      "Humanidade"
     );
 
 
@@ -58,10 +67,6 @@ export function createCharacterSheet({
               })}
 
 
-              <!-- ============================== -->
-              <!-- CLÃ -->
-              <!-- ============================== -->
-
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
@@ -74,10 +79,6 @@ export function createCharacterSheet({
 
               </div>
 
-
-              <!-- ============================== -->
-              <!-- GERAÇÃO -->
-              <!-- ============================== -->
 
               <div class="character-sheet-row">
 
@@ -111,10 +112,6 @@ export function createCharacterSheet({
               </div>
 
 
-              <!-- ============================== -->
-              <!-- SEITA -->
-              <!-- ============================== -->
-
               <div class="character-sheet-row">
 
                 <span class="character-sheet-label">
@@ -127,10 +124,6 @@ export function createCharacterSheet({
 
               </div>
 
-
-              <!-- ============================== -->
-              <!-- CRÔNICA -->
-              <!-- ============================== -->
 
               <div class="character-sheet-row">
 
@@ -305,12 +298,23 @@ export function createCharacterSheet({
             </section>
 
 
+            <!-- ============================== -->
+            <!-- MORALIDADE -->
+            <!-- ============================== -->
+
             <section
               class="character-section-card character-sheet-section character-sheet-resource"
+              data-morality-rating="${
+                Number.isFinite(
+                  moralityRating
+                )
+                  ? moralityRating
+                  : ""
+              }"
             >
 
               <h4 class="character-sheet-title">
-                Trilha
+                ${safeMoralityPathLabel}
               </h4>
 
               <div class="character-sheet-pips">
@@ -384,10 +388,6 @@ export function createCharacterSheet({
           >
 
 
-            <!-- ============================== -->
-            <!-- HABILIDADES -->
-            <!-- ============================== -->
-
             <section
               class="character-section-card character-sheet-section"
             >
@@ -419,10 +419,6 @@ export function createCharacterSheet({
 
             </section>
 
-
-            <!-- ============================== -->
-            <!-- DISCIPLINAS -->
-            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -468,10 +464,6 @@ export function createCharacterSheet({
 
             </section>
 
-
-            <!-- ============================== -->
-            <!-- ANTECEDENTES -->
-            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"

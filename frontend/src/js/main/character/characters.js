@@ -215,10 +215,6 @@ function renderCharacters(
   `;
 
 
-  // =============================================
-  // Bootstrap popovers
-  // =============================================
-
   setupCharacterPopovers(
     container
   );
@@ -399,6 +395,17 @@ function createCharacterCard(
         demeanorLabel:
           character.demeanorLabel ||
           "",
+
+        moralityPathLabel:
+          character.moralityPathLabel ||
+          "Humanidade",
+
+        moralityRating:
+          Number.isFinite(
+            character.moralityRating
+          )
+            ? character.moralityRating
+            : null,
 
         clan,
 
@@ -595,10 +602,6 @@ async function handleCharacterListClick(
     event.currentTarget;
 
 
-  // =============================================
-  // Inline fields
-  // =============================================
-
   if (
     await handleCharacterInlineEditClick(
       event,
@@ -620,10 +623,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Generation help
-  // =============================================
-
   if (
     target.closest(
       ".character-generation-help"
@@ -632,10 +631,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Delete
-  // =============================================
 
   const deleteAction =
     target.closest(
@@ -674,10 +669,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Chronicle
-  // =============================================
-
   const houseAction =
     target.closest(
       ".character-house-select-button"
@@ -712,10 +703,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Open / close character
-  // =============================================
 
   const openButton =
     target.closest(

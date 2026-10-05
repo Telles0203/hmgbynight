@@ -14,6 +14,14 @@ const {
   "../data/vampire/clans"
 );
 
+const {
+  DEFAULT_MORALITY_PATH,
+  MORALITY_MIN,
+  MORALITY_MAX,
+} = require(
+  "../data/vampire/moralityPaths"
+);
+
 
 const validSects =
   SECT_OPTIONS.map(
@@ -68,16 +76,6 @@ const CharacterSchema =
       // Inspiration
       // ==============================
 
-      /*
-       * Conceito.
-       *
-       * O personagem é criado inicialmente
-       * com o campo vazio.
-       *
-       * O preenchimento ocorre posteriormente
-       * dentro da ficha.
-       */
-
       concept: {
         type:
           String,
@@ -96,21 +94,7 @@ const CharacterSchema =
       /*
        * Natureza.
        *
-       * Guarda uma REFERÊNCIA para uma opção,
-       * e não uma cópia do nome/descrição.
-       *
-       * Exemplos:
-       *
-       * core:sobrevivente
-       * core:visionario
-       *
-       * Futuramente:
-       *
-       * chronicle:<optionId>
-       *
-       * Isso permite que Crônicas adicionem
-       * opções próprias sem duplicar o catálogo
-       * padrão do sistema.
+       * Guarda referência ao catálogo.
        */
 
       nature: {
@@ -131,8 +115,8 @@ const CharacterSchema =
       /*
        * Comportamento.
        *
-       * Utiliza exatamente o mesmo sistema
-       * de referências da Natureza.
+       * Guarda referência ao mesmo
+       * catálogo de Arquétipos.
        */
 
       demeanor: {
@@ -147,6 +131,71 @@ const CharacterSchema =
 
         default:
           "",
+      },
+
+
+      // ==============================
+      // Morality
+      // ==============================
+
+      /*
+       * Trilha de Moralidade.
+       *
+       * Por padrão:
+       *
+       * core:humanidade
+       *
+       * Futuramente poderão existir
+       * referências próprias da Crônica.
+       */
+
+      moralityPath: {
+        type:
+          String,
+
+        trim:
+          true,
+
+        maxlength:
+          120,
+
+        default:
+          DEFAULT_MORALITY_PATH,
+      },
+
+
+      /*
+       * Pontuação atual de Moralidade.
+       *
+       * Escala OWBN:
+       *
+       * 0 a 10.
+       *
+       * Durante a criação fica null até
+       * que as Virtudes necessárias
+       * tenham sido definidas.
+       *
+       * Nesse momento o valor inicial
+       * será calculado pela soma das
+       * Virtudes correspondentes.
+       *
+       * Após a criação, Moralidade possui
+       * progressão própria e deixa de ser
+       * um simples valor derivado.
+       */
+
+      moralityRating: {
+        type:
+          Number,
+
+        min:
+          MORALITY_MIN,
+
+        max:
+          MORALITY_MAX,
+
+        default:
+          null,
       },
 
 
@@ -207,14 +256,6 @@ const CharacterSchema =
       // Approved mother Chronicle
       // ==============================
 
-      /*
-       * Mantemos internamente o nome
-       * motherHouse por compatibilidade.
-       *
-       * Na interface utilizaremos
-       * o termo Crônica.
-       */
-
       motherHouse: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -264,10 +305,6 @@ CharacterSchema.pre(
   "validate",
   function () {
 
-    // ==============================
-    // PC must have owner
-    // ==============================
-
     if (
       this.type === "PC" &&
       !this.ownerUser
@@ -277,10 +314,6 @@ CharacterSchema.pre(
       );
     }
 
-
-    // ==============================
-    // NPC must have Chronicle
-    // ==============================
 
     if (
       this.type === "NPC" &&
@@ -292,10 +325,6 @@ CharacterSchema.pre(
     }
 
 
-    // ==============================
-    // NPC cannot have owner
-    // ==============================
-
     if (
       this.type === "NPC" &&
       this.ownerUser
@@ -306,10 +335,6 @@ CharacterSchema.pre(
     }
 
 
-    // ==============================
-    // NPC cannot have pending Chronicle
-    // ==============================
-
     if (
       this.type === "NPC" &&
       this.pendingMotherHouse
@@ -319,10 +344,6 @@ CharacterSchema.pre(
       );
     }
 
-
-    // ==============================
-    // Cannot have approved and pending
-    // ==============================
 
     if (
       this.motherHouse &&

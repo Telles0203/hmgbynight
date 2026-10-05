@@ -38,6 +38,7 @@ const {
 const {
   serializeHouse,
   serializeArchetype,
+  serializeMoralityPath,
 } = require(
   "./characterHelpers"
 );
@@ -118,7 +119,7 @@ async function listCharacters(
       })
 
         .select(
-          "name concept nature demeanor type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name concept nature demeanor moralityPath moralityRating type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -164,6 +165,20 @@ async function listCharacters(
               );
 
 
+            const moralityPath =
+              serializeMoralityPath(
+                character.moralityPath
+              );
+
+
+            const moralityRating =
+              Number.isFinite(
+                character.moralityRating
+              )
+                ? character.moralityRating
+                : null;
+
+
             return {
               id:
                 character._id,
@@ -186,6 +201,14 @@ async function listCharacters(
 
               demeanorLabel:
                 demeanor.label,
+
+              moralityPath:
+                moralityPath.ref,
+
+              moralityPathLabel:
+                moralityPath.label,
+
+              moralityRating,
 
               type:
                 character.type,
