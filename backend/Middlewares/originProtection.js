@@ -6,10 +6,16 @@ const SAFE_METHODS =
   ]);
 
 
-function normalizeOrigin(
+function normalizeConfiguredOrigin(
   value,
-  variableName
+  variableName,
+  options = {}
 ) {
+  const {
+    required = true,
+  } = options;
+
+
   const rawValue =
     String(
       value || ""
@@ -17,6 +23,10 @@ function normalizeOrigin(
 
 
   if (!rawValue) {
+    if (!required) {
+      return null;
+    }
+
     throw new Error(
       `${variableName} não configurado.`
     );
@@ -42,8 +52,33 @@ function normalizeOrigin(
 }
 
 
+function normalizeRequestOrigin(
+  value
+) {
+  const rawValue =
+    String(
+      value || ""
+    ).trim();
+
+
+  if (!rawValue) {
+    return null;
+  }
+
+
+  try {
+    return new URL(
+      rawValue
+    ).origin;
+
+  } catch {
+    return null;
+  }
+}
+
+
 function getProductionOrigin() {
-  return normalizeOrigin(
+  return normalizeConfiguredOrigin(
     process.env.APP_URL,
     "APP_URL"
   );
@@ -51,9 +86,12 @@ function getProductionOrigin() {
 
 
 function getLocalOrigin() {
-  return normalizeOrigin(
+  return normalizeConfiguredOrigin(
     process.env.APP_URL_LOCAL,
-    "APP_URL_LOCAL"
+    "APP_URL_LOCAL",
+    {
+      required: false,
+    }
   );
 }
 
@@ -75,6 +113,53 @@ function isLocalRequest(req) {
     hostname ===
       "::1"
   );
+}
+
+
+function getRequestOrigin(req) {
+  const originHeader =
+    String(
+      req.get(
+        "origin"
+      ) || ""
+    ).trim();
+
+
+  if (originHeader) {
+    return normalizeRequestOrigin(
+      originHeader
+    );
+  }
+
+
+  const refererHeader =
+    String(
+      req.get(
+        "referer"
+      ) || ""
+    ).trim();
+
+
+  if (refererHeader) {
+    return normalizeRequestOrigin(
+      refererHeader
+    );
+  }
+
+
+  return null;
+}
+
+
+function denyRequest(res) {
+  return res
+    .status(403)
+    .json({
+      ok: false,
+
+      error:
+        "Origem da requisição não permitida.",
+    });
 }
 
 
@@ -106,35 +191,22 @@ function originProtection(
     secFetchSite ===
     "cross-site"
   ) {
-    return res
-      .status(403)
-      .json({
-        ok: false,
-
-        error:
-          "Origem da requisição não permitida.",
-      });
+    return denyRequest(
+      res
+    );
   }
 
 
-  const origin =
-    String(
-      req.get(
-        "origin"
-      ) || ""
-    ).trim();
+  const requestOrigin =
+    getRequestOrigin(
+      req
+    );
 
 
-  /*
-   * Alguns clientes HTTP e chamadas
-   * internas podem não enviar Origin.
-   *
-   * Navegadores modernos normalmente
-   * enviam Origin nas requisições
-   * relevantes que alteram dados.
-   */
-  if (!origin) {
-    return next();
+  if (!requestOrigin) {
+    return denyRequest(
+      res
+    );
   }
 
 
@@ -166,7 +238,7 @@ function originProtection(
 
 
   if (
-    origin ===
+    requestOrigin ===
     productionOrigin
   ) {
     return next();
@@ -174,22 +246,18 @@ function originProtection(
 
 
   if (
+    localOrigin &&
     isLocalRequest(req) &&
-    origin ===
+    requestOrigin ===
       localOrigin
   ) {
     return next();
   }
 
 
-  return res
-    .status(403)
-    .json({
-      ok: false,
-
-      error:
-        "Origem da requisição não permitida.",
-    });
+  return denyRequest(
+    res
+  );
 }
 
 

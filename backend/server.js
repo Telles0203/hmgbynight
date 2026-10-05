@@ -99,6 +99,7 @@ function validateConfiguredUrl(
   const {
     requireHttps = false,
     requireLocalhost = false,
+    required = true,
   } = options;
 
 
@@ -111,6 +112,10 @@ function validateConfiguredUrl(
 
 
   if (!rawValue) {
+    if (!required) {
+      return null;
+    }
+
     throw new Error(
       `${variableName} não configurado.`
     );
@@ -223,6 +228,9 @@ function validateApplicationUrls() {
       {
         requireLocalhost:
           true,
+
+        required:
+          false,
       }
     );
 
@@ -230,17 +238,31 @@ function validateApplicationUrls() {
   process.env.APP_URL =
     productionUrl;
 
-  process.env.APP_URL_LOCAL =
-    localUrl;
+
+  if (localUrl) {
+    process.env.APP_URL_LOCAL =
+      localUrl;
+
+  } else {
+    delete process.env.APP_URL_LOCAL;
+  }
 
 
   console.log(
     `[SERVER] APP_URL: ${productionUrl}.`
   );
 
-  console.log(
-    `[SERVER] APP_URL_LOCAL: ${localUrl}.`
-  );
+
+  if (localUrl) {
+    console.log(
+      `[SERVER] APP_URL_LOCAL: ${localUrl}.`
+    );
+
+  } else {
+    console.log(
+      "[SERVER] APP_URL_LOCAL não configurado."
+    );
+  }
 }
 
 
