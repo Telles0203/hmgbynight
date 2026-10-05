@@ -157,6 +157,10 @@ p {
     opacity: 0.65;
 }
 
+.page-form-container {
+    max-width: 520px;
+}
+
 .cookie-notice {
     z-index: 1080;
 }
