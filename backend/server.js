@@ -81,6 +81,65 @@ const indexPath =
 
 
 // ==============================
+// Environment validation
+// ==============================
+
+function validateApplicationUrl() {
+  const rawApplicationUrl =
+    String(
+      process.env.APP_URL || ""
+    ).trim();
+
+  if (!rawApplicationUrl) {
+    throw new Error(
+      "APP_URL não configurado."
+    );
+  }
+
+
+  let applicationUrl;
+
+  try {
+    applicationUrl =
+      new URL(
+        rawApplicationUrl
+      );
+  } catch {
+    throw new Error(
+      "APP_URL inválido."
+    );
+  }
+
+
+  const isLocalhost =
+    applicationUrl.hostname ===
+      "localhost" ||
+    applicationUrl.hostname ===
+      "127.0.0.1";
+
+
+  if (
+    applicationUrl.protocol !==
+      "https:" &&
+    !isLocalhost
+  ) {
+    throw new Error(
+      "APP_URL deve utilizar HTTPS fora do ambiente local."
+    );
+  }
+
+
+  process.env.APP_URL =
+    applicationUrl
+      .toString()
+      .replace(
+        /\/+$/,
+        ""
+      );
+}
+
+
+// ==============================
 // Proxy
 // ==============================
 
@@ -262,6 +321,9 @@ async function startServer() {
         "MONGO_URI não configurado."
       );
     }
+
+
+    validateApplicationUrl();
 
 
     await mongoose.connect(

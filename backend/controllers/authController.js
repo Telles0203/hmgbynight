@@ -133,15 +133,24 @@ function createPasswordResetExpiration() {
   );
 }
 
-function getApplicationUrl(req) {
-  if (process.env.APP_URL) {
-    return process.env.APP_URL.replace(
-      /\/+$/,
-      ""
+function getApplicationUrl() {
+  const applicationUrl =
+    String(
+      process.env.APP_URL || ""
+    )
+      .trim()
+      .replace(
+        /\/+$/,
+        ""
+      );
+
+  if (!applicationUrl) {
+    throw new Error(
+      "APP_URL não configurado."
     );
   }
 
-  return `${req.protocol}://${req.get("host")}`;
+  return applicationUrl;
 }
 
 function wait(milliseconds) {
