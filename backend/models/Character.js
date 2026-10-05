@@ -22,6 +22,13 @@ const {
   "../data/vampire/moralityPaths"
 );
 
+const {
+  VIRTUE_MIN,
+  VIRTUE_MAX,
+} = require(
+  "../data/vampire/virtues"
+);
+
 
 const validSects =
   SECT_OPTIONS.map(
@@ -200,6 +207,105 @@ const CharacterSchema =
 
 
       // ==============================
+      // Virtues
+      // ==============================
+
+      /*
+       * Mantemos as cinco possibilidades.
+       *
+       * A Trilha determina quais delas
+       * estão ativas.
+       *
+       * Exemplo:
+       *
+       * Humanidade:
+       * - conscience
+       * - selfControl
+       * - courage
+       *
+       * Os valores ficam null enquanto
+       * ainda não foram definidos durante
+       * a criação do personagem.
+       */
+
+      virtues: {
+        conscience: {
+          type:
+            Number,
+
+          min:
+            VIRTUE_MIN,
+
+          max:
+            VIRTUE_MAX,
+
+          default:
+            null,
+        },
+
+
+        conviction: {
+          type:
+            Number,
+
+          min:
+            VIRTUE_MIN,
+
+          max:
+            VIRTUE_MAX,
+
+          default:
+            null,
+        },
+
+
+        selfControl: {
+          type:
+            Number,
+
+          min:
+            VIRTUE_MIN,
+
+          max:
+            VIRTUE_MAX,
+
+          default:
+            null,
+        },
+
+
+        instinct: {
+          type:
+            Number,
+
+          min:
+            VIRTUE_MIN,
+
+          max:
+            VIRTUE_MAX,
+
+          default:
+            null,
+        },
+
+
+        courage: {
+          type:
+            Number,
+
+          min:
+            VIRTUE_MIN,
+
+          max:
+            VIRTUE_MAX,
+
+          default:
+            null,
+        },
+      },
+
+
+      // ==============================
       // Vampire
       // ==============================
 
@@ -351,6 +457,51 @@ CharacterSchema.pre(
     ) {
       throw new Error(
         "Um personagem não pode possuir Crônica aprovada e solicitação pendente ao mesmo tempo."
+      );
+    }
+
+
+    // ==============================
+    // Virtue exclusivity
+    // ==============================
+
+    const conscience =
+      this.virtues?.conscience;
+
+    const conviction =
+      this.virtues?.conviction;
+
+    const selfControl =
+      this.virtues?.selfControl;
+
+    const instinct =
+      this.virtues?.instinct;
+
+
+    if (
+      Number.isFinite(
+        conscience
+      ) &&
+      Number.isFinite(
+        conviction
+      )
+    ) {
+      throw new Error(
+        "Um personagem não pode possuir Consciência e Convicção ao mesmo tempo."
+      );
+    }
+
+
+    if (
+      Number.isFinite(
+        selfControl
+      ) &&
+      Number.isFinite(
+        instinct
+      )
+    ) {
+      throw new Error(
+        "Um personagem não pode possuir Autocontrole e Instinto ao mesmo tempo."
       );
     }
   }

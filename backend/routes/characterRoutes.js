@@ -17,6 +17,7 @@ const {
   updateCharacterConcept,
   updateCharacterNature,
   updateCharacterDemeanor,
+  updateCharacterVirtue,
   requestMotherHouse,
   deleteCharacter,
 } = require(
@@ -111,9 +112,6 @@ router.post(
 
 // =============================================
 // Available Archetypes
-//
-// Futuramente este endpoint resolverá:
-// core + opções da Crônica - desativadas.
 // =============================================
 
 router.get(
@@ -165,6 +163,20 @@ router.patch(
   requireVerifiedEmail,
 
   updateCharacterDemeanor
+);
+
+
+// =============================================
+// Update Virtue
+// =============================================
+
+router.patch(
+  "/:characterId/virtues/:virtueKey",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateCharacterVirtue
 );
 
 

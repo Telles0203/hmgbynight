@@ -37,6 +37,7 @@ const {
   updateCharacterConcept,
   updateCharacterNature,
   updateCharacterDemeanor,
+  updateCharacterVirtue,
 } = require(
   "./character/characterEditController"
 );
@@ -76,6 +77,7 @@ module.exports = {
   updateCharacterConcept,
   updateCharacterNature,
   updateCharacterDemeanor,
+  updateCharacterVirtue,
   requestMotherHouse,
   deleteCharacter,
 };

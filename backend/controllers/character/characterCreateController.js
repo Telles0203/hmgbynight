@@ -40,10 +40,18 @@ const {
 
 
 const {
+  getStartingVirtueValues,
+} = require(
+  "../../data/vampire/virtues"
+);
+
+
+const {
   CHARACTER_NAME_MIN_LENGTH,
   CHARACTER_NAME_MAX_LENGTH,
   serializeHouse,
   serializeMoralityPath,
+  serializeVirtues,
 } = require(
   "./characterHelpers"
 );
@@ -254,6 +262,16 @@ async function createCharacter(
 
 
     // =============================================
+    // Starting Virtues
+    // =============================================
+
+    const startingVirtues =
+      getStartingVirtueValues(
+        DEFAULT_MORALITY_PATH
+      );
+
+
+    // =============================================
     // Create character
     // =============================================
 
@@ -280,6 +298,9 @@ async function createCharacter(
         moralityRating:
           null,
 
+        virtues:
+          startingVirtues,
+
         sect:
           cleanSect,
 
@@ -301,6 +322,13 @@ async function createCharacter(
     const moralityPath =
       serializeMoralityPath(
         character.moralityPath
+      );
+
+
+    const virtues =
+      serializeVirtues(
+        moralityPath.ref,
+        character.virtues
       );
 
 
@@ -340,6 +368,15 @@ async function createCharacter(
 
           moralityRating:
             null,
+
+          virtues:
+            virtues.values,
+
+          activeVirtues:
+            virtues.active,
+
+          virtuePoints:
+            virtues.points,
 
           type:
             character.type,

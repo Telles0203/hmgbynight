@@ -39,6 +39,7 @@ const {
   serializeHouse,
   serializeArchetype,
   serializeMoralityPath,
+  serializeVirtues,
 } = require(
   "./characterHelpers"
 );
@@ -119,7 +120,7 @@ async function listCharacters(
       })
 
         .select(
-          "name concept nature demeanor moralityPath moralityRating type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name concept nature demeanor moralityPath moralityRating virtues type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -179,6 +180,13 @@ async function listCharacters(
                 : null;
 
 
+            const virtues =
+              serializeVirtues(
+                moralityPath.ref,
+                character.virtues
+              );
+
+
             return {
               id:
                 character._id,
@@ -209,6 +217,15 @@ async function listCharacters(
                 moralityPath.label,
 
               moralityRating,
+
+              virtues:
+                virtues.values,
+
+              activeVirtues:
+                virtues.active,
+
+              virtuePoints:
+                virtues.points,
 
               type:
                 character.type,
@@ -343,23 +360,6 @@ async function getCharacterArchetypes(
         });
     }
 
-
-    // =============================================
-    // Resolution rules
-    //
-    // Sem Crônica:
-    // catálogo padrão.
-    //
-    // Aguardando Crônica:
-    // catálogo padrão.
-    //
-    // Crônica aprovada:
-    // futuramente:
-    //
-    // padrão
-    // + personalizados
-    // - desativados
-    // =============================================
 
     const archetypes =
       getCoreArchetypes();

@@ -15,6 +15,14 @@ const {
 );
 
 
+const {
+  getActiveVirtues,
+  getVirtueCreationProgress,
+} = require(
+  "../../data/vampire/virtues"
+);
+
+
 // =============================================
 // Character constants
 // =============================================
@@ -145,16 +153,97 @@ function serializeMoralityPath(
   }
 
 
-  // =============================================
-  // Future Chronicle custom path
-  // =============================================
-
   return {
     ref,
 
     label:
       ref,
   };
+}
+
+
+// =============================================
+// Virtues serializer
+// =============================================
+
+function serializeVirtues(
+  moralityPathRef,
+  virtues = {}
+) {
+  const values = {
+    conscience:
+      normalizeVirtueValue(
+        virtues?.conscience
+      ),
+
+    conviction:
+      normalizeVirtueValue(
+        virtues?.conviction
+      ),
+
+    selfControl:
+      normalizeVirtueValue(
+        virtues?.selfControl
+      ),
+
+    instinct:
+      normalizeVirtueValue(
+        virtues?.instinct
+      ),
+
+    courage:
+      normalizeVirtueValue(
+        virtues?.courage
+      ),
+  };
+
+
+  const active =
+    getActiveVirtues(
+      moralityPathRef
+    ).map(
+      (virtue) => ({
+        key:
+          virtue.key,
+
+        label:
+          virtue.label,
+
+        value:
+          values[
+            virtue.key
+          ],
+      })
+    );
+
+
+  const points =
+    getVirtueCreationProgress(
+      moralityPathRef,
+      values
+    );
+
+
+  return {
+    values,
+    active,
+    points,
+  };
+}
+
+
+// =============================================
+// Normalize Virtue value
+// =============================================
+
+function normalizeVirtueValue(
+  value
+) {
+  return Number.isFinite(
+    value
+  )
+    ? value
+    : null;
 }
 
 
@@ -169,4 +258,5 @@ module.exports = {
   serializeHouse,
   serializeArchetype,
   serializeMoralityPath,
+  serializeVirtues,
 };

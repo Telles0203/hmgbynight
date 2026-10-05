@@ -9,6 +9,7 @@ export function createCharacterSheet({
   demeanorLabel,
   moralityPathLabel,
   moralityRating,
+  activeVirtues,
   clan,
   sect,
   house,
@@ -217,43 +218,9 @@ export function createCharacterSheet({
               </h4>
 
 
-              <div class="character-sheet-row">
-
-                <span class="character-sheet-label">
-                  Consciência
-                </span>
-
-                <span class="character-sheet-value">
-                  —
-                </span>
-
-              </div>
-
-
-              <div class="character-sheet-row">
-
-                <span class="character-sheet-label">
-                  Coragem
-                </span>
-
-                <span class="character-sheet-value">
-                  —
-                </span>
-
-              </div>
-
-
-              <div class="character-sheet-row">
-
-                <span class="character-sheet-label">
-                  Autocontrole
-                </span>
-
-                <span class="character-sheet-value">
-                  —
-                </span>
-
-              </div>
+              ${createVirtueRows(
+                activeVirtues
+              )}
 
             </section>
 
@@ -388,6 +355,10 @@ export function createCharacterSheet({
           >
 
 
+            <!-- ============================== -->
+            <!-- HABILIDADES -->
+            <!-- ============================== -->
+
             <section
               class="character-section-card character-sheet-section"
             >
@@ -419,6 +390,10 @@ export function createCharacterSheet({
 
             </section>
 
+
+            <!-- ============================== -->
+            <!-- DISCIPLINAS -->
+            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -464,6 +439,10 @@ export function createCharacterSheet({
 
             </section>
 
+
+            <!-- ============================== -->
+            <!-- ANTECEDENTES -->
+            <!-- ============================== -->
 
             <section
               class="character-section-card character-sheet-section"
@@ -543,6 +522,83 @@ export function createCharacterSheet({
 
     </div>
   `;
+}
+
+
+// =============================================
+// Virtues
+// =============================================
+
+function createVirtueRows(
+  activeVirtues
+) {
+  if (
+    !Array.isArray(
+      activeVirtues
+    ) ||
+    activeVirtues.length ===
+      0
+  ) {
+    return `
+      <div class="character-sheet-empty">
+        Nenhuma virtude disponível.
+      </div>
+    `;
+  }
+
+
+  return activeVirtues
+    .map(
+      (virtue) => {
+        const safeKey =
+          escapeSheetHtml(
+            virtue?.key ||
+            ""
+          );
+
+
+        const safeLabel =
+          escapeSheetHtml(
+            virtue?.label ||
+            ""
+          );
+
+
+        const value =
+          Number.isFinite(
+            virtue?.value
+          )
+            ? String(
+                virtue.value
+              )
+            : "—";
+
+
+        const safeValue =
+          escapeSheetHtml(
+            value
+          );
+
+
+        return `
+          <div
+            class="character-sheet-row character-virtue-row"
+            data-virtue-key="${safeKey}"
+          >
+
+            <span class="character-sheet-label">
+              ${safeLabel}
+            </span>
+
+            <span class="character-sheet-value">
+              ${safeValue}
+            </span>
+
+          </div>
+        `;
+      }
+    )
+    .join("");
 }
 
 
