@@ -23,6 +23,10 @@ import {
   saveActiveCharacterInlineEdit,
 } from "./characterInlineEdit.js";
 
+import {
+  handleCharacterVirtueClick,
+} from "./characterVirtues.js";
+
 
 // =============================================
 // Character creation notice
@@ -430,10 +434,6 @@ function setupCharacterCreationNotice(
   }
 
 
-  // =============================================
-  // Checkbox
-  // =============================================
-
   checkbox.addEventListener(
     "change",
     () => {
@@ -442,10 +442,6 @@ function setupCharacterCreationNotice(
     }
   );
 
-
-  // =============================================
-  // Hide permanently
-  // =============================================
 
   hideButton.addEventListener(
     "click",
@@ -668,6 +664,25 @@ function createCharacterCard(
             ? character.activeVirtues
             : [],
 
+        virtuePoints:
+          character.virtuePoints ||
+          {
+            total:
+              7,
+
+            spent:
+              0,
+
+            remaining:
+              7,
+
+            complete:
+              false,
+          },
+
+        canEditVirtues:
+          !hasHouse,
+
         clan,
 
         sect,
@@ -688,10 +703,6 @@ function createCharacterCard(
 function getCharacterStatus(
   character
 ) {
-  // =============================================
-  // Approved
-  // =============================================
-
   if (
     character.motherHouse
   ) {
@@ -711,10 +722,6 @@ function getCharacterStatus(
   }
 
 
-  // =============================================
-  // Pending Chronicle approval
-  // =============================================
-
   if (
     character.pendingMotherHouse
   ) {
@@ -733,10 +740,6 @@ function getCharacterStatus(
     };
   }
 
-
-  // =============================================
-  // Initial construction
-  // =============================================
 
   return {
     key:
@@ -846,10 +849,6 @@ function createCharacterStatus(
 function getCharacterHouseSummary(
   character
 ) {
-  // =============================================
-  // Approved Chronicle
-  // =============================================
-
   if (
     character.motherHouse
   ) {
@@ -859,10 +858,6 @@ function getCharacterHouseSummary(
     );
   }
 
-
-  // =============================================
-  // Pending Chronicle
-  // =============================================
 
   if (
     character.pendingMotherHouse
@@ -875,10 +870,6 @@ function getCharacterHouseSummary(
     );
   }
 
-
-  // =============================================
-  // No Chronicle
-  // =============================================
 
   return "Sem Crônica";
 }
@@ -928,20 +919,12 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Update local state
-  // =============================================
-
   character.motherHouse =
     null;
 
   character.pendingMotherHouse =
     pendingMotherHouse;
 
-
-  // =============================================
-  // Find card
-  // =============================================
 
   const card =
     document.querySelector(
@@ -960,10 +943,6 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Update status
-  // =============================================
-
   const statusSlot =
     card.querySelector(
       ".character-status-slot"
@@ -977,10 +956,6 @@ async function handleCharacterHouseRequestCompleted({
       );
   }
 
-
-  // =============================================
-  // Update Chronicle summary
-  // =============================================
 
   const summary =
     card.querySelector(
@@ -1016,10 +991,6 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Update Chronicle field
-  // =============================================
-
   const houseField =
     card.querySelector(
       ".character-house-field"
@@ -1033,10 +1004,6 @@ async function handleCharacterHouseRequestCompleted({
       );
   }
 
-
-  // =============================================
-  // Reinitialize new popover
-  // =============================================
 
   setupCharacterPopovers(
     card
@@ -1092,6 +1059,20 @@ async function handleCharacterListClick(
 
 
   if (!target) {
+    return;
+  }
+
+
+  // =============================================
+  // Virtues
+  // =============================================
+
+  if (
+    await handleCharacterVirtueClick(
+      event,
+      container
+    )
+  ) {
     return;
   }
 

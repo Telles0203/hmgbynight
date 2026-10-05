@@ -16,7 +16,9 @@ const {
 
 
 const {
+  VIRTUE_MAX,
   getActiveVirtues,
+  getVirtueMinimumValue,
   getVirtueCreationProgress,
 } = require(
   "../../data/vampire/virtues"
@@ -202,18 +204,37 @@ function serializeVirtues(
     getActiveVirtues(
       moralityPathRef
     ).map(
-      (virtue) => ({
-        key:
-          virtue.key,
-
-        label:
-          virtue.label,
-
-        value:
-          values[
+      (virtue) => {
+        const minimum =
+          getVirtueMinimumValue(
+            moralityPathRef,
             virtue.key
-          ],
-      })
+          );
+
+
+        return {
+          key:
+            virtue.key,
+
+          label:
+            virtue.label,
+
+          value:
+            values[
+              virtue.key
+            ],
+
+          minimum:
+            Number.isFinite(
+              minimum
+            )
+              ? minimum
+              : 0,
+
+          maximum:
+            VIRTUE_MAX,
+        };
+      }
     );
 
 

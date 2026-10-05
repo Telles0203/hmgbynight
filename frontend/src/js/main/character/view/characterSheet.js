@@ -10,6 +10,8 @@ export function createCharacterSheet({
   moralityPathLabel,
   moralityRating,
   activeVirtues,
+  virtuePoints,
+  canEditVirtues,
   clan,
   sect,
   house,
@@ -210,17 +212,42 @@ export function createCharacterSheet({
             <!-- ============================== -->
 
             <section
-              class="character-section-card character-sheet-section"
+              class="
+                character-section-card
+                character-sheet-section
+                character-virtues-section
+              "
             >
 
-              <h4 class="character-sheet-title">
-                Virtudes
-              </h4>
+              ${createVirtueTitle({
+                virtuePoints,
+                canEditVirtues,
+              })}
 
 
-              ${createVirtueRows(
-                activeVirtues
-              )}
+              ${createVirtueRows({
+                characterId:
+                  safeCharacterId,
+
+                activeVirtues,
+
+                virtuePoints,
+
+                canEditVirtues,
+              })}
+
+
+              <div
+                class="
+                  character-inline-error
+                  character-virtue-error
+                  text-danger
+                  small
+                  mt-2
+                  d-none
+                "
+                role="alert"
+              ></div>
 
             </section>
 
@@ -526,12 +553,90 @@ export function createCharacterSheet({
 
 
 // =============================================
+// Virtue title
+// =============================================
+
+function createVirtueTitle({
+  virtuePoints,
+  canEditVirtues,
+}) {
+  if (
+    !canEditVirtues
+  ) {
+    return `
+      <h4 class="character-sheet-title">
+        Virtudes
+      </h4>
+    `;
+  }
+
+
+  const spent =
+    Number.isFinite(
+      virtuePoints?.spent
+    )
+      ? virtuePoints.spent
+      : 0;
+
+
+  const total =
+    Number.isFinite(
+      virtuePoints?.total
+    )
+      ? virtuePoints.total
+      : 7;
+
+
+  return `
+    <h4
+      class="
+        character-sheet-title
+        d-flex
+        align-items-center
+        justify-content-between
+        gap-2
+      "
+    >
+
+      <span>
+        Virtudes
+      </span>
+
+      <span
+        class="
+          badge
+          rounded-pill
+          border
+          border-secondary
+          text-secondary
+          bg-transparent
+        "
+        data-virtue-points
+        data-complete="${
+          spent === total
+            ? "true"
+            : "false"
+        }"
+        title="Pontos de Virtude distribuídos na criação"
+      >
+        ${spent}/${total}
+      </span>
+
+    </h4>
+  `;
+}
+
+
+// =============================================
 // Virtues
 // =============================================
 
-function createVirtueRows(
-  activeVirtues
-) {
+function createVirtueRows({
+  characterId,
+  activeVirtues,
+  virtuePoints,
+  canEditVirtues,
+}) {
   if (
     !Array.isArray(
       activeVirtues
@@ -545,6 +650,14 @@ function createVirtueRows(
       </div>
     `;
   }
+
+
+  const remaining =
+    Number.isFinite(
+      virtuePoints?.remaining
+    )
+      ? virtuePoints.remaining
+      : 7;
 
 
   return activeVirtues
@@ -564,41 +677,157 @@ function createVirtueRows(
           );
 
 
+        const minimum =
+          Number.isFinite(
+            virtue?.minimum
+          )
+            ? virtue.minimum
+            : 0;
+
+
+        const maximum =
+          Number.isFinite(
+            virtue?.maximum
+          )
+            ? virtue.maximum
+            : 5;
+
+
         const value =
           Number.isFinite(
             virtue?.value
           )
-            ? String(
-                virtue.value
-              )
-            : "—";
-
-
-        const safeValue =
-          escapeSheetHtml(
-            value
-          );
+            ? virtue.value
+            : minimum;
 
 
         return `
           <div
             class="character-sheet-row character-virtue-row"
+            data-character-id="${characterId}"
             data-virtue-key="${safeKey}"
+            data-virtue-value="${value}"
+            data-virtue-minimum="${minimum}"
+            data-virtue-maximum="${maximum}"
           >
 
             <span class="character-sheet-label">
               ${safeLabel}
             </span>
 
-            <span class="character-sheet-value">
-              ${safeValue}
-            </span>
+
+            ${
+              canEditVirtues
+                ? createVirtueControls({
+                    value,
+                    minimum,
+                    maximum,
+                    remaining,
+                  })
+                : `
+                  <span
+                    class="character-sheet-value character-virtue-value"
+                  >
+                    ${value}
+                  </span>
+                `
+            }
 
           </div>
         `;
       }
     )
     .join("");
+}
+
+
+// =============================================
+// Virtue controls
+// =============================================
+
+function createVirtueControls({
+  value,
+  minimum,
+  maximum,
+  remaining,
+}) {
+  const decreaseDisabled =
+    value <=
+    minimum;
+
+
+  const increaseDisabled =
+    value >=
+      maximum ||
+    remaining <=
+      0;
+
+
+  return `
+    <span
+      class="
+        character-sheet-value
+        d-inline-flex
+        align-items-center
+        justify-content-end
+        gap-2
+      "
+    >
+
+      <button
+        type="button"
+        class="
+          btn
+          btn-outline-secondary
+          btn-sm
+          py-0
+          px-2
+          character-virtue-control
+        "
+        data-character-virtue-action="decrease"
+        aria-label="Diminuir Virtude"
+        title="Diminuir"
+        ${
+          decreaseDisabled
+            ? "disabled"
+            : ""
+        }
+      >
+        −
+      </button>
+
+
+      <span
+        class="character-virtue-value"
+      >
+        ${value}
+      </span>
+
+
+      <button
+        type="button"
+        class="
+          btn
+          btn-outline-secondary
+          btn-sm
+          py-0
+          px-2
+          character-virtue-control
+        "
+        data-character-virtue-action="increase"
+        aria-label="Aumentar Virtude"
+        title="Aumentar"
+        ${
+          increaseDisabled
+            ? "disabled"
+            : ""
+        }
+      >
+        +
+      </button>
+
+    </span>
+  `;
 }
 
 
