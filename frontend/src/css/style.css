@@ -169,6 +169,11 @@ p {
     max-width: 900px;
 }
 
+.character-house-list {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
 .cookie-notice {
     z-index: 1080;
 }
