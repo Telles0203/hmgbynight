@@ -52,11 +52,10 @@ function hideCurrentNavbarRoute() {
         return;
       }
 
-      if (route === currentRoute) {
-        listItem.style.display = "none";
-      } else {
-        listItem.style.display = "";
-      }
+      listItem.classList.toggle(
+        "route-hidden",
+        route === currentRoute
+      );
     });
 }
 

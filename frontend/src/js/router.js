@@ -29,11 +29,10 @@ function updateNavbarRoute(route) {
         return;
       }
 
-      if (linkRoute === route) {
-        listItem.style.display = "none";
-      } else {
-        listItem.style.display = "";
-      }
+      listItem.classList.toggle(
+        "route-hidden",
+        linkRoute === route
+      );
     });
 }
 

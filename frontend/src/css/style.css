@@ -41,6 +41,10 @@ p {
     border: none;
 }
 
+.route-hidden {
+    display: none !important;
+}
+
 .offcanvas .nav-link {
     position: relative;
     padding: 15px;
