@@ -12,6 +12,12 @@ import {
   setupCharacterDeleteModal,
 } from "./characterDelete.js";
 
+import {
+  createCharacterHouseField,
+  handleCharacterHouseClick,
+  setupCharacterHouseModal,
+} from "./characterHouse.js";
+
 
 // =============================================
 // ByNight Main
@@ -37,16 +43,23 @@ async function loadCharacters() {
       await fetch(
         "/api/characters",
         {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
+          method:
+            "GET",
+
+          credentials:
+            "include",
+
+          cache:
+            "no-store",
         }
       );
+
 
     const data =
       await response
         .json()
         .catch(() => ({}));
+
 
     if (
       !response.ok ||
@@ -54,9 +67,10 @@ async function loadCharacters() {
     ) {
       throw new Error(
         data?.error ||
-          "Não foi possível carregar os personagens."
+        "Não foi possível carregar os personagens."
       );
     }
+
 
     const characters =
       Array.isArray(
@@ -65,10 +79,12 @@ async function loadCharacters() {
         ? data.characters
         : [];
 
+
     window.ByNightMain
       .character
       .characters =
         characters;
+
 
     renderCharacters(
       characters
@@ -80,10 +96,12 @@ async function loadCharacters() {
       error
     );
 
+
     window.ByNightMain
       .character
       .characters =
         [];
+
 
     renderCharacterError();
   }
@@ -102,17 +120,26 @@ function renderCharacters(
       "characterListContainer"
     );
 
+
   if (!container) {
     return;
   }
+
 
   setupCharacterListEvents(
     container
   );
 
+
   setupCharacterDeleteModal(
     loadCharacters
   );
+
+
+  setupCharacterHouseModal(
+    handleCharacterHouseRequestCompleted
+  );
+
 
   if (
     characters.length ===
@@ -137,6 +164,7 @@ function renderCharacters(
     return;
   }
 
+
   const cards =
     characters
       .map(
@@ -147,6 +175,7 @@ function renderCharacters(
       )
       .join("");
 
+
   container.innerHTML = `
     <div id="characterList">
       ${cards}
@@ -156,6 +185,7 @@ function renderCharacters(
       id="characterCreateArea"
       class="mt-3"
     >
+
       <button
         id="createCharacterButton"
         type="button"
@@ -166,11 +196,13 @@ function renderCharacters(
         + Criar personagem
       </button>
 
+
       <p class="character-delete-note">
         Personagens vinculados a uma House
         não podem ser excluídos por esta tela.
         A exclusão deve ser realizada pela própria House.
       </p>
+
     </div>
   `;
 }
@@ -188,10 +220,12 @@ function createCharacterCard(
       character.id
     );
 
+
   const name =
     escapeCharacterHtml(
       character.name
     );
+
 
   const clan =
     escapeCharacterHtml(
@@ -199,6 +233,7 @@ function createCharacterCard(
       character.clan ||
       ""
     );
+
 
   const sect =
     escapeCharacterHtml(
@@ -209,15 +244,24 @@ function createCharacterCard(
       ""
     );
 
+
   const hasHouse =
     Boolean(
       character.motherHouse
     );
 
-  const house =
-    hasHouse
-      ? "Vinculado"
-      : "Sem House";
+
+  const houseSummary =
+    getCharacterHouseSummary(
+      character
+    );
+
+
+  const houseField =
+    createCharacterHouseField(
+      character
+    );
+
 
   return `
     <article
@@ -225,9 +269,13 @@ function createCharacterCard(
       data-character-id="${id}"
     >
 
-      <div class="character-card-header">
+      <div
+        class="character-card-header"
+      >
 
-        <div class="character-card-identity">
+        <div
+          class="character-card-identity"
+        >
 
           <h3
             class="character-card-name h6 text-light mb-1"
@@ -235,25 +283,34 @@ function createCharacterCard(
             ${name}
           </h3>
 
+
           ${
             clan
               ? `
-                <div class="text-secondary small">
+                <div
+                  class="text-secondary small"
+                >
                   ${clan}
                 </div>
               `
               : ""
           }
 
-          <div class="text-secondary small">
+
+          <div
+            class="text-secondary small character-house-summary"
+          >
             ${
               sect
                 ? `${sect} · `
                 : ""
-            }${house}
+            }${escapeCharacterHtml(
+              houseSummary
+            )}
           </div>
 
         </div>
+
 
         ${
           !hasHouse
@@ -262,6 +319,7 @@ function createCharacterCard(
               )
             : ""
         }
+
 
         <button
           type="button"
@@ -273,14 +331,188 @@ function createCharacterCard(
 
       </div>
 
+
       ${createCharacterSheet({
         clan,
         sect,
-        house,
+        house:
+          houseField,
       })}
 
     </article>
   `;
+}
+
+
+// =============================================
+// House summary
+// =============================================
+
+function getCharacterHouseSummary(
+  character
+) {
+  if (
+    character.motherHouse
+  ) {
+    return (
+      character.motherHouse.name ||
+      "Vinculado"
+    );
+  }
+
+
+  if (
+    character.pendingMotherHouse
+  ) {
+    return `${
+      character
+        .pendingMotherHouse
+        .name ||
+      "House"
+    } · Aguardando aprovação`;
+  }
+
+
+  return "Sem House";
+}
+
+
+// =============================================
+// House request completed
+// =============================================
+
+async function handleCharacterHouseRequestCompleted({
+  characterId,
+  pendingMotherHouse,
+}) {
+  const characters =
+    window.ByNightMain
+      ?.character
+      ?.characters;
+
+
+  if (
+    !Array.isArray(
+      characters
+    )
+  ) {
+    await loadCharacters();
+
+    return;
+  }
+
+
+  const character =
+    characters.find(
+      (item) =>
+        String(
+          item.id
+        ) ===
+        String(
+          characterId
+        )
+    );
+
+
+  if (!character) {
+    await loadCharacters();
+
+    return;
+  }
+
+
+  // =============================================
+  // Atualiza o estado local
+  // =============================================
+
+  character.motherHouse =
+    null;
+
+  character.pendingMotherHouse =
+    pendingMotherHouse;
+
+
+  // =============================================
+  // Localiza o card já aberto
+  // =============================================
+
+  const card =
+    document.querySelector(
+      `.character-card[data-character-id="${CSS.escape(
+        String(
+          characterId
+        )
+      )}"]`
+    );
+
+
+  if (!card) {
+    await loadCharacters();
+
+    return;
+  }
+
+
+  // =============================================
+  // Atualiza resumo do card
+  // =============================================
+
+  const summary =
+    card.querySelector(
+      ".character-house-summary"
+    );
+
+
+  if (summary) {
+    const sect =
+      escapeCharacterHtml(
+        window.getSectLabel?.(
+          character.sect
+        ) ||
+        character.sect ||
+        ""
+      );
+
+
+    const houseSummary =
+      escapeCharacterHtml(
+        getCharacterHouseSummary(
+          character
+        )
+      );
+
+
+    summary.innerHTML =
+      `${
+        sect
+          ? `${sect} · `
+          : ""
+      }${houseSummary}`;
+  }
+
+
+  // =============================================
+  // Atualiza somente o campo House da ficha
+  // =============================================
+
+  const houseField =
+    card.querySelector(
+      ".character-house-field"
+    );
+
+
+  if (houseField) {
+    houseField.outerHTML =
+      createCharacterHouseField(
+        character
+      );
+
+    return;
+  }
+
+
+  // Fallback
+  await loadCharacters();
 }
 
 
@@ -296,6 +528,7 @@ function setupCharacterListEvents(
     handleCharacterListClick
   );
 
+
   container.addEventListener(
     "click",
     handleCharacterListClick
@@ -309,6 +542,11 @@ function handleCharacterListClick(
   const container =
     event.currentTarget;
 
+
+  // =============================================
+  // Delete
+  // =============================================
+
   if (
     handleCharacterDeleteClick(
       event,
@@ -318,19 +556,41 @@ function handleCharacterListClick(
     return;
   }
 
+
+  // =============================================
+  // House
+  // =============================================
+
+  if (
+    handleCharacterHouseClick(
+      event,
+      container
+    )
+  ) {
+    return;
+  }
+
+
+  // =============================================
+  // Open character
+  // =============================================
+
   const target =
     event.target instanceof Element
       ? event.target
       : null;
 
+
   if (!target) {
     return;
   }
+
 
   const openButton =
     target.closest(
       ".character-open-button"
     );
+
 
   if (
     !openButton ||
@@ -341,14 +601,17 @@ function handleCharacterListClick(
     return;
   }
 
+
   const characterId =
     openButton
       .dataset
       .characterId;
 
+
   if (!characterId) {
     return;
   }
+
 
   toggleCharacterView(
     characterId
@@ -366,9 +629,11 @@ function renderCharacterError() {
       "characterListContainer"
     );
 
+
   if (!container) {
     return;
   }
+
 
   container.innerHTML = `
     <div
@@ -403,10 +668,12 @@ function escapeCharacterHtml(
       "div"
     );
 
+
   element.textContent =
     String(
       value ?? ""
     );
+
 
   return element.innerHTML;
 }

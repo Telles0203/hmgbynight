@@ -10,9 +10,14 @@ const Character = require(
   "../models/Character"
 );
 
+const House = require(
+  "../models/House"
+);
+
 const User = require(
   "../models/User"
 );
+
 
 const {
   SECT_OPTIONS,
@@ -21,12 +26,14 @@ const {
   "../data/vampire/sects"
 );
 
+
 const {
   CLAN_OPTIONS,
   isValidClan,
 } = require(
   "../data/vampire/clans"
 );
+
 
 const {
   getClanDisplayName,
@@ -35,8 +42,48 @@ const {
 );
 
 
-const CHARACTER_NAME_MIN_LENGTH = 2;
-const CHARACTER_NAME_MAX_LENGTH = 60;
+const CHARACTER_NAME_MIN_LENGTH =
+  2;
+
+const CHARACTER_NAME_MAX_LENGTH =
+  60;
+
+
+// ==============================
+// Helpers
+// ==============================
+
+function serializeHouse(
+  house
+) {
+  if (!house) {
+    return null;
+  }
+
+
+  if (
+    typeof house ===
+      "object" &&
+    house._id
+  ) {
+    return {
+      id:
+        house._id,
+
+      name:
+        house.name || "",
+    };
+  }
+
+
+  return {
+    id:
+      house,
+
+    name:
+      "",
+  };
+}
 
 
 // ==============================
@@ -49,21 +96,30 @@ async function getCharacterOptions(
 ) {
   try {
     return res.json({
-      ok: true,
+      ok:
+        true,
 
-      sects: SECT_OPTIONS.map(
-        (sect) => ({
-          value: sect.value,
-          label: sect.label,
-        })
-      ),
+      sects:
+        SECT_OPTIONS.map(
+          (sect) => ({
+            value:
+              sect.value,
 
-      clans: CLAN_OPTIONS.map(
-        (clan) => ({
-          value: clan.value,
-          label: clan.label,
-        })
-      ),
+            label:
+              sect.label,
+          })
+        ),
+
+      clans:
+        CLAN_OPTIONS.map(
+          (clan) => ({
+            value:
+              clan.value,
+
+            label:
+              clan.label,
+          })
+        ),
     });
 
   } catch (error) {
@@ -72,12 +128,16 @@ async function getCharacterOptions(
       error
     );
 
-    return res.status(500).json({
-      ok: false,
 
-      error:
-        "Erro interno ao carregar opções do personagem.",
-    });
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Erro interno ao carregar opções do personagem.",
+      });
   }
 }
 
@@ -95,12 +155,16 @@ async function createCharacter(
       name,
       sect,
       clan,
-    } = req.body || {};
+      requestedMotherHouseId,
+    } =
+      req.body || {};
+
 
     const cleanName =
       String(
         name || ""
       ).trim();
+
 
     const cleanSect =
       String(
@@ -108,6 +172,7 @@ async function createCharacter(
       )
         .trim()
         .toLowerCase();
+
 
     const cleanClan =
       String(
@@ -117,13 +182,27 @@ async function createCharacter(
         .toLowerCase();
 
 
-    if (!cleanName) {
-      return res.status(400).json({
-        ok: false,
+    const cleanRequestedHouseId =
+      String(
+        requestedMotherHouseId ||
+          ""
+      ).trim();
 
-        error:
-          "Informe o nome do personagem.",
-      });
+
+    // ==============================
+    // Name
+    // ==============================
+
+    if (!cleanName) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Informe o nome do personagem.",
+        });
     }
 
 
@@ -133,22 +212,32 @@ async function createCharacter(
       cleanName.length >
         CHARACTER_NAME_MAX_LENGTH
     ) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          `O nome do personagem deve possuir entre ${CHARACTER_NAME_MIN_LENGTH} e ${CHARACTER_NAME_MAX_LENGTH} caracteres.`,
-      });
+          error:
+            `O nome do personagem deve possuir entre ${CHARACTER_NAME_MIN_LENGTH} e ${CHARACTER_NAME_MAX_LENGTH} caracteres.`,
+        });
     }
 
 
-    if (!cleanSect) {
-      return res.status(400).json({
-        ok: false,
+    // ==============================
+    // Sect
+    // ==============================
 
-        error:
-          "Selecione a seita do personagem.",
-      });
+    if (!cleanSect) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Selecione a seita do personagem.",
+        });
     }
 
 
@@ -157,22 +246,32 @@ async function createCharacter(
         cleanSect
       )
     ) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Seita inválida.",
-      });
+          error:
+            "Seita inválida.",
+        });
     }
 
 
-    if (!cleanClan) {
-      return res.status(400).json({
-        ok: false,
+    // ==============================
+    // Clan
+    // ==============================
 
-        error:
-          "Selecione o clã do personagem.",
-      });
+    if (!cleanClan) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Selecione o clã do personagem.",
+        });
     }
 
 
@@ -181,63 +280,142 @@ async function createCharacter(
         cleanClan
       )
     ) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Clã inválido.",
-      });
+          error:
+            "Clã inválido.",
+        });
     }
 
 
+    // ==============================
+    // Optional mother House request
+    // ==============================
+
+    let requestedHouse =
+      null;
+
+
+    if (
+      cleanRequestedHouseId
+    ) {
+      if (
+        !mongoose.isValidObjectId(
+          cleanRequestedHouseId
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            ok:
+              false,
+
+            error:
+              "House selecionada inválida.",
+          });
+      }
+
+
+      requestedHouse =
+        await House.findOne({
+          _id:
+            cleanRequestedHouseId,
+
+          isActive:
+            true,
+        }).select(
+          "name"
+        );
+
+
+      if (!requestedHouse) {
+        return res
+          .status(404)
+          .json({
+            ok:
+              false,
+
+            error:
+              "A House selecionada não foi encontrada ou está inativa.",
+          });
+      }
+    }
+
+
+    // ==============================
+    // Create character
+    // ==============================
+
     const character =
       await Character.create({
-        name: cleanName,
-        type: "PC",
+        name:
+          cleanName,
 
-        sect: cleanSect,
-        clan: cleanClan,
+        type:
+          "PC",
+
+        sect:
+          cleanSect,
+
+        clan:
+          cleanClan,
 
         ownerUser:
           req.user.sub,
 
         motherHouse:
           null,
+
+        pendingMotherHouse:
+          requestedHouse?._id ||
+          null,
       });
 
 
-    return res.status(201).json({
-      ok: true,
+    return res
+      .status(201)
+      .json({
+        ok:
+          true,
 
-      character: {
-        id:
-          character._id,
+        character: {
+          id:
+            character._id,
 
-        name:
-          character.name,
+          name:
+            character.name,
 
-        type:
-          character.type,
+          type:
+            character.type,
 
-        sect:
-          character.sect,
-
-        clan:
-          character.clan,
-
-        clanDisplayName:
-          getClanDisplayName(
+          sect:
             character.sect,
-            character.clan
-          ),
 
-        motherHouse:
-          character.motherHouse,
+          clan:
+            character.clan,
 
-        createdAt:
-          character.createdAt,
-      },
-    });
+          clanDisplayName:
+            getClanDisplayName(
+              character.sect,
+              character.clan
+            ),
+
+          motherHouse:
+            null,
+
+          pendingMotherHouse:
+            serializeHouse(
+              requestedHouse
+            ),
+
+          createdAt:
+            character.createdAt,
+        },
+      });
 
   } catch (error) {
     console.error(
@@ -245,12 +423,16 @@ async function createCharacter(
       error
     );
 
-    return res.status(500).json({
-      ok: false,
 
-      error:
-        "Erro interno ao criar personagem.",
-    });
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Erro interno ao criar personagem.",
+      });
   }
 }
 
@@ -272,18 +454,38 @@ async function listCharacters(
         type:
           "PC",
       })
+
         .select(
-          "name type sect clan motherHouse createdAt updatedAt"
+          "name type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
+
+        .populate({
+          path:
+            "motherHouse",
+
+          select:
+            "name",
+        })
+
+        .populate({
+          path:
+            "pendingMotherHouse",
+
+          select:
+            "name",
+        })
+
         .sort({
           createdAt:
             -1,
         })
+
         .lean();
 
 
     return res.json({
-      ok: true,
+      ok:
+        true,
 
       characters:
         characters.map(
@@ -310,7 +512,14 @@ async function listCharacters(
               ),
 
             motherHouse:
-              character.motherHouse,
+              serializeHouse(
+                character.motherHouse
+              ),
+
+            pendingMotherHouse:
+              serializeHouse(
+                character.pendingMotherHouse
+              ),
 
             createdAt:
               character.createdAt,
@@ -327,12 +536,311 @@ async function listCharacters(
       error
     );
 
-    return res.status(500).json({
-      ok: false,
 
-      error:
-        "Erro interno ao buscar personagens.",
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Erro interno ao buscar personagens.",
+      });
+  }
+}
+
+
+// ==============================
+// Request mother House
+// ==============================
+
+async function requestMotherHouse(
+  req,
+  res
+) {
+  try {
+    const userId =
+      req.user?.sub;
+
+
+    const characterId =
+      String(
+        req.params?.characterId ||
+          ""
+      ).trim();
+
+
+    const houseId =
+      String(
+        req.body?.houseId ||
+          ""
+      ).trim();
+
+
+    // ==============================
+    // Authentication
+    // ==============================
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Não autenticado.",
+        });
+    }
+
+
+    // ==============================
+    // Character ID
+    // ==============================
+
+    if (
+      !characterId ||
+      !mongoose.isValidObjectId(
+        characterId
+      )
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem inválido.",
+        });
+    }
+
+
+    // ==============================
+    // House ID
+    // ==============================
+
+    if (
+      !houseId ||
+      !mongoose.isValidObjectId(
+        houseId
+      )
+    ) {
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Selecione uma House válida.",
+        });
+    }
+
+
+    // ==============================
+    // House
+    // ==============================
+
+    const house =
+      await House.findOne({
+        _id:
+          houseId,
+
+        isActive:
+          true,
+      }).select(
+        "name"
+      );
+
+
+    if (!house) {
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
+
+          error:
+            "A House selecionada não foi encontrada ou está inativa.",
+        });
+    }
+
+
+    // ==============================
+    // Character ownership
+    // ==============================
+
+    const character =
+      await Character.findOne({
+        _id:
+          characterId,
+
+        ownerUser:
+          userId,
+
+        type:
+          "PC",
+      }).select(
+        "_id motherHouse pendingMotherHouse"
+      );
+
+
+    if (!character) {
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Personagem não encontrado.",
+        });
+    }
+
+
+    // ==============================
+    // Already approved
+    // ==============================
+
+    if (
+      character.motherHouse
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Este personagem já possui uma House mãe.",
+        });
+    }
+
+
+    // ==============================
+    // Already pending
+    // ==============================
+
+    if (
+      character.pendingMotherHouse
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Este personagem já possui uma solicitação de House aguardando aprovação.",
+        });
+    }
+
+
+    // ==============================
+    // Create request
+    //
+    // IMPORTANTE:
+    //
+    // Usamos updateOne em vez de
+    // character.save().
+    //
+    // Personagens antigos podem não
+    // possuir campos hoje obrigatórios,
+    // como clan e sect.
+    //
+    // O save() validaria novamente todo
+    // o documento e poderia impedir a
+    // alteração de pendingMotherHouse.
+    //
+    // Aqui alteramos somente o campo
+    // necessário.
+    // ==============================
+
+    const result =
+      await Character.updateOne(
+        {
+          _id:
+            characterId,
+
+          ownerUser:
+            userId,
+
+          type:
+            "PC",
+
+          motherHouse:
+            null,
+
+          pendingMotherHouse:
+            null,
+        },
+
+        {
+          $set: {
+            pendingMotherHouse:
+              house._id,
+          },
+        }
+      );
+
+
+    // ==============================
+    // Race/state protection
+    // ==============================
+
+    if (
+      result.modifiedCount !==
+      1
+    ) {
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
+
+          error:
+            "Não foi possível registrar a solicitação. O estado do personagem pode ter sido alterado.",
+        });
+    }
+
+
+    // ==============================
+    // Success
+    // ==============================
+
+    return res.json({
+      ok:
+        true,
+
+      message:
+        "Solicitação enviada para a House.",
+
+      pendingMotherHouse: {
+        id:
+          house._id,
+
+        name:
+          house.name,
+      },
     });
+
+  } catch (error) {
+    console.error(
+      "[CHARACTER] Erro ao solicitar House mãe:",
+      error
+    );
+
+
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível solicitar o vínculo com a House.",
+      });
   }
 }
 
@@ -349,11 +857,13 @@ async function deleteCharacter(
     const userId =
       req.user?.sub;
 
+
     const characterId =
       String(
         req.params?.characterId ||
-        ""
+          ""
       ).trim();
+
 
     const currentPassword =
       req.body?.currentPassword;
@@ -364,12 +874,15 @@ async function deleteCharacter(
     // ==============================
 
     if (!userId) {
-      return res.status(401).json({
-        ok: false,
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Não autenticado.",
-      });
+          error:
+            "Não autenticado.",
+        });
     }
 
 
@@ -383,12 +896,15 @@ async function deleteCharacter(
         characterId
       )
     ) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Personagem inválido.",
-      });
+          error:
+            "Personagem inválido.",
+        });
     }
 
 
@@ -401,12 +917,15 @@ async function deleteCharacter(
       typeof currentPassword !==
         "string"
     ) {
-      return res.status(400).json({
-        ok: false,
+      return res
+        .status(400)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Informe sua senha atual.",
-      });
+          error:
+            "Informe sua senha atual.",
+        });
     }
 
 
@@ -430,12 +949,15 @@ async function deleteCharacter(
 
 
     if (!character) {
-      return res.status(404).json({
-        ok: false,
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Personagem não encontrado.",
-      });
+          error:
+            "Personagem não encontrado.",
+        });
     }
 
 
@@ -446,12 +968,15 @@ async function deleteCharacter(
     if (
       character.motherHouse
     ) {
-      return res.status(409).json({
-        ok: false,
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Personagens vinculados a uma House não podem ser excluídos por aqui. A exclusão deve ser realizada pela House.",
-      });
+          error:
+            "Personagens vinculados a uma House não podem ser excluídos por aqui. A exclusão deve ser realizada pela House.",
+        });
     }
 
 
@@ -468,12 +993,15 @@ async function deleteCharacter(
 
 
     if (!user) {
-      return res.status(404).json({
-        ok: false,
+      return res
+        .status(404)
+        .json({
+          ok:
+            false,
 
-        error:
-          "Usuário não encontrado.",
-      });
+          error:
+            "Usuário não encontrado.",
+        });
     }
 
 
@@ -488,21 +1016,29 @@ async function deleteCharacter(
       );
 
 
-    if (!passwordMatches) {
-      return res.status(401).json({
-        ok: false,
+    if (
+      !passwordMatches
+    ) {
+      return res
+        .status(401)
+        .json({
+          ok:
+            false,
 
-        error:
-          "A senha atual está incorreta.",
-      });
+          error:
+            "A senha atual está incorreta.",
+        });
     }
 
 
     // ==============================
     // Delete
     //
-    // motherHouse: null também é
-    // verificado novamente aqui.
+    // Solicitação pendente de House
+    // NÃO bloqueia a exclusão.
+    //
+    // Somente motherHouse aprovada
+    // protege o personagem.
     // ==============================
 
     const result =
@@ -525,17 +1061,25 @@ async function deleteCharacter(
       result.deletedCount !==
       1
     ) {
-      return res.status(409).json({
-        ok: false,
+      return res
+        .status(409)
+        .json({
+          ok:
+            false,
 
-        error:
-          "O personagem não pôde ser excluído. Verifique se ele foi vinculado a uma House.",
-      });
+          error:
+            "O personagem não pôde ser excluído. Verifique se ele foi vinculado a uma House.",
+        });
     }
 
 
+    // ==============================
+    // Success
+    // ==============================
+
     return res.json({
-      ok: true,
+      ok:
+        true,
 
       message:
         "Personagem excluído com sucesso.",
@@ -555,12 +1099,16 @@ async function deleteCharacter(
       error
     );
 
-    return res.status(500).json({
-      ok: false,
 
-      error:
-        "Não foi possível excluir o personagem.",
-    });
+    return res
+      .status(500)
+      .json({
+        ok:
+          false,
+
+        error:
+          "Não foi possível excluir o personagem.",
+      });
   }
 }
 
@@ -573,5 +1121,6 @@ module.exports = {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  requestMotherHouse,
   deleteCharacter,
 };

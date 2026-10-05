@@ -13,6 +13,7 @@ const {
   getCharacterOptions,
   createCharacter,
   listCharacters,
+  requestMotherHouse,
   deleteCharacter,
 } = require(
   "../controllers/characterController"
@@ -53,7 +54,8 @@ const characterDeleteLimiter =
       true,
 
     message: {
-      ok: false,
+      ok:
+        false,
 
       error:
         "Muitas tentativas de exclusão de personagem. Aguarde alguns minutos.",
@@ -100,6 +102,20 @@ router.post(
   requireVerifiedEmail,
 
   createCharacter
+);
+
+
+// ==============================
+// Request mother House
+// ==============================
+
+router.post(
+  "/:characterId/mother-house-request",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  requestMotherHouse
 );
 
 
