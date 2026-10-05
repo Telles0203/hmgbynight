@@ -1,0 +1,28 @@
+name: Deploy to Discloud
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy ByNight
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Deploy to Discloud
+        uses: discloud/deploy-action@v1
+        with:
+          token: ${{ secrets.DISCLOUD_TOKEN }}
+          app_id: prdbynight
+          env: ${{ secrets.DISCLOUD_ENV }}
+          env_file: backend/.env
