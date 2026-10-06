@@ -64,6 +64,13 @@ const creationSheetPath =
   );
 
 
+const creationAttributesPath =
+  path.resolve(
+    sheetDirectory,
+    "characterSheetCreationAttributes.js"
+  );
+
+
 const creationResourcesPath =
   path.resolve(
     sheetDirectory,
@@ -152,6 +159,8 @@ test(
       ),
 
       creationSheetPath,
+
+      creationAttributesPath,
 
       path.join(
         sheetDirectory,

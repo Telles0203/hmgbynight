@@ -112,8 +112,7 @@ function validateAttributes(
 
 
         const absoluteMaximum =
-          generationMaximum *
-          2;
+          generationMaximum;
 
 
         if (
@@ -121,7 +120,7 @@ function validateAttributes(
           absoluteMaximum
         ) {
           errors.push(
-            `${category} possui ${traits.length} Traits, acima do limite absoluto de ${absoluteMaximum}.`
+            `${category} possui ${traits.length} Traits, acima do limite de ${absoluteMaximum} para esta Geração.`
           );
         }
 

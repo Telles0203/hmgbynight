@@ -8,6 +8,7 @@ import {
   readAttributeCreationSection,
   addAttributeTraitSelection,
   removeAttributeTraitSelection,
+  handleAttributePriorityChange,
 } from "./form/characterCreationAttributeForm.js";
 
 import {
@@ -281,4 +282,5 @@ export {
   appendCharacterCreationMapRow,
   addAttributeTraitSelection,
   removeAttributeTraitSelection,
+  handleAttributePriorityChange,
 };

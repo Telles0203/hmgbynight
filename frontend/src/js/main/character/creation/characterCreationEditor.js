@@ -10,11 +10,12 @@ import {
   readCharacterCreationSection,
   addAttributeTraitSelection,
   removeAttributeTraitSelection,
+  handleAttributePriorityChange,
 } from "./characterCreationForm.js";
 
 import {
-  createCharacterCreationSections,
-} from "../view/sheet/characterSheetCreation.js";
+  refreshCharacterCreationView,
+} from "./characterCreationViewRefresh.js";
 
 
 let activeEditor =
@@ -24,6 +25,12 @@ let activeEditor =
 document.addEventListener(
   "click",
   handleDocumentClick
+);
+
+
+document.addEventListener(
+  "change",
+  handleDocumentChange
 );
 
 
@@ -170,6 +177,35 @@ function handleDocumentClick(
 
     addMapRow(
       addButton
+    );
+  }
+}
+
+
+function handleDocumentChange(
+  event
+) {
+  const target =
+    event.target instanceof
+      Element
+      ? event.target
+      : null;
+
+
+  if (
+    !target
+  ) {
+    return;
+  }
+
+
+  if (
+    target.matches(
+      "[data-creation-attribute-priority]"
+    )
+  ) {
+    handleAttributePriorityChange(
+      target
     );
   }
 }
@@ -514,7 +550,7 @@ async function saveEditor(
       null;
 
 
-    refreshCreationView(
+    refreshCharacterCreationView(
       character
     );
 
@@ -586,7 +622,7 @@ function cancelEditor() {
   if (
     character
   ) {
-    refreshCreationView(
+    refreshCharacterCreationView(
       character
     );
   }
@@ -690,90 +726,4 @@ function removeMapRow(
       type
     );
   }
-}
-
-
-function refreshCreationView(
-  character
-) {
-  const root =
-    document.querySelector(
-      `[data-character-creation-root="${CSS.escape(
-        String(
-          character.id
-        )
-      )}"]`
-    );
-
-
-  if (
-    !root
-  ) {
-    return;
-  }
-
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-
-  wrapper.innerHTML =
-    createCharacterCreationSections(
-      character,
-      character.editState
-        ?.canEdit ??
-      false
-    );
-
-
-  const replacement =
-    wrapper.firstElementChild;
-
-
-  if (
-    !replacement
-  ) {
-    return;
-  }
-
-
-  root.replaceWith(
-    replacement
-  );
-
-
-  initializeCreationPopovers(
-    replacement
-  );
-}
-
-
-function initializeCreationPopovers(
-  container
-) {
-  if (
-    !window.bootstrap
-      ?.Popover
-  ) {
-    return;
-  }
-
-
-  container
-    .querySelectorAll(
-      '[data-bs-toggle="popover"]'
-    )
-    .forEach(
-      (
-        element
-      ) => {
-        window.bootstrap
-          .Popover
-          .getOrCreateInstance(
-            element
-          );
-      }
-    );
 }

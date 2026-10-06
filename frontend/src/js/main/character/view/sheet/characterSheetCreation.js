@@ -4,9 +4,13 @@ import {
 } from "./characterSheetCommon.js";
 
 import {
-  createCreationList,
   createCreationMapList,
 } from "./characterSheetCreationLists.js";
+
+import {
+  createCreationSectionTitle,
+  createAttributeSection,
+} from "./characterSheetCreationAttributes.js";
 
 import {
   createPendingCreationNotice,
@@ -16,197 +20,6 @@ import {
   createFreeTraitContent,
   createFreeTraitSpending,
 } from "./characterSheetCreationResources.js";
-
-
-function createEditButton({
-  character,
-  section,
-  label,
-  editable,
-}) {
-  if (
-    !editable
-  ) {
-    return "";
-  }
-
-
-  return `
-    <button
-      type="button"
-      class="
-        btn
-        btn-link
-        btn-sm
-        text-secondary
-        text-decoration-none
-        p-0
-        character-creation-section-edit
-      "
-      data-character-id="${escapeSheetHtml(
-        character.id
-      )}"
-      data-character-creation-edit="${escapeSheetHtml(
-        section
-      )}"
-      aria-label="Editar ${escapeSheetHtml(
-        label
-      )}"
-      title="Editar ${escapeSheetHtml(
-        label
-      )}"
-    >
-      ✎
-    </button>
-  `;
-}
-
-
-function createSectionTitle({
-  character,
-  title,
-  section,
-  editable,
-}) {
-  return `
-    <h4
-      class="
-        character-sheet-title
-        d-flex
-        align-items-center
-        justify-content-between
-        gap-2
-      "
-    >
-
-      <span>
-        ${escapeSheetHtml(
-          title
-        )}
-      </span>
-
-      ${createEditButton({
-        character,
-        section,
-        label:
-          title,
-        editable,
-      })}
-
-    </h4>
-  `;
-}
-
-
-function createAttributeSection({
-  character,
-  state,
-  category,
-  title,
-  editable,
-}) {
-  const traits =
-    state
-      ?.attributes
-      ?.[
-        category
-      ] ||
-    [];
-
-
-  const negatives =
-    state
-      ?.negativeTraits
-      ?.[
-        category
-      ] ||
-    [];
-
-
-  const hasContent =
-    traits.length >
-      0 ||
-    negatives.length >
-      0;
-
-
-  return `
-    <section
-      class="
-        character-section-card
-        character-sheet-section
-      "
-      data-character-id="${escapeSheetHtml(
-        character.id
-      )}"
-      data-character-creation-section="attributes.${category}"
-    >
-
-      ${createSectionTitle({
-        character,
-
-        title:
-          `${title} / Negativos`,
-
-        section:
-          `attributes.${category}`,
-
-        editable,
-      })}
-
-      ${
-        !hasContent
-          ? `
-            <div class="character-sheet-empty">
-              Nenhum traço cadastrado.
-            </div>
-          `
-          : `
-            ${
-              traits.length >
-                0
-                ? `
-                  <div class="character-sheet-group">
-
-                    <div class="character-sheet-mini-title">
-                      Traits
-                    </div>
-
-                    ${createCreationList(
-                      traits,
-                      ""
-                    )}
-
-                  </div>
-                `
-                : ""
-            }
-
-            ${
-              negatives.length >
-                0
-                ? `
-                  <div class="character-sheet-group mt-3">
-
-                    <div class="character-sheet-mini-title">
-                      Negativos
-                    </div>
-
-                    ${createCreationList(
-                      negatives,
-                      ""
-                    )}
-
-                  </div>
-                `
-                : ""
-            }
-          `
-      }
-
-    </section>
-  `;
-}
 
 
 function createEditableGroup({
@@ -227,7 +40,7 @@ function createEditableGroup({
       )}"
     >
 
-      ${createSectionTitle({
+      ${createCreationSectionTitle({
         character,
         title,
         section,
@@ -411,6 +224,11 @@ export function createCharacterCreationSections(
     {};
 
 
+  const sections =
+    creation.sections ||
+    {};
+
+
   const derived =
     creation.derived ||
     {};
@@ -524,6 +342,9 @@ export function createCharacterCreationSections(
           character,
           state,
 
+          progress:
+            sections.attributes,
+
           category:
             "physical",
 
@@ -537,6 +358,9 @@ export function createCharacterCreationSections(
           character,
           state,
 
+          progress:
+            sections.attributes,
+
           category:
             "social",
 
@@ -549,6 +373,9 @@ export function createCharacterCreationSections(
         ${createAttributeSection({
           character,
           state,
+
+          progress:
+            sections.attributes,
 
           category:
             "mental",
