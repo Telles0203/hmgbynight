@@ -23,6 +23,18 @@ const {
 
 
 const {
+  getChronicleManagement,
+  updateChronicleSettings,
+  approveChronicleCharacter,
+  rejectChronicleCharacter,
+  updateChronicleMemberRole,
+} =
+  require(
+    "../controllers/chronicle/chronicleManagementController"
+  );
+
+
+const {
   requireAuth,
   requireVerifiedEmail,
 } =
@@ -68,6 +80,56 @@ router.get(
   requireVerifiedEmail,
 
   searchHouses
+);
+
+
+router.get(
+  "/:houseId/management",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  getChronicleManagement
+);
+
+
+router.patch(
+  "/:houseId",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateChronicleSettings
+);
+
+
+router.post(
+  "/:houseId/characters/:characterId/approve",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  approveChronicleCharacter
+);
+
+
+router.post(
+  "/:houseId/characters/:characterId/reject",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  rejectChronicleCharacter
+);
+
+
+router.patch(
+  "/:houseId/members/:memberId/role",
+
+  requireAuth,
+  requireVerifiedEmail,
+
+  updateChronicleMemberRole
 );
 
 

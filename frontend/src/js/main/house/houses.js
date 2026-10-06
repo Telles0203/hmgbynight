@@ -1,3 +1,8 @@
+import {
+  openChronicleManagement,
+} from "./chronicleManagement.js";
+
+
 window.ByNightMain =
   window.ByNightMain || {};
 
@@ -149,6 +154,11 @@ export function renderHouses(
 
     </div>
   `;
+
+
+  setupChronicleOpenButtons(
+    container
+  );
 }
 
 
@@ -185,12 +195,23 @@ function createHouseCard(
 
   return `
     <article
-      class="border border-secondary rounded p-3 mb-2"
+      class="
+        border
+        border-secondary
+        rounded
+        p-3
+        mb-2
+      "
       data-house-id="${id}"
     >
 
       <div
-        class="d-flex align-items-center justify-content-between gap-3"
+        class="
+          d-flex
+          align-items-center
+          justify-content-between
+          gap-3
+        "
       >
 
         <div class="min-w-0">
@@ -212,8 +233,13 @@ function createHouseCard(
 
         <button
           type="button"
-          class="btn btn-outline-secondary btn-sm"
-          disabled
+          class="
+            btn
+            btn-outline-light
+            btn-sm
+            chronicle-open-button
+          "
+          data-house-id="${id}"
         >
           Abrir
         </button>
@@ -222,6 +248,38 @@ function createHouseCard(
 
     </article>
   `;
+}
+
+
+function setupChronicleOpenButtons(
+  container
+) {
+  container
+    .querySelectorAll(
+      ".chronicle-open-button"
+    )
+    .forEach(
+      (button) => {
+        button.addEventListener(
+          "click",
+          async () => {
+            const houseId =
+              button.dataset
+                .houseId;
+
+
+            if (!houseId) {
+              return;
+            }
+
+
+            await openChronicleManagement(
+              houseId
+            );
+          }
+        );
+      }
+    );
 }
 
 
@@ -314,7 +372,7 @@ function getHouseRoleLabel(
       return "Narrador";
 
     case "member":
-      return "Membro";
+      return "Jogador";
 
     default:
       return "Membro";
