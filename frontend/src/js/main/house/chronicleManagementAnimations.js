@@ -1,342 +1,960 @@
-const CHRONICLE_MANAGEMENT_STYLESHEET_ID =
-  "chronicleManagementStylesheet";
+let panelAnimations =
+  [];
 
-const CHRONICLE_MANAGEMENT_STYLESHEET_HREF =
-  "/src/css/chronicleManagement.css";
-
-
-let stylesheetPromise =
+let chronicleDetailsAnimation =
   null;
 
 
-function wait(
-  milliseconds
-) {
-  return new Promise(
-    (resolve) => {
-      window.setTimeout(
-        resolve,
-        milliseconds
-      );
-    }
-  );
+const verticalMetrics =
+  new WeakMap();
+
+
+const MOTION_DURATION =
+  1000;
+
+
+export function getChronicleMotionDuration() {
+  return MOTION_DURATION;
 }
 
 
-function forceReflow(
-  element
+export async function animateChronicleDetails(
+  card,
+  opening,
+  duration = MOTION_DURATION
 ) {
-  if (!element) {
+  cancelChronicleDetailsAnimation();
+
+
+  const details =
+    card?.querySelector(
+      ".chronicle-card-details"
+    );
+
+
+  if (!details) {
     return;
   }
 
 
-  void element.offsetHeight;
+  let startHeight;
+  let targetHeight;
+
+
+  if (opening) {
+    card.classList.remove(
+      "is-closing"
+    );
+
+
+    startHeight =
+      0;
+
+
+    card.classList.add(
+      "is-open"
+    );
+
+
+    targetHeight =
+      details.scrollHeight;
+
+  } else {
+    startHeight =
+      details
+        .getBoundingClientRect()
+        .height;
+
+
+    targetHeight =
+      0;
+
+
+    card.classList.add(
+      "is-closing"
+    );
+  }
+
+
+  const animation =
+    details.animate(
+      createDetailsKeyframes({
+        startHeight,
+        targetHeight,
+        opening,
+      }),
+      {
+        duration,
+
+        easing:
+          "linear",
+
+        fill:
+          "both",
+      }
+    );
+
+
+  chronicleDetailsAnimation =
+    animation;
+
+
+  try {
+    await animation.finished;
+
+  } catch (error) {
+    if (
+      error?.name !==
+      "AbortError"
+    ) {
+      throw error;
+    }
+
+
+    return;
+  }
+
+
+  if (
+    chronicleDetailsAnimation !==
+    animation
+  ) {
+    return;
+  }
+
+
+  chronicleDetailsAnimation =
+    null;
+
+
+  if (!opening) {
+    card.classList.remove(
+      "is-open",
+      "is-closing"
+    );
+  }
+
+
+  animation.cancel();
 }
 
 
-function waitForTransitionEnd(
-  element,
-  fallbackMs = 220
-) {
-  return new Promise(
-    (resolve) => {
-      if (!element) {
-        resolve();
-
-        return;
-      }
+function createDetailsKeyframes({
+  startHeight,
+  targetHeight,
+  opening,
+}) {
+  const steps =
+    60;
 
 
-      let resolved =
-        false;
+  return Array.from(
+    {
+      length:
+        steps + 1,
+    },
+
+    (
+      _,
+      index
+    ) => {
+      const progress =
+        index /
+        steps;
 
 
-      const finish = () => {
-        if (resolved) {
-          return;
-        }
-
-
-        resolved =
-          true;
-
-
-        element.removeEventListener(
-          "transitionend",
-          onTransitionEnd
+      const eased =
+        easeInOutSine(
+          progress
         );
 
 
-        resolve();
+      const height =
+        startHeight +
+        (
+          targetHeight -
+          startHeight
+        ) *
+        eased;
+
+
+      return {
+        offset:
+          progress,
+
+        height:
+          `${Math.max(
+            0,
+            height
+          )}px`,
+
+        opacity:
+          opening
+            ? eased
+            : 1 - eased,
       };
-
-
-      const onTransitionEnd =
-        (event) => {
-          if (
-            event.target !==
-            element
-          ) {
-            return;
-          }
-
-
-          finish();
-        };
-
-
-      element.addEventListener(
-        "transitionend",
-        onTransitionEnd
-      );
-
-
-      window.setTimeout(
-        finish,
-        fallbackMs
-      );
     }
   );
 }
 
 
-export function ensureChronicleManagementStyles() {
-  if (
-    stylesheetPromise
-  ) {
-    return stylesheetPromise;
-  }
+export async function collapseChronicleElements(
+  elements,
+  duration = MOTION_DURATION
+) {
+  await Promise.all(
+    elements.map(
+      (element) =>
+        collapseElement(
+          element,
+          duration
+        )
+    )
+  );
+}
 
 
-  const existing =
-    document.getElementById(
-      CHRONICLE_MANAGEMENT_STYLESHEET_ID
+async function collapseElement(
+  element,
+  duration
+) {
+  const style =
+    window.getComputedStyle(
+      element
     );
 
 
-  if (existing) {
-    stylesheetPromise =
-      Promise.resolve();
+  const metrics = {
+    height:
+      element
+        .getBoundingClientRect()
+        .height,
 
-    return stylesheetPromise;
-  }
+    marginTop:
+      parseFloat(
+        style.marginTop
+      ) || 0,
 
+    marginBottom:
+      parseFloat(
+        style.marginBottom
+      ) || 0,
 
-  stylesheetPromise =
-    new Promise(
-      (
-        resolve,
-        reject
-      ) => {
-        const link =
-          document.createElement(
-            "link"
-          );
+    paddingTop:
+      parseFloat(
+        style.paddingTop
+      ) || 0,
 
+    paddingBottom:
+      parseFloat(
+        style.paddingBottom
+      ) || 0,
 
-        link.id =
-          CHRONICLE_MANAGEMENT_STYLESHEET_ID;
+    borderTopWidth:
+      parseFloat(
+        style.borderTopWidth
+      ) || 0,
 
-        link.rel =
-          "stylesheet";
+    borderBottomWidth:
+      parseFloat(
+        style.borderBottomWidth
+      ) || 0,
 
-        link.href =
-          CHRONICLE_MANAGEMENT_STYLESHEET_HREF;
-
-
-        link.addEventListener(
-          "load",
-          () => {
-            resolve();
-          },
-          {
-            once:
-              true,
-          }
-        );
-
-
-        link.addEventListener(
-          "error",
-          () => {
-            reject(
-              new Error(
-                "Não foi possível carregar o estilo do gerenciamento da Crônica."
-              )
-            );
-          },
-          {
-            once:
-              true,
-          }
-        );
+    opacity:
+      parseFloat(
+        style.opacity
+      ) || 1,
+  };
 
 
-        document.head.appendChild(
-          link
-        );
+  verticalMetrics.set(
+    element,
+    metrics
+  );
+
+
+  element.classList.remove(
+    "chronicle-view-collapsed",
+    "chronicle-view-expanding"
+  );
+
+
+  element.classList.add(
+    "chronicle-view-collapsing"
+  );
+
+
+  const animation =
+    element.animate(
+      [
+        {
+          height:
+            `${metrics.height}px`,
+
+          marginTop:
+            `${metrics.marginTop}px`,
+
+          marginBottom:
+            `${metrics.marginBottom}px`,
+
+          paddingTop:
+            `${metrics.paddingTop}px`,
+
+          paddingBottom:
+            `${metrics.paddingBottom}px`,
+
+          borderTopWidth:
+            `${metrics.borderTopWidth}px`,
+
+          borderBottomWidth:
+            `${metrics.borderBottomWidth}px`,
+
+          opacity:
+            metrics.opacity,
+
+          transform:
+            "translateY(0px)",
+        },
+
+        {
+          height:
+            "0px",
+
+          marginTop:
+            "0px",
+
+          marginBottom:
+            "0px",
+
+          paddingTop:
+            "0px",
+
+          paddingBottom:
+            "0px",
+
+          borderTopWidth:
+            "0px",
+
+          borderBottomWidth:
+            "0px",
+
+          opacity:
+            0,
+
+          transform:
+            "translateY(-16px)",
+        },
+      ],
+      {
+        duration,
+
+        easing:
+          "cubic-bezier(0.45, 0, 0.55, 1)",
+
+        fill:
+          "forwards",
       }
     );
 
 
-  return stylesheetPromise;
-}
+  try {
+    await animation.finished;
+
+  } catch (error) {
+    if (
+      error?.name !==
+      "AbortError"
+    ) {
+      throw error;
+    }
 
 
-export async function prepareChronicleManagementPanel(
-  panel
-) {
-  await ensureChronicleManagementStyles();
-
-
-  if (!panel) {
     return;
   }
 
 
-  panel.classList.add(
-    "chronicle-management-panel"
+  element.classList.add(
+    "chronicle-view-collapsed"
+  );
+
+
+  element.classList.remove(
+    "chronicle-view-collapsing"
+  );
+
+
+  animation.cancel();
+}
+
+
+export async function expandChronicleElements(
+  elements,
+  duration = MOTION_DURATION
+) {
+  await Promise.all(
+    elements.map(
+      (element) =>
+        expandElement(
+          element,
+          duration
+        )
+    )
   );
 }
 
 
-export async function animateOpenChronicleManagement(
-  panels,
-  managementPanel
+async function expandElement(
+  element,
+  duration
 ) {
-  await ensureChronicleManagementStyles();
+  const metrics =
+    verticalMetrics.get(
+      element
+    );
 
 
+  if (!metrics) {
+    element.classList.remove(
+      "chronicle-view-collapsed",
+      "chronicle-view-expanding",
+      "chronicle-view-collapsing"
+    );
+
+
+    return;
+  }
+
+
+  element.classList.remove(
+    "chronicle-view-collapsing"
+  );
+
+
+  element.classList.add(
+    "chronicle-view-expanding"
+  );
+
+
+  const animation =
+    element.animate(
+      [
+        {
+          height:
+            "0px",
+
+          marginTop:
+            "0px",
+
+          marginBottom:
+            "0px",
+
+          paddingTop:
+            "0px",
+
+          paddingBottom:
+            "0px",
+
+          borderTopWidth:
+            "0px",
+
+          borderBottomWidth:
+            "0px",
+
+          opacity:
+            0,
+
+          transform:
+            "translateY(-16px)",
+        },
+
+        {
+          height:
+            `${metrics.height}px`,
+
+          marginTop:
+            `${metrics.marginTop}px`,
+
+          marginBottom:
+            `${metrics.marginBottom}px`,
+
+          paddingTop:
+            `${metrics.paddingTop}px`,
+
+          paddingBottom:
+            `${metrics.paddingBottom}px`,
+
+          borderTopWidth:
+            `${metrics.borderTopWidth}px`,
+
+          borderBottomWidth:
+            `${metrics.borderBottomWidth}px`,
+
+          opacity:
+            metrics.opacity,
+
+          transform:
+            "translateY(0px)",
+        },
+      ],
+      {
+        duration,
+
+        easing:
+          "cubic-bezier(0.45, 0, 0.55, 1)",
+
+        fill:
+          "forwards",
+      }
+    );
+
+
+  try {
+    await animation.finished;
+
+  } catch (error) {
+    if (
+      error?.name !==
+      "AbortError"
+    ) {
+      throw error;
+    }
+
+
+    return;
+  }
+
+
+  element.classList.remove(
+    "chronicle-view-collapsed",
+    "chronicle-view-expanding"
+  );
+
+
+  animation.cancel();
+
+
+  verticalMetrics.delete(
+    element
+  );
+}
+
+
+export async function animateChroniclePanels({
+  dashboard,
+  panelsContainer,
+  characterPanel,
+  housePanel,
+  opening,
+  duration = MOTION_DURATION,
+}) {
+  cancelPanelAnimations();
+
+
+  const mobile =
+    window.matchMedia(
+      "(max-width: 991.98px)"
+    ).matches;
+
+
+  if (mobile) {
+    await animateMobilePanels({
+      dashboard,
+      characterPanel,
+      opening,
+      duration,
+    });
+
+
+    return;
+  }
+
+
+  await animateDesktopPanels({
+    dashboard,
+    panelsContainer,
+    characterPanel,
+    housePanel,
+    opening,
+    duration,
+  });
+}
+
+
+async function animateMobilePanels({
+  dashboard,
+  characterPanel,
+  opening,
+  duration,
+}) {
+  if (opening) {
+    await collapseChronicleElements(
+      [
+        characterPanel,
+      ],
+      duration
+    );
+
+
+    dashboard.classList.add(
+      "chronicle-focus"
+    );
+
+
+    return;
+  }
+
+
+  dashboard.classList.remove(
+    "chronicle-focus"
+  );
+
+
+  await expandChronicleElements(
+    [
+      characterPanel,
+    ],
+    duration
+  );
+}
+
+
+async function animateDesktopPanels({
+  dashboard,
+  panelsContainer,
+  characterPanel,
+  housePanel,
+  opening,
+  duration,
+}) {
+  const containerWidth =
+    panelsContainer
+      .getBoundingClientRect()
+      .width;
+
+
+  const styles =
+    window.getComputedStyle(
+      panelsContainer
+    );
+
+
+  const gap =
+    Number.parseFloat(
+      styles.columnGap ||
+      styles.gap ||
+      "0"
+    ) || 0;
+
+
+  const normalWidth =
+    (
+      containerWidth -
+      gap
+    ) / 2;
+
+
+  const houseOffset =
+    normalWidth +
+    gap;
+
+
+  if (!opening) {
+    dashboard.classList.remove(
+      "chronicle-focus"
+    );
+  }
+
+
+  const characterAnimation =
+    characterPanel.animate(
+      createHorizontalKeyframes({
+        startX:
+          opening
+            ? 0
+            : -115,
+
+        endX:
+          opening
+            ? -115
+            : 0,
+
+        startOpacity:
+          opening
+            ? 1
+            : 0,
+
+        endOpacity:
+          opening
+            ? 0
+            : 1,
+
+        unit:
+          "%",
+      }),
+      {
+        duration,
+
+        easing:
+          "linear",
+
+        fill:
+          "both",
+      }
+    );
+
+
+  const houseAnimation =
+    housePanel.animate(
+      createHousePanelKeyframes({
+        startWidth:
+          opening
+            ? normalWidth
+            : containerWidth,
+
+        endWidth:
+          opening
+            ? containerWidth
+            : normalWidth,
+
+        startX:
+          opening
+            ? 0
+            : -houseOffset,
+
+        endX:
+          opening
+            ? -houseOffset
+            : 0,
+      }),
+      {
+        duration,
+
+        easing:
+          "linear",
+
+        fill:
+          "both",
+      }
+    );
+
+
+  panelAnimations = [
+    characterAnimation,
+    houseAnimation,
+  ];
+
+
+  try {
+    await Promise.all(
+      panelAnimations.map(
+        (animation) =>
+          animation.finished
+      )
+    );
+
+  } catch (error) {
+    if (
+      error?.name !==
+      "AbortError"
+    ) {
+      throw error;
+    }
+
+
+    return;
+  }
+
+
+  if (opening) {
+    dashboard.classList.add(
+      "chronicle-focus"
+    );
+  }
+
+
+  panelAnimations =
+    [];
+
+
+  characterAnimation.cancel();
+  houseAnimation.cancel();
+}
+
+
+function createHorizontalKeyframes({
+  startX,
+  endX,
+  startOpacity,
+  endOpacity,
+  unit,
+}) {
+  const steps =
+    60;
+
+
+  return Array.from(
+    {
+      length:
+        steps + 1,
+    },
+
+    (
+      _,
+      index
+    ) => {
+      const progress =
+        index /
+        steps;
+
+
+      const eased =
+        easeInOutSine(
+          progress
+        );
+
+
+      const x =
+        startX +
+        (
+          endX -
+          startX
+        ) *
+        eased;
+
+
+      const opacity =
+        startOpacity +
+        (
+          endOpacity -
+          startOpacity
+        ) *
+        eased;
+
+
+      return {
+        offset:
+          progress,
+
+        transform:
+          `translateX(${x}${unit})`,
+
+        opacity,
+      };
+    }
+  );
+}
+
+
+function createHousePanelKeyframes({
+  startWidth,
+  endWidth,
+  startX,
+  endX,
+}) {
+  const steps =
+    60;
+
+
+  return Array.from(
+    {
+      length:
+        steps + 1,
+    },
+
+    (
+      _,
+      index
+    ) => {
+      const progress =
+        index /
+        steps;
+
+
+      const eased =
+        easeInOutSine(
+          progress
+        );
+
+
+      const width =
+        startWidth +
+        (
+          endWidth -
+          startWidth
+        ) *
+        eased;
+
+
+      const x =
+        startX +
+        (
+          endX -
+          startX
+        ) *
+        eased;
+
+
+      return {
+        offset:
+          progress,
+
+        width:
+          `${width}px`,
+
+        transform:
+          `translateX(${x}px)`,
+      };
+    }
+  );
+}
+
+
+function easeInOutSine(
+  value
+) {
+  return -(
+    Math.cos(
+      Math.PI *
+      value
+    ) - 1
+  ) / 2;
+}
+
+
+function cancelPanelAnimations() {
   if (
-    !managementPanel
+    panelAnimations.length ===
+    0
   ) {
     return;
   }
 
 
-  managementPanel.classList.add(
-    "chronicle-management-panel"
-  );
+  const animations =
+    panelAnimations;
 
 
-  managementPanel.classList.remove(
-    "d-none",
-    "chronicle-management-panel-visible",
-    "chronicle-management-panel-hiding"
-  );
+  panelAnimations =
+    [];
 
 
-  if (panels) {
-    panels.classList.remove(
-      "chronicle-dashboard-panels-hidden",
-      "chronicle-dashboard-panels-showing"
-    );
-
-    panels.classList.add(
-      "chronicle-dashboard-panels-hiding"
-    );
-
-    forceReflow(
-      panels
-    );
-
-    await waitForTransitionEnd(
-      panels,
-      180
-    );
-
-    panels.classList.remove(
-      "chronicle-dashboard-panels-hiding"
-    );
-
-    panels.classList.add(
-      "chronicle-dashboard-panels-hidden"
-    );
-  }
-
-
-  managementPanel.classList.remove(
-    "chronicle-management-panel-hiding"
-  );
-
-  forceReflow(
-    managementPanel
-  );
-
-  await wait(
-    10
-  );
-
-  managementPanel.classList.add(
-    "chronicle-management-panel-visible"
-  );
-
-  await waitForTransitionEnd(
-    managementPanel,
-    260
+  animations.forEach(
+    (animation) => {
+      animation.cancel();
+    }
   );
 }
 
 
-export async function animateCloseChronicleManagement(
-  panels,
-  managementPanel
-) {
-  await ensureChronicleManagementStyles();
-
-
-  if (
-    !managementPanel
-  ) {
+function cancelChronicleDetailsAnimation() {
+  if (!chronicleDetailsAnimation) {
     return;
   }
 
 
-  managementPanel.classList.remove(
-    "chronicle-management-panel-visible"
-  );
-
-  managementPanel.classList.add(
-    "chronicle-management-panel-hiding"
-  );
-
-  await waitForTransitionEnd(
-    managementPanel,
-    180
-  );
+  chronicleDetailsAnimation.cancel();
 
 
-  managementPanel.classList.add(
-    "d-none"
-  );
-
-  managementPanel.classList.remove(
-    "chronicle-management-panel-hiding"
-  );
-
-
-  if (panels) {
-    panels.classList.remove(
-      "chronicle-dashboard-panels-hidden",
-      "chronicle-dashboard-panels-hiding"
-    );
-
-    panels.classList.add(
-      "chronicle-dashboard-panels-showing"
-    );
-
-    forceReflow(
-      panels
-    );
-
-    await waitForTransitionEnd(
-      panels,
-      180
-    );
-
-    panels.classList.remove(
-      "chronicle-dashboard-panels-showing"
-    );
-  }
+  chronicleDetailsAnimation =
+    null;
 }

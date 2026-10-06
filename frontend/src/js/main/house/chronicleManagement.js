@@ -7,9 +7,11 @@ import {
 } from "./chronicleManagementView.js";
 
 import {
-  animateCloseChronicleManagement,
-  animateOpenChronicleManagement,
-  prepareChronicleManagementPanel,
+  animateChronicleDetails,
+  animateChroniclePanels,
+  collapseChronicleElements,
+  expandChronicleElements,
+  getChronicleMotionDuration,
 } from "./chronicleManagementAnimations.js";
 
 
@@ -22,67 +24,96 @@ let currentChronicleData =
 let activeTab =
   "overview";
 
-
-function getDashboardPanels() {
-  return document.querySelector(
-    "#mainDashboard .main-dashboard-panels"
-  );
-}
+let chronicleTransitioning =
+  false;
 
 
-function ensureChronicleManagementPanel() {
-  let panel =
-    document.getElementById(
-      "chronicleManagementPanel"
-    );
-
-
-  if (panel) {
-    return panel;
-  }
-
-
+function getChronicleViewElements(
+  chronicleId
+) {
   const dashboard =
     document.getElementById(
       "mainDashboard"
     );
 
 
-  if (!dashboard) {
+  const panelsContainer =
+    dashboard?.querySelector(
+      ".main-dashboard-panels"
+    );
+
+
+  const characterPanel =
+    document.getElementById(
+      "characterPanel"
+    );
+
+
+  const housePanel =
+    document.getElementById(
+      "housePanel"
+    );
+
+
+  const selectedCard =
+    document.querySelector(
+      `.chronicle-card[data-house-id="${CSS.escape(
+        String(
+          chronicleId
+        )
+      )}"]`
+    );
+
+
+  const allCards =
+    Array.from(
+      document.querySelectorAll(
+        ".chronicle-card"
+      )
+    );
+
+
+  const panelHeader =
+    document.getElementById(
+      "housePanelHeader"
+    );
+
+
+  const createArea =
+    document.getElementById(
+      "chronicleCreateArea"
+    );
+
+
+  const detailsContainer =
+    selectedCard?.querySelector(
+      ".chronicle-card-details-inner"
+    );
+
+
+  if (
+    !dashboard ||
+    !panelsContainer ||
+    !characterPanel ||
+    !housePanel ||
+    !selectedCard ||
+    !detailsContainer
+  ) {
     return null;
   }
 
 
-  panel =
-    document.createElement(
-      "section"
-    );
-
-
-  panel.id =
-    "chronicleManagementPanel";
-
-  panel.className =
-    "d-none";
-
-
-  panel.addEventListener(
-    "click",
-    handleChronicleManagementClick
-  );
-
-  panel.addEventListener(
-    "submit",
-    handleChronicleManagementSubmit
-  );
-
-
-  dashboard.appendChild(
-    panel
-  );
-
-
-  return panel;
+  return {
+    dashboard,
+    panelsContainer,
+    characterPanel,
+    housePanel,
+    selectedCard,
+    allCards,
+    panelHeader,
+    createArea,
+    detailsContainer,
+  };
 }
 
 
@@ -120,22 +151,342 @@ async function requestJson(
 }
 
 
-async function loadChronicleManagement() {
-  const panel =
-    ensureChronicleManagementPanel();
+export function toggleChronicleManagement(
+  chronicleId
+) {
+  if (
+    chronicleTransitioning
+  ) {
+    return;
+  }
 
 
   if (
-    !panel ||
+    String(
+      currentChronicleId
+    ) ===
+    String(
+      chronicleId
+    )
+  ) {
+    closeChronicleManagement();
+
+    return;
+  }
+
+
+  openChronicleManagement(
+    chronicleId
+  );
+}
+
+
+export async function openChronicleManagement(
+  chronicleId
+) {
+  if (
+    chronicleTransitioning
+  ) {
+    return;
+  }
+
+
+  const cleanId =
+    String(
+      chronicleId ||
+      ""
+    ).trim();
+
+
+  if (!cleanId) {
+    return;
+  }
+
+
+  const elements =
+    getChronicleViewElements(
+      cleanId
+    );
+
+
+  if (!elements) {
+    return;
+  }
+
+
+  const {
+    dashboard,
+    panelsContainer,
+    characterPanel,
+    housePanel,
+    selectedCard,
+    allCards,
+    panelHeader,
+    createArea,
+    detailsContainer,
+  } =
+    elements;
+
+
+  chronicleTransitioning =
+    true;
+
+
+  currentChronicleId =
+    cleanId;
+
+  currentChronicleData =
+    null;
+
+  activeTab =
+    "overview";
+
+
+  try {
+    selectedCard.classList.add(
+      "is-selected"
+    );
+
+
+    selectedCard
+      .querySelector(
+        ".chronicle-open-button"
+      )
+      ?.replaceChildren(
+        document.createTextNode(
+          "← Minhas Crônicas"
+        )
+      );
+
+
+    bindManagementEvents(
+      detailsContainer
+    );
+
+
+    renderChronicleLoading(
+      detailsContainer
+    );
+
+
+    const elementsToCollapse = [
+      ...allCards.filter(
+        (card) =>
+          card !==
+          selectedCard
+      ),
+
+      panelHeader,
+      createArea,
+    ].filter(
+      Boolean
+    );
+
+
+    await collapseChronicleElements(
+      elementsToCollapse,
+      getChronicleMotionDuration()
+    );
+
+
+    await animateChroniclePanels({
+      dashboard,
+      panelsContainer,
+      characterPanel,
+      housePanel,
+      opening:
+        true,
+
+      duration:
+        getChronicleMotionDuration(),
+    });
+
+
+    await animateChronicleDetails(
+      selectedCard,
+      true,
+      getChronicleMotionDuration()
+    );
+
+
+    await loadChronicleManagement();
+
+  } catch (error) {
+    console.error(
+      "[CHRONICLE] Erro ao abrir Crônica:",
+      error
+    );
+
+
+    renderChronicleError(
+      detailsContainer,
+      "Não foi possível abrir a Crônica."
+    );
+
+  } finally {
+    chronicleTransitioning =
+      false;
+  }
+}
+
+
+export async function closeChronicleManagement() {
+  if (
+    chronicleTransitioning ||
     !currentChronicleId
   ) {
     return;
   }
 
 
-  renderChronicleLoading(
-    panel
-  );
+  const elements =
+    getChronicleViewElements(
+      currentChronicleId
+    );
+
+
+  if (!elements) {
+    currentChronicleId =
+      null;
+
+    currentChronicleData =
+      null;
+
+    activeTab =
+      "overview";
+
+
+    return;
+  }
+
+
+  const {
+    dashboard,
+    panelsContainer,
+    characterPanel,
+    housePanel,
+    selectedCard,
+    allCards,
+    panelHeader,
+    createArea,
+    detailsContainer,
+  } =
+    elements;
+
+
+  chronicleTransitioning =
+    true;
+
+
+  try {
+    await animateChronicleDetails(
+      selectedCard,
+      false,
+      getChronicleMotionDuration()
+    );
+
+
+    await animateChroniclePanels({
+      dashboard,
+      panelsContainer,
+      characterPanel,
+      housePanel,
+      opening:
+        false,
+
+      duration:
+        getChronicleMotionDuration(),
+    });
+
+
+    const elementsToExpand = [
+      panelHeader,
+
+      ...allCards.filter(
+        (card) =>
+          card !==
+          selectedCard
+      ),
+
+      createArea,
+    ].filter(
+      Boolean
+    );
+
+
+    await expandChronicleElements(
+      elementsToExpand,
+      getChronicleMotionDuration()
+    );
+
+
+    selectedCard.classList.remove(
+      "is-selected"
+    );
+
+
+    selectedCard
+      .querySelector(
+        ".chronicle-open-button"
+      )
+      ?.replaceChildren(
+        document.createTextNode(
+          "Abrir →"
+        )
+      );
+
+
+    detailsContainer.replaceChildren();
+
+
+    currentChronicleId =
+      null;
+
+    currentChronicleData =
+      null;
+
+    activeTab =
+      "overview";
+
+
+    await window
+      .loadHouses
+      ?.();
+
+  } catch (error) {
+    console.error(
+      "[CHRONICLE] Erro ao fechar Crônica:",
+      error
+    );
+
+  } finally {
+    chronicleTransitioning =
+      false;
+  }
+}
+
+
+async function loadChronicleManagement() {
+  if (!currentChronicleId) {
+    return;
+  }
+
+
+  const elements =
+    getChronicleViewElements(
+      currentChronicleId
+    );
+
+
+  if (!elements) {
+    return;
+  }
+
+
+  const {
+    detailsContainer,
+  } =
+    elements;
 
 
   try {
@@ -162,121 +513,99 @@ async function loadChronicleManagement() {
 
 
     renderChronicleManagement(
-      panel,
+      detailsContainer,
       data
     );
 
 
     setActiveChronicleTab(
-      panel,
+      detailsContainer,
       activeTab
+    );
+
+
+    updateSelectedChronicleHeader(
+      data.chronicle
     );
 
   } catch (error) {
     console.error(
-      "[CHRONICLE] Erro ao abrir gerenciamento:",
+      "[CHRONICLE] Erro ao carregar gerenciamento:",
       error
     );
 
 
     renderChronicleError(
-      panel,
+      detailsContainer,
       error.message ||
-        "Não foi possível abrir a Crônica."
+        "Não foi possível carregar a Crônica."
     );
   }
 }
 
 
-export async function openChronicleManagement(
-  chronicleId
+function updateSelectedChronicleHeader(
+  chronicle
 ) {
-  const cleanId =
-    String(
-      chronicleId ||
-      ""
-    ).trim();
-
-
-  if (!cleanId) {
+  if (
+    !currentChronicleId ||
+    !chronicle
+  ) {
     return;
   }
 
 
-  currentChronicleId =
-    cleanId;
-
-  currentChronicleData =
-    null;
-
-  activeTab =
-    "overview";
-
-
-  const panels =
-    getDashboardPanels();
-
-  const managementPanel =
-    ensureChronicleManagementPanel();
-
-
-  if (!managementPanel) {
-    return;
-  }
-
-
-  await prepareChronicleManagementPanel(
-    managementPanel
-  );
-
-
-  renderChronicleLoading(
-    managementPanel
-  );
-
-
-  await animateOpenChronicleManagement(
-    panels,
-    managementPanel
-  );
-
-
-  await loadChronicleManagement();
-}
-
-
-async function closeChronicleManagement() {
-  const panels =
-    getDashboardPanels();
-
-  const managementPanel =
-    document.getElementById(
-      "chronicleManagementPanel"
+  const card =
+    document.querySelector(
+      `.chronicle-card[data-house-id="${CSS.escape(
+        String(
+          currentChronicleId
+        )
+      )}"]`
     );
 
 
-  await animateCloseChronicleManagement(
-    panels,
-    managementPanel
-  );
+  const nameElement =
+    card?.querySelector(
+      ".chronicle-card-name"
+    );
 
 
-  currentChronicleId =
-    null;
-
-  currentChronicleData =
-    null;
-
-  activeTab =
-    "overview";
+  if (nameElement) {
+    nameElement.textContent =
+      chronicle.name ||
+      "";
+  }
 }
 
 
-async function refreshRelatedPanels() {
-  await Promise.all([
-    window.loadHouses?.(),
-    window.loadCharacters?.(),
-  ]);
+function bindManagementEvents(
+  container
+) {
+  if (
+    container.dataset
+      .chronicleManagementBound ===
+    "true"
+  ) {
+    return;
+  }
+
+
+  container.dataset
+    .chronicleManagementBound =
+    "true";
+
+
+  container.addEventListener(
+    "click",
+    handleChronicleManagementClick
+  );
+
+
+  container.addEventListener(
+    "submit",
+    handleChronicleManagementSubmit
+  );
 }
 
 
@@ -345,7 +674,10 @@ async function approveCharacter(
         "requests";
 
 
-      await refreshRelatedPanels();
+      await window
+        .loadCharacters
+        ?.();
+
 
       await loadChronicleManagement();
     }
@@ -392,7 +724,10 @@ async function rejectCharacter(
         "requests";
 
 
-      await refreshRelatedPanels();
+      await window
+        .loadCharacters
+        ?.();
+
 
       await loadChronicleManagement();
     }
@@ -483,19 +818,8 @@ async function handleChronicleManagementClick(
   }
 
 
-  const panel =
+  const container =
     event.currentTarget;
-
-
-  if (
-    target.closest(
-      ".chronicle-back-button"
-    )
-  ) {
-    await closeChronicleManagement();
-
-    return;
-  }
 
 
   if (
@@ -523,7 +847,7 @@ async function handleChronicleManagementClick(
 
 
     setActiveChronicleTab(
-      panel,
+      container,
       activeTab
     );
 
@@ -558,7 +882,7 @@ async function handleChronicleManagementClick(
 
 
       showChronicleManagementAlert(
-        panel,
+        container,
         error.message
       );
     }
@@ -594,7 +918,7 @@ async function handleChronicleManagementClick(
 
 
       showChronicleManagementAlert(
-        panel,
+        container,
         error.message
       );
     }
@@ -630,7 +954,7 @@ async function handleChronicleManagementClick(
 
 
       showChronicleManagementAlert(
-        panel,
+        container,
         error.message
       );
     }
@@ -656,13 +980,15 @@ async function handleChronicleManagementSubmit(
   event.preventDefault();
 
 
-  const panel =
+  const container =
     event.currentTarget;
+
 
   const input =
     event.target.querySelector(
       "#chronicleSettingsName"
     );
+
 
   const button =
     event.target.querySelector(
@@ -682,9 +1008,10 @@ async function handleChronicleManagementSubmit(
     name.length > 80
   ) {
     showChronicleManagementAlert(
-      panel,
+      container,
       "O nome da Crônica deve possuir entre 2 e 80 caracteres."
     );
+
 
     return;
   }
@@ -695,35 +1022,50 @@ async function handleChronicleManagementSubmit(
       button,
       "Salvando...",
       async () => {
-        await requestJson(
-          `/api/houses/${encodeURIComponent(
-            currentChronicleId
-          )}`,
-          {
-            method:
-              "PATCH",
+        const data =
+          await requestJson(
+            `/api/houses/${encodeURIComponent(
+              currentChronicleId
+            )}`,
+            {
+              method:
+                "PATCH",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-            credentials:
-              "include",
+              credentials:
+                "include",
 
-            body:
-              JSON.stringify({
-                name,
-              }),
-          }
+              body:
+                JSON.stringify({
+                  name,
+                }),
+            }
+          );
+
+
+        if (
+          currentChronicleData
+            ?.chronicle
+        ) {
+          currentChronicleData
+            .chronicle
+            .name =
+            data.chronicle.name;
+        }
+
+
+        updateSelectedChronicleHeader(
+          data.chronicle
         );
 
 
         activeTab =
           "settings";
 
-
-        await refreshRelatedPanels();
 
         await loadChronicleManagement();
       }
@@ -737,7 +1079,7 @@ async function handleChronicleManagementSubmit(
 
 
     showChronicleManagementAlert(
-      panel,
+      container,
       error.message
     );
   }

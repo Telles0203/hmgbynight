@@ -54,25 +54,6 @@ function getCharacterOwnerLabel(
 }
 
 
-function getBackButtonIcon() {
-  return `
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M15 18L9 12L15 6"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-  `;
-}
-
-
 function createStatCard(
   label,
   value
@@ -82,19 +63,16 @@ function createStatCard(
       <div
         class="
           chronicle-stat-card
-          border
-          rounded
-          p-3
           h-100
         "
       >
-        <div class="text-secondary small">
+        <div class="chronicle-stat-label">
           ${escapeHtml(
             label
           )}
         </div>
 
-        <div class="h4 mb-0">
+        <div class="chronicle-stat-value">
           ${escapeHtml(
             value
           )}
@@ -139,13 +117,7 @@ function createPendingCharacterCard(
 
   return `
     <article
-      class="
-        chronicle-section-card
-        border
-        rounded
-        p-3
-        mb-2
-      "
+      class="chronicle-section-card"
       data-pending-character-id="${id}"
     >
       <div
@@ -157,6 +129,7 @@ function createPendingCharacterCard(
           gap-3
         "
       >
+
         <div>
           <div class="chronicle-card-title">
             ${name}
@@ -188,6 +161,7 @@ function createPendingCharacterCard(
                   align-items-start
                 "
               >
+
                 <button
                   type="button"
                   class="
@@ -211,10 +185,12 @@ function createPendingCharacterCard(
                 >
                   Rejeitar
                 </button>
+
               </div>
             `
             : ""
         }
+
       </div>
     </article>
   `;
@@ -254,15 +230,8 @@ function createCharacterCard(
 
 
   return `
-    <article
-      class="
-        chronicle-section-card
-        border
-        rounded
-        p-3
-        mb-2
-      "
-    >
+    <article class="chronicle-section-card">
+
       <div class="chronicle-card-title">
         ${name}
       </div>
@@ -279,6 +248,7 @@ function createCharacterCard(
       <div class="chronicle-card-subtext mt-1">
         Responsável: ${owner}
       </div>
+
     </article>
   `;
 }
@@ -329,15 +299,10 @@ function createMemberCard(
 
   return `
     <article
-      class="
-        chronicle-section-card
-        border
-        rounded
-        p-3
-        mb-2
-      "
+      class="chronicle-section-card"
       data-chronicle-member-id="${id}"
     >
+
       <div
         class="
           d-flex
@@ -347,7 +312,9 @@ function createMemberCard(
           gap-3
         "
       >
+
         <div>
+
           <div class="chronicle-card-title">
             ${name}
           </div>
@@ -364,17 +331,12 @@ function createMemberCard(
 
           <div class="mt-2">
             <span
-              class="
-                badge
-                border
-                border-secondary
-                text-secondary
-                bg-transparent
-              "
+              class="chronicle-role-badge"
             >
               ${roleLabel}
             </span>
           </div>
+
         </div>
 
         ${
@@ -389,6 +351,7 @@ function createMemberCard(
                   align-items-sm-start
                 "
               >
+
                 <select
                   class="
                     form-select
@@ -400,6 +363,7 @@ function createMemberCard(
                   "
                   aria-label="Papel do membro"
                 >
+
                   <option
                     value="admin"
                     ${
@@ -435,6 +399,7 @@ function createMemberCard(
                   >
                     Jogador
                   </option>
+
                 </select>
 
                 <button
@@ -448,11 +413,14 @@ function createMemberCard(
                 >
                   Salvar
                 </button>
+
               </div>
             `
             : ""
         }
+
       </div>
+
     </article>
   `;
 }
@@ -464,17 +432,11 @@ export function renderChronicleLoading(
   container.innerHTML = `
     <div
       class="
-        card
-        bg-dark
-        border-danger
-        shadow
+        chronicle-management-loading
+        text-secondary
       "
     >
-      <div class="card-body p-4">
-        <div class="text-secondary">
-          Carregando Crônica...
-        </div>
-      </div>
+      Carregando Crônica...
     </div>
   `;
 }
@@ -486,39 +448,12 @@ export function renderChronicleError(
 ) {
   container.innerHTML = `
     <div
-      class="
-        card
-        bg-dark
-        border-danger
-        shadow
-      "
+      class="alert alert-danger mb-0"
+      role="alert"
     >
-      <div class="card-body p-4">
-
-        <div
-          class="alert alert-danger"
-          role="alert"
-        >
-          ${escapeHtml(
-            message
-          )}
-        </div>
-
-        <button
-          type="button"
-          class="
-            btn
-            btn-link
-            text-decoration-none
-            p-0
-            chronicle-back-button
-          "
-        >
-          ${getBackButtonIcon()}
-          <span>Minhas Crônicas</span>
-        </button>
-
-      </div>
+      ${escapeHtml(
+        message
+      )}
     </div>
   `;
 }
@@ -528,10 +463,6 @@ export function renderChronicleManagement(
   container,
   data
 ) {
-  const chronicle =
-    data.chronicle;
-
-
   const membership =
     data.membership;
 
@@ -605,392 +536,344 @@ export function renderChronicleManagement(
 
 
   container.innerHTML = `
-    <div
-      class="
-        card
-        bg-dark
-        border-danger
-        shadow
-      "
-    >
-      <div class="card-body p-4">
+    <div class="chronicle-management-content">
 
-        <div
-          class="
-            d-flex
-            flex-column
-            flex-lg-row
-            justify-content-between
-            gap-3
-            mb-4
-          "
-        >
+      <div
+        class="
+          d-flex
+          flex-column
+          flex-md-row
+          align-items-md-center
+          justify-content-between
+          gap-3
+          mb-4
+        "
+      >
 
-          <div>
-            <button
-              type="button"
-              class="
-                btn
-                btn-link
-                text-decoration-none
-                p-0
-                mb-3
-                chronicle-back-button
-              "
-            >
-              ${getBackButtonIcon()}
-              <span>Minhas Crônicas</span>
-            </button>
-
-            <h2
-              class="
-                h3
-                text-light
-                mb-1
-              "
-            >
-              ${escapeHtml(
-                chronicle.name
-              )}
-            </h2>
-
-            <div class="text-secondary small">
-              Seu papel:
-              ${escapeHtml(
-                getRoleLabel(
-                  membership.role
-                )
-              )}
-            </div>
+        <div>
+          <div class="text-secondary small">
+            Seu papel
           </div>
 
-          <div>
-            <button
-              type="button"
-              class="
-                btn
-                btn-sm
-                chronicle-refresh-button
-              "
-            >
-              Atualizar
-            </button>
+          <div class="text-light fw-semibold">
+            ${escapeHtml(
+              getRoleLabel(
+                membership.role
+              )
+            )}
           </div>
-
         </div>
 
-
-        <div
-          id="chronicleManagementAlert"
-          class="alert d-none"
-          role="alert"
-        ></div>
-
-
-        <div class="row g-2 mb-4">
-
-          ${createStatCard(
-            "Equipe de Narração",
-            narrativeTeamCount
-          )}
-
-          ${createStatCard(
-            "Jogadores",
-            playerCount
-          )}
-
-          ${createStatCard(
-            "Personagens",
-            characters.length
-          )}
-
-          ${createStatCard(
-            "Solicitações",
-            pendingCharacters.length
-          )}
-
-        </div>
-
-
-        <div
+        <button
+          type="button"
           class="
-            chronicle-tab-list
-            mb-4
+            btn
+            btn-sm
+            chronicle-refresh-button
           "
-          role="tablist"
         >
-
-          <button
-            type="button"
-            class="
-              chronicle-tab-button
-              chronicle-tab-button-active
-            "
-            data-chronicle-tab="overview"
-          >
-            Visão geral
-          </button>
-
-          <button
-            type="button"
-            class="
-              chronicle-tab-button
-            "
-            data-chronicle-tab="requests"
-          >
-            Solicitações
-            ${
-              pendingCharacters.length
-                ? `(${pendingCharacters.length})`
-                : ""
-            }
-          </button>
-
-          <button
-            type="button"
-            class="
-              chronicle-tab-button
-            "
-            data-chronicle-tab="characters"
-          >
-            Personagens
-          </button>
-
-          <button
-            type="button"
-            class="
-              chronicle-tab-button
-            "
-            data-chronicle-tab="people"
-          >
-            Pessoas
-          </button>
-
-          <button
-            type="button"
-            class="
-              chronicle-tab-button
-            "
-            data-chronicle-tab="settings"
-          >
-            Configurações
-          </button>
-
-        </div>
-
-
-        <section
-          data-chronicle-pane="overview"
-        >
-
-          <h3 class="h4 text-light">
-            Visão geral
-          </h3>
-
-          <p class="text-secondary">
-            Gerencie os personagens, solicitações,
-            jogadores e equipe de Narração desta Crônica.
-          </p>
-
-          ${
-            pendingCharacters.length
-              ? `
-                <div
-                  class="
-                    alert
-                    alert-warning
-                    mb-0
-                  "
-                >
-                  Há
-                  <strong>
-                    ${pendingCharacters.length}
-                  </strong>
-                  ${
-                    pendingCharacters.length ===
-                      1
-                      ? "solicitação pendente"
-                      : "solicitações pendentes"
-                  }
-                  de personagem.
-                </div>
-              `
-              : `
-                <div
-                  class="
-                    alert
-                    alert-dark
-                    border
-                    border-secondary
-                    mb-0
-                  "
-                >
-                  Nenhuma solicitação de personagem está pendente.
-                </div>
-              `
-          }
-
-        </section>
-
-
-        <section
-          class="d-none"
-          data-chronicle-pane="requests"
-        >
-
-          <h3 class="h5 text-light mb-3">
-            Solicitações pendentes
-          </h3>
-
-          ${
-            pendingCharacters.length
-              ? pendingCharacters
-                  .map(
-                    (character) =>
-                      createPendingCharacterCard(
-                        character,
-                        canManageCharacters
-                      )
-                  )
-                  .join("")
-              : `
-                <p class="text-secondary">
-                  Nenhuma solicitação pendente.
-                </p>
-              `
-          }
-
-        </section>
-
-
-        <section
-          class="d-none"
-          data-chronicle-pane="characters"
-        >
-
-          <h3 class="h5 text-light mb-3">
-            Personagens vinculados
-          </h3>
-
-          ${
-            characters.length
-              ? characters
-                  .map(
-                    createCharacterCard
-                  )
-                  .join("")
-              : `
-                <p class="text-secondary">
-                  Nenhum personagem está vinculado a esta Crônica.
-                </p>
-              `
-          }
-
-        </section>
-
-
-        <section
-          class="d-none"
-          data-chronicle-pane="people"
-        >
-
-          <h3 class="h5 text-light mb-3">
-            Narradores e jogadores
-          </h3>
-
-          ${
-            members.length
-              ? members
-                  .map(
-                    (member) =>
-                      createMemberCard(
-                        member,
-                        canManageMembers
-                      )
-                  )
-                  .join("")
-              : `
-                <p class="text-secondary">
-                  Nenhum membro encontrado.
-                </p>
-              `
-          }
-
-        </section>
-
-
-        <section
-          class="d-none"
-          data-chronicle-pane="settings"
-        >
-
-          <h3 class="h5 text-light mb-3">
-            Configurações
-          </h3>
-
-          ${
-            canManageHouse
-              ? `
-                <form
-                  id="chronicleSettingsForm"
-                >
-
-                  <div class="mb-3">
-
-                    <label
-                      for="chronicleSettingsName"
-                      class="
-                        form-label
-                        text-secondary
-                      "
-                    >
-                      Nome da Crônica
-                    </label>
-
-                    <input
-                      id="chronicleSettingsName"
-                      type="text"
-                      class="
-                        form-control
-                        bg-black
-                        text-light
-                        border-secondary
-                      "
-                      minlength="2"
-                      maxlength="80"
-                      value="${escapeHtml(
-                        chronicle.name
-                      )}"
-                      required
-                    >
-
-                  </div>
-
-                  <button
-                    type="submit"
-                    class="
-                      btn
-                      btn-blood
-                      chronicle-save-settings
-                    "
-                  >
-                    Salvar configurações
-                  </button>
-
-                </form>
-              `
-              : `
-                <p class="text-secondary mb-0">
-                  Você pode visualizar esta Crônica,
-                  mas não possui permissão para alterar
-                  suas configurações.
-                </p>
-              `
-          }
-
-        </section>
+          Atualizar
+        </button>
 
       </div>
+
+
+      <div
+        id="chronicleManagementAlert"
+        class="alert d-none"
+        role="alert"
+      ></div>
+
+
+      <div class="row g-2 mb-4">
+
+        ${createStatCard(
+          "Equipe de Narração",
+          narrativeTeamCount
+        )}
+
+        ${createStatCard(
+          "Jogadores",
+          playerCount
+        )}
+
+        ${createStatCard(
+          "Personagens",
+          characters.length
+        )}
+
+        ${createStatCard(
+          "Solicitações",
+          pendingCharacters.length
+        )}
+
+      </div>
+
+
+      <div
+        class="
+          chronicle-tab-list
+          mb-4
+        "
+        role="tablist"
+      >
+
+        <button
+          type="button"
+          class="
+            chronicle-tab-button
+            chronicle-tab-button-active
+          "
+          data-chronicle-tab="overview"
+        >
+          Visão geral
+        </button>
+
+        <button
+          type="button"
+          class="chronicle-tab-button"
+          data-chronicle-tab="requests"
+        >
+          Solicitações
+          ${
+            pendingCharacters.length
+              ? `(${pendingCharacters.length})`
+              : ""
+          }
+        </button>
+
+        <button
+          type="button"
+          class="chronicle-tab-button"
+          data-chronicle-tab="characters"
+        >
+          Personagens
+        </button>
+
+        <button
+          type="button"
+          class="chronicle-tab-button"
+          data-chronicle-tab="people"
+        >
+          Pessoas
+        </button>
+
+        <button
+          type="button"
+          class="chronicle-tab-button"
+          data-chronicle-tab="settings"
+        >
+          Configurações
+        </button>
+
+      </div>
+
+
+      <section
+        data-chronicle-pane="overview"
+      >
+
+        <h3 class="h5 text-light">
+          Visão geral
+        </h3>
+
+        <p class="text-secondary">
+          Gerencie os personagens, solicitações,
+          jogadores e equipe de Narração desta Crônica.
+        </p>
+
+        ${
+          pendingCharacters.length
+            ? `
+              <div
+                class="
+                  alert
+                  alert-warning
+                  mb-0
+                "
+              >
+                Há
+                <strong>
+                  ${pendingCharacters.length}
+                </strong>
+                ${
+                  pendingCharacters.length ===
+                    1
+                    ? "solicitação pendente"
+                    : "solicitações pendentes"
+                }
+                de personagem.
+              </div>
+            `
+            : `
+              <div
+                class="
+                  chronicle-empty-message
+                  mb-0
+                "
+              >
+                Nenhuma solicitação de personagem está pendente.
+              </div>
+            `
+        }
+
+      </section>
+
+
+      <section
+        class="d-none"
+        data-chronicle-pane="requests"
+      >
+
+        <h3 class="h5 text-light mb-3">
+          Solicitações pendentes
+        </h3>
+
+        ${
+          pendingCharacters.length
+            ? pendingCharacters
+                .map(
+                  (character) =>
+                    createPendingCharacterCard(
+                      character,
+                      canManageCharacters
+                    )
+                )
+                .join("")
+            : `
+              <p class="text-secondary">
+                Nenhuma solicitação pendente.
+              </p>
+            `
+        }
+
+      </section>
+
+
+      <section
+        class="d-none"
+        data-chronicle-pane="characters"
+      >
+
+        <h3 class="h5 text-light mb-3">
+          Personagens vinculados
+        </h3>
+
+        ${
+          characters.length
+            ? characters
+                .map(
+                  createCharacterCard
+                )
+                .join("")
+            : `
+              <p class="text-secondary">
+                Nenhum personagem está vinculado a esta Crônica.
+              </p>
+            `
+        }
+
+      </section>
+
+
+      <section
+        class="d-none"
+        data-chronicle-pane="people"
+      >
+
+        <h3 class="h5 text-light mb-3">
+          Narradores e jogadores
+        </h3>
+
+        ${
+          members.length
+            ? members
+                .map(
+                  (member) =>
+                    createMemberCard(
+                      member,
+                      canManageMembers
+                    )
+                )
+                .join("")
+            : `
+              <p class="text-secondary">
+                Nenhum membro encontrado.
+              </p>
+            `
+        }
+
+      </section>
+
+
+      <section
+        class="d-none"
+        data-chronicle-pane="settings"
+      >
+
+        <h3 class="h5 text-light mb-3">
+          Configurações
+        </h3>
+
+        ${
+          canManageHouse
+            ? `
+              <form
+                id="chronicleSettingsForm"
+              >
+
+                <div class="mb-3">
+
+                  <label
+                    for="chronicleSettingsName"
+                    class="form-label text-secondary"
+                  >
+                    Nome da Crônica
+                  </label>
+
+                  <input
+                    id="chronicleSettingsName"
+                    type="text"
+                    class="
+                      form-control
+                      bg-black
+                      text-light
+                      border-secondary
+                    "
+                    minlength="2"
+                    maxlength="80"
+                    value="${escapeHtml(
+                      data.chronicle.name
+                    )}"
+                    required
+                  >
+
+                </div>
+
+                <button
+                  type="submit"
+                  class="
+                    btn
+                    btn-blood
+                    chronicle-save-settings
+                  "
+                >
+                  Salvar configurações
+                </button>
+
+              </form>
+            `
+            : `
+              <p class="text-secondary mb-0">
+                Você pode visualizar esta Crônica,
+                mas não possui permissão para alterar
+                suas configurações.
+              </p>
+            `
+        }
+
+      </section>
+
     </div>
   `;
 }

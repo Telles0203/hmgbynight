@@ -1,5 +1,5 @@
 import {
-  openChronicleManagement,
+  toggleChronicleManagement,
 } from "./chronicleManagement.js";
 
 
@@ -99,6 +99,11 @@ export function renderHouses(
   }
 
 
+  setupChronicleListEvents(
+    container
+  );
+
+
   if (
     houses.length ===
     0
@@ -140,8 +145,10 @@ export function renderHouses(
       ${cards}
     </div>
 
-    <div class="mt-3">
-
+    <div
+      id="chronicleCreateArea"
+      class="mt-3"
+    >
       <button
         id="createHouseButton"
         type="button"
@@ -151,14 +158,8 @@ export function renderHouses(
       >
         + Criar Crônica
       </button>
-
     </div>
   `;
-
-
-  setupChronicleOpenButtons(
-    container
-  );
 }
 
 
@@ -195,36 +196,26 @@ function createHouseCard(
 
   return `
     <article
-      class="
-        border
-        border-secondary
-        rounded
-        p-3
-        mb-2
-      "
+      class="chronicle-card"
       data-house-id="${id}"
     >
 
-      <div
-        class="
-          d-flex
-          align-items-center
-          justify-content-between
-          gap-3
-        "
-      >
+      <div class="chronicle-card-header">
 
-        <div class="min-w-0">
+        <div class="chronicle-card-identity">
 
           <h3
-            class="h6 text-light mb-1"
+            class="
+              chronicle-card-name
+              h6
+              text-light
+              mb-1
+            "
           >
             ${name}
           </h3>
 
-          <div
-            class="text-secondary small"
-          >
+          <div class="text-secondary small">
             ${role} · ${plan}
           </div>
 
@@ -234,16 +225,20 @@ function createHouseCard(
         <button
           type="button"
           class="
-            btn
-            btn-outline-light
-            btn-sm
             chronicle-open-button
+            btn
+            btn-sm
           "
           data-house-id="${id}"
         >
-          Abrir
+          Abrir →
         </button>
 
+      </div>
+
+
+      <div class="chronicle-card-details">
+        <div class="chronicle-card-details-inner"></div>
       </div>
 
     </article>
@@ -251,35 +246,70 @@ function createHouseCard(
 }
 
 
-function setupChronicleOpenButtons(
+function setupChronicleListEvents(
   container
 ) {
-  container
-    .querySelectorAll(
+  container.removeEventListener(
+    "click",
+    handleChronicleListClick
+  );
+
+
+  container.addEventListener(
+    "click",
+    handleChronicleListClick
+  );
+}
+
+
+function handleChronicleListClick(
+  event
+) {
+  const target =
+    event.target instanceof
+      Element
+      ? event.target
+      : null;
+
+
+  if (!target) {
+    return;
+  }
+
+
+  const button =
+    target.closest(
       ".chronicle-open-button"
-    )
-    .forEach(
-      (button) => {
-        button.addEventListener(
-          "click",
-          async () => {
-            const houseId =
-              button.dataset
-                .houseId;
-
-
-            if (!houseId) {
-              return;
-            }
-
-
-            await openChronicleManagement(
-              houseId
-            );
-          }
-        );
-      }
     );
+
+
+  if (
+    !button ||
+    !event.currentTarget
+      .contains(
+        button
+      )
+  ) {
+    return;
+  }
+
+
+  const houseId =
+    String(
+      button.dataset
+        .houseId ||
+      ""
+    ).trim();
+
+
+  if (!houseId) {
+    return;
+  }
+
+
+  toggleChronicleManagement(
+    houseId
+  );
 }
 
 
@@ -306,6 +336,21 @@ function getHouseListContainer() {
   }
 
 
+  const header =
+    body.querySelector(
+      ":scope > .mb-4"
+    );
+
+
+  if (
+    header &&
+    !header.id
+  ) {
+    header.id =
+      "housePanelHeader";
+  }
+
+
   let container =
     body.querySelector(
       "#houseListContainer"
@@ -315,12 +360,6 @@ function getHouseListContainer() {
   if (container) {
     return container;
   }
-
-
-  const header =
-    body.querySelector(
-      ".mb-4"
-    );
 
 
   Array
