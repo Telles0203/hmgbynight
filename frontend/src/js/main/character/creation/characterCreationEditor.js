@@ -34,6 +34,9 @@ document.addEventListener(
 function handleDocumentClick(
   event
 ) {
+  reconcileActiveEditorState();
+
+
   const target =
     event.target instanceof
       Element
@@ -131,6 +134,9 @@ function handleDocumentClick(
 async function handleDocumentSubmit(
   event
 ) {
+  reconcileActiveEditorState();
+
+
   const form =
     event.target;
 
@@ -151,6 +157,57 @@ async function handleDocumentSubmit(
 
   await saveEditor(
     form
+  );
+}
+
+
+function reconcileActiveEditorState() {
+  if (
+    !activeEditor
+  ) {
+    return;
+  }
+
+
+  if (
+    !(activeEditor.container instanceof
+      Element) ||
+    !activeEditor.container
+      .isConnected
+  ) {
+    activeEditor =
+      null;
+  }
+}
+
+
+function getCreationSectionContainer(
+  characterId,
+  section
+) {
+  const root =
+    document.querySelector(
+      `[data-character-creation-root="${CSS.escape(
+        String(
+          characterId
+        )
+      )}"]`
+    );
+
+
+  if (
+    !root
+  ) {
+    return null;
+  }
+
+
+  return root.querySelector(
+    `[data-character-creation-section="${CSS.escape(
+      String(
+        section
+      )
+    )}"]`
   );
 }
 
@@ -178,6 +235,14 @@ function openSectionEditor(
     );
 
 
+  if (
+    !characterId ||
+    !section
+  ) {
+    return;
+  }
+
+
   const character =
     getCharacterById(
       characterId
@@ -185,8 +250,7 @@ function openSectionEditor(
 
 
   if (
-    !character ||
-    !section
+    !character
   ) {
     return;
   }
@@ -206,6 +270,22 @@ function openSectionEditor(
   }
 
 
+  reconcileActiveEditorState();
+
+
+  if (
+    activeEditor &&
+    String(
+      activeEditor.characterId
+    ) ===
+      characterId &&
+    activeEditor.section ===
+      section
+  ) {
+    return;
+  }
+
+
   if (
     activeEditor
   ) {
@@ -214,10 +294,9 @@ function openSectionEditor(
 
 
   const container =
-    button.closest(
-      `[data-character-creation-section="${CSS.escape(
-        section
-      )}"]`
+    getCreationSectionContainer(
+      characterId,
+      section
     );
 
 
@@ -271,6 +350,9 @@ function openSectionEditor(
 async function saveEditor(
   form
 ) {
+  reconcileActiveEditorState();
+
+
   if (
     !activeEditor
   ) {
@@ -294,6 +376,10 @@ async function saveEditor(
   if (
     !character
   ) {
+    activeEditor =
+      null;
+
+
     return;
   }
 
@@ -419,6 +505,9 @@ async function saveEditor(
 
 
 function cancelEditor() {
+  reconcileActiveEditorState();
+
+
   if (
     !activeEditor
   ) {
@@ -426,15 +515,28 @@ function cancelEditor() {
   }
 
 
-  const character =
-    getCharacterById(
-      activeEditor
-        .characterId
-    );
+  const currentEditor =
+    activeEditor;
 
 
   activeEditor =
     null;
+
+
+  if (
+    !currentEditor
+      .container
+      ?.isConnected
+  ) {
+    return;
+  }
+
+
+  const character =
+    getCharacterById(
+      currentEditor
+        .characterId
+    );
 
 
   if (
@@ -536,7 +638,7 @@ function removeMapRow(
 
   if (
     container.children.length ===
-    0
+      0
   ) {
     appendCharacterCreationMapRow(
       container,
@@ -587,10 +689,47 @@ function refreshCreationView(
 
 
   if (
-    replacement
+    !replacement
   ) {
-    root.replaceWith(
-      replacement
-    );
+    return;
   }
+
+
+  root.replaceWith(
+    replacement
+  );
+
+
+  initializeCreationPopovers(
+    replacement
+  );
+}
+
+
+function initializeCreationPopovers(
+  container
+) {
+  if (
+    !window.bootstrap
+      ?.Popover
+  ) {
+    return;
+  }
+
+
+  container
+    .querySelectorAll(
+      '[data-bs-toggle="popover"]'
+    )
+    .forEach(
+      (
+        element
+      ) => {
+        window.bootstrap
+          .Popover
+          .getOrCreateInstance(
+            element
+          );
+      }
+    );
 }
