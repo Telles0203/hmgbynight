@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+tests
+coverage
+scripts
+discloud
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+npm-debug.log
+yarn-error.log
+pnpm-debug.log

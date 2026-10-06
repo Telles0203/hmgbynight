@@ -44,8 +44,16 @@ const houseRoutes = require(
   "./routes/houseRoutes"
 );
 
+const securityRoutes = require(
+  "./routes/securityRoutes"
+);
+
 const originProtection = require(
   "./Middlewares/originProtection"
+);
+
+const csrfProtection = require(
+  "./Middlewares/csrfProtection"
 );
 
 
@@ -393,6 +401,18 @@ app.use(
 
 
 app.use(
+  "/api",
+  csrfProtection
+);
+
+
+app.use(
+  "/api/security",
+  securityRoutes
+);
+
+
+app.use(
   "/api/auth",
   authRoutes
 );
@@ -524,9 +544,12 @@ app.use(
     res
   ) => {
     return res
-      .status(404)
+      .status(
+        404
+      )
       .json({
-        ok: false,
+        ok:
+          false,
 
         error:
           "Rota não encontrada.",
@@ -562,9 +585,12 @@ app.use(
     res
   ) => {
     return res
-      .status(404)
+      .status(
+        404
+      )
       .json({
-        ok: false,
+        ok:
+          false,
 
         error:
           "Rota não encontrada.",
