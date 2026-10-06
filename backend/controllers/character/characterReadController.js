@@ -59,6 +59,12 @@ const {
   "../../services/characterSheetDraftService"
 );
 
+const {
+  getCharacterCreationProgress,
+} = require(
+  "../../rules/characterCreation/characterCreationProgress"
+);
+
 
 async function getCharacterOptions(
   req,
@@ -109,7 +115,9 @@ async function getCharacterOptions(
 
 
     return res
-      .status(500)
+      .status(
+        500
+      )
       .json({
         ok:
           false,
@@ -144,7 +152,8 @@ function serializeDraftForCharacter(
     serialized.changes;
 
 
-  const displayChanges = {};
+  const displayChanges =
+    {};
 
 
   if (
@@ -337,6 +346,12 @@ async function listCharacters(
               );
 
 
+            const creation =
+              getCharacterCreationProgress(
+                character
+              );
+
+
             const draft =
               draftMap.get(
                 String(
@@ -394,6 +409,8 @@ async function listCharacters(
 
               virtuePoints:
                 virtues.points,
+
+              creation,
 
               type:
                 character.type,
@@ -460,7 +477,9 @@ async function listCharacters(
 
 
     return res
-      .status(500)
+      .status(
+        500
+      )
       .json({
         ok:
           false,
@@ -496,7 +515,9 @@ async function getCharacterArchetypes(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -526,7 +547,9 @@ async function getCharacterArchetypes(
       !character
     ) {
       return res
-        .status(404)
+        .status(
+          404
+        )
         .json({
           ok:
             false,
@@ -572,7 +595,9 @@ async function getCharacterArchetypes(
 
 
     return res
-      .status(500)
+      .status(
+        500
+      )
       .json({
         ok:
           false,

@@ -62,6 +62,12 @@ const {
   "./characterState"
 );
 
+const {
+  getCharacterCreationProgress,
+} = require(
+  "../../rules/characterCreation/characterCreationProgress"
+);
+
 
 async function createCharacter(
   req,
@@ -74,18 +80,21 @@ async function createCharacter(
       clan,
       requestedMotherHouseId,
     } =
-      req.body || {};
+      req.body ||
+      {};
 
 
     const cleanName =
       String(
-        name || ""
+        name ||
+        ""
       ).trim();
 
 
     const cleanSect =
       String(
-        sect || ""
+        sect ||
+        ""
       )
         .trim()
         .toLowerCase();
@@ -93,7 +102,8 @@ async function createCharacter(
 
     const cleanClan =
       String(
-        clan || ""
+        clan ||
+        ""
       )
         .trim()
         .toLowerCase();
@@ -106,9 +116,13 @@ async function createCharacter(
       ).trim();
 
 
-    if (!cleanName) {
+    if (
+      !cleanName
+    ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -126,7 +140,9 @@ async function createCharacter(
         CHARACTER_NAME_MAX_LENGTH
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -144,7 +160,9 @@ async function createCharacter(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -162,7 +180,9 @@ async function createCharacter(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -186,7 +206,9 @@ async function createCharacter(
         )
       ) {
         return res
-          .status(400)
+          .status(
+            400
+          )
           .json({
             ok:
               false,
@@ -209,9 +231,13 @@ async function createCharacter(
         );
 
 
-      if (!requestedHouse) {
+      if (
+        !requestedHouse
+      ) {
         return res
-          .status(404)
+          .status(
+            404
+          )
           .json({
             ok:
               false,
@@ -294,8 +320,16 @@ async function createCharacter(
       );
 
 
+    const creation =
+      getCharacterCreationProgress(
+        character
+      );
+
+
     return res
-      .status(201)
+      .status(
+        201
+      )
       .json({
         ok:
           true,
@@ -342,6 +376,8 @@ async function createCharacter(
 
           virtuePoints:
             virtues.points,
+
+          creation,
 
           type:
             character.type,
@@ -394,7 +430,9 @@ async function createCharacter(
 
 
     return res
-      .status(500)
+      .status(
+        500
+      )
       .json({
         ok:
           false,

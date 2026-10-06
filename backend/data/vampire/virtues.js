@@ -4,32 +4,26 @@ const {
   "./moralityPaths"
 );
 
+const {
+  CHARACTER_CREATION_RULES,
+} = require(
+  "../../rules/vampire/lawsOfTheNightRevised"
+);
 
-// =============================================
-// Virtue limits
-// =============================================
 
 const VIRTUE_MIN =
   0;
+
 
 const VIRTUE_MAX =
   5;
 
 
-// =============================================
-// Creation budget
-//
-// São 7 pontos distribuíveis além dos
-// pontos gratuitos concedidos pela criação.
-// =============================================
-
 const VIRTUE_CREATION_BUDGET =
-  7;
+  CHARACTER_CREATION_RULES
+    .virtues
+    .total;
 
-
-// =============================================
-// Core Virtues
-// =============================================
 
 const VIRTUE_OPTIONS = [
   {
@@ -89,14 +83,12 @@ const VIRTUE_OPTIONS = [
 ];
 
 
-// =============================================
-// Lookup
-// =============================================
-
 const VIRTUE_BY_KEY =
   new Map(
     VIRTUE_OPTIONS.map(
-      (virtue) => [
+      (
+        virtue
+      ) => [
         virtue.key,
         virtue,
       ]
@@ -104,17 +96,14 @@ const VIRTUE_BY_KEY =
   );
 
 
-// =============================================
-// Helpers
-// =============================================
-
 function getVirtueByKey(
   key
 ) {
   return (
     VIRTUE_BY_KEY.get(
       String(
-        key || ""
+        key ||
+        ""
       )
     ) ||
     null
@@ -136,16 +125,14 @@ function getVirtueLabel(
 
 function getCoreVirtues() {
   return VIRTUE_OPTIONS.map(
-    (virtue) => ({
+    (
+      virtue
+    ) => ({
       ...virtue,
     })
   );
 }
 
-
-// =============================================
-// Active Virtues by Morality Path
-// =============================================
 
 function getActiveVirtueKeys(
   moralityPathRef
@@ -156,7 +143,9 @@ function getActiveVirtueKeys(
     );
 
 
-  if (!moralityPath) {
+  if (
+    !moralityPath
+  ) {
     return [];
   }
 
@@ -177,7 +166,9 @@ function getActiveVirtues(
     moralityPathRef
   )
     .map(
-      (key) =>
+      (
+        key
+      ) =>
         getVirtueByKey(
           key
         )
@@ -186,16 +177,14 @@ function getActiveVirtues(
       Boolean
     )
     .map(
-      (virtue) => ({
+      (
+        virtue
+      ) => ({
         ...virtue,
       })
     );
 }
 
-
-// =============================================
-// Is active Virtue
-// =============================================
 
 function isActiveVirtueKey(
   moralityPathRef,
@@ -205,23 +194,12 @@ function isActiveVirtueKey(
     moralityPathRef
   ).includes(
     String(
-      virtueKey || ""
+      virtueKey ||
+      ""
     )
   );
 }
 
-
-// =============================================
-// Starting Virtues
-//
-// Coragem sempre começa em 1.
-//
-// Consciência e Autocontrole recebem
-// 1 ponto gratuito.
-//
-// Convicção e Instinto não recebem
-// automaticamente esse ponto gratuito.
-// =============================================
 
 function getStartingVirtueValues(
   moralityPathRef
@@ -274,10 +252,6 @@ function getStartingVirtueValues(
 }
 
 
-// =============================================
-// Minimum during creation
-// =============================================
-
 function getVirtueMinimumValue(
   moralityPathRef,
   virtueKey
@@ -311,13 +285,6 @@ function getVirtueMinimumValue(
     : 0;
 }
 
-
-// =============================================
-// Creation progress
-//
-// Calcula apenas os pontos gastos além dos
-// valores gratuitos.
-// =============================================
 
 function getVirtueCreationProgress(
   moralityPathRef,
@@ -398,10 +365,6 @@ function getVirtueCreationProgress(
   };
 }
 
-
-// =============================================
-// Exports
-// =============================================
 
 module.exports = {
   VIRTUE_MIN,

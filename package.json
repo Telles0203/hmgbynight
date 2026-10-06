@@ -1,6 +1,6 @@
 {
   "name": "bynight",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "ByNight RPG and LARP game management platform.",
   "main": "backend/server.js",
