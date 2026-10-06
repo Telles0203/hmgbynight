@@ -6,6 +6,14 @@ import {
   createCreationList,
 } from "./characterSheetCreationLists.js";
 
+import {
+  getAttributeTraitLabel,
+} from "../../creation/data/attributeTraitCatalog.js";
+
+
+const ATTRIBUTE_CREATION_HELP_TEXT =
+  "O formato (Atual/Criação) mostra quantos Traits esta categoria possui atualmente e quantos Traits correspondem à sua distribuição-base durante a criação inicial do personagem. Primário recebe 7, Secundário 5 e Terciário 3. Este valor é mantido separadamente para permitir outros usos no futuro; por enquanto, ele serve apenas como referência da criação inicial.";
+
 
 function createEditButton({
   character,
@@ -51,6 +59,36 @@ function createEditButton({
 }
 
 
+function createAttributeCreationHelpButton() {
+  return `
+    <button
+      type="button"
+      class="
+        btn
+        btn-outline-secondary
+        rounded-circle
+        p-0
+        character-sheet-help-button
+      "
+      aria-label="Informações sobre a distribuição inicial de Atributos"
+      title="${escapeSheetHtml(
+        ATTRIBUTE_CREATION_HELP_TEXT
+      )}"
+      data-bs-toggle="popover"
+      data-bs-trigger="focus"
+      data-bs-placement="top"
+      data-bs-container="body"
+      data-bs-title="Atributos na criação"
+      data-bs-content="${escapeSheetHtml(
+        ATTRIBUTE_CREATION_HELP_TEXT
+      )}"
+    >
+      ?
+    </button>
+  `;
+}
+
+
 export function createCreationSectionTitle({
   character,
   title,
@@ -87,7 +125,7 @@ export function createCreationSectionTitle({
 }
 
 
-function createAttributeSummary(
+function getAttributeSummary(
   traits,
   categoryProgress
 ) {
@@ -133,7 +171,105 @@ function createAttributeSummary(
       : 10;
 
 
-  return `(${current}/${target}) (Máx: ${maximum})`;
+  return {
+    current,
+    target,
+    maximum,
+  };
+}
+
+
+function createAttributeSectionTitle({
+  character,
+  title,
+  section,
+  editable,
+  current,
+  target,
+  maximum,
+}) {
+  const label =
+    `${title} / Negativos`;
+
+
+  return `
+    <h4
+      class="
+        character-sheet-title
+        d-flex
+        align-items-center
+        justify-content-between
+        gap-2
+      "
+    >
+
+      <span
+        class="
+          d-inline-flex
+          align-items-center
+          flex-wrap
+          gap-1
+        "
+      >
+
+        <span>
+          ${escapeSheetHtml(
+            label
+          )}
+        </span>
+
+        <span>
+          (${escapeSheetHtml(
+            current
+          )}/${escapeSheetHtml(
+            target
+          )})
+        </span>
+
+        ${createAttributeCreationHelpButton()}
+
+        <span>
+          (Máx: ${escapeSheetHtml(
+            maximum
+          )})
+        </span>
+
+      </span>
+
+      ${createEditButton({
+        character,
+        section,
+        label,
+        editable,
+      })}
+
+    </h4>
+  `;
+}
+
+
+function getDisplayTraits(
+  category,
+  traits
+) {
+  if (
+    !Array.isArray(
+      traits
+    )
+  ) {
+    return [];
+  }
+
+
+  return traits.map(
+    (
+      trait
+    ) =>
+      getAttributeTraitLabel(
+        category,
+        trait
+      )
+  );
 }
 
 
@@ -163,6 +299,13 @@ export function createAttributeSection({
     [];
 
 
+  const displayTraits =
+    getDisplayTraits(
+      category,
+      traits
+    );
+
+
   const categoryProgress =
     progress
       ?.categories
@@ -172,8 +315,12 @@ export function createAttributeSection({
     {};
 
 
-  const summary =
-    createAttributeSummary(
+  const {
+    current,
+    target,
+    maximum,
+  } =
+    getAttributeSummary(
       traits,
       categoryProgress
     );
@@ -186,6 +333,10 @@ export function createAttributeSection({
       0;
 
 
+  const section =
+    `attributes.${category}`;
+
+
   return `
     <section
       class="
@@ -195,19 +346,19 @@ export function createAttributeSection({
       data-character-id="${escapeSheetHtml(
         character.id
       )}"
-      data-character-creation-section="attributes.${category}"
+      data-character-creation-section="${escapeSheetHtml(
+        section
+      )}"
     >
 
-      ${createCreationSectionTitle({
+      ${createAttributeSectionTitle({
         character,
-
-        title:
-          `${title} / Negativos ${summary}`,
-
-        section:
-          `attributes.${category}`,
-
+        title,
+        section,
         editable,
+        current,
+        target,
+        maximum,
       })}
 
       ${
@@ -219,7 +370,7 @@ export function createAttributeSection({
           `
           : `
             ${
-              traits.length >
+              displayTraits.length >
                 0
                 ? `
                   <div class="character-sheet-group">
@@ -229,7 +380,7 @@ export function createAttributeSection({
                     </div>
 
                     ${createCreationList(
-                      traits,
+                      displayTraits,
                       ""
                     )}
 
