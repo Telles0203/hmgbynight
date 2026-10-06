@@ -35,10 +35,6 @@ const router =
   express.Router();
 
 
-// =============================================
-// Create House limiter
-// =============================================
-
 const houseCreateLimiter =
   rateLimit({
     windowMs:
@@ -60,14 +56,10 @@ const houseCreateLimiter =
         false,
 
       error:
-        "Muitas tentativas de criação de House. Tente novamente mais tarde.",
+        "Muitas tentativas de criação de Crônica. Tente novamente mais tarde.",
     },
   });
 
-
-// =============================================
-// Search active Houses
-// =============================================
 
 router.get(
   "/search",
@@ -79,10 +71,6 @@ router.get(
 );
 
 
-// =============================================
-// List user's Houses
-// =============================================
-
 router.get(
   "/",
 
@@ -92,10 +80,6 @@ router.get(
   listHouses
 );
 
-
-// =============================================
-// Create House
-// =============================================
 
 router.post(
   "/",

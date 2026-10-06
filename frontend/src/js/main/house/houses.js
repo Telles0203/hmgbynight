@@ -1,19 +1,13 @@
-// =============================================
-// ByNight Main - Houses
-// =============================================
-
 window.ByNightMain =
   window.ByNightMain || {};
 
+
 window.ByNightMain.house =
   window.ByNightMain.house || {
-    houses: [],
+    houses:
+      [],
   };
 
-
-// =============================================
-// Load Houses
-// =============================================
 
 export async function loadHouses() {
   try {
@@ -21,7 +15,8 @@ export async function loadHouses() {
       await fetch(
         "/api/houses",
         {
-          method: "GET",
+          method:
+            "GET",
 
           credentials:
             "include",
@@ -35,7 +30,9 @@ export async function loadHouses() {
     const data =
       await response
         .json()
-        .catch(() => ({}));
+        .catch(
+          () => ({})
+        );
 
 
     if (
@@ -44,7 +41,7 @@ export async function loadHouses() {
     ) {
       throw new Error(
         data?.error ||
-          "Não foi possível carregar as Houses."
+          "Não foi possível carregar as Crônicas."
       );
     }
 
@@ -69,7 +66,7 @@ export async function loadHouses() {
 
   } catch (error) {
     console.error(
-      "[HOUSE] Erro ao carregar Houses:",
+      "[CHRONICLE] Erro ao carregar Crônicas:",
       error
     );
 
@@ -84,10 +81,6 @@ export async function loadHouses() {
   }
 }
 
-
-// =============================================
-// Render Houses
-// =============================================
 
 export function renderHouses(
   houses
@@ -107,7 +100,7 @@ export function renderHouses(
   ) {
     container.innerHTML = `
       <p class="text-secondary small">
-        Você ainda não possui nenhuma House cadastrada.
+        Você ainda não possui nenhuma Crônica cadastrada.
       </p>
 
       <button
@@ -117,9 +110,10 @@ export function renderHouses(
         data-bs-toggle="modal"
         data-bs-target="#createHouseModal"
       >
-        Criar minha primeira House
+        Criar minha primeira Crônica
       </button>
     `;
+
 
     return;
   }
@@ -150,17 +144,13 @@ export function renderHouses(
         data-bs-toggle="modal"
         data-bs-target="#createHouseModal"
       >
-        + Criar House
+        + Criar Crônica
       </button>
 
     </div>
   `;
 }
 
-
-// =============================================
-// House card
-// =============================================
 
 function createHouseCard(
   house
@@ -234,10 +224,6 @@ function createHouseCard(
   `;
 }
 
-
-// =============================================
-// House container
-// =============================================
 
 function getHouseListContainer() {
   const panel =
@@ -314,10 +300,6 @@ function getHouseListContainer() {
 }
 
 
-// =============================================
-// Role labels
-// =============================================
-
 function getHouseRoleLabel(
   role
 ) {
@@ -340,10 +322,6 @@ function getHouseRoleLabel(
 }
 
 
-// =============================================
-// Plan labels
-// =============================================
-
 function getHousePlanLabel(
   plan
 ) {
@@ -356,10 +334,6 @@ function getHousePlanLabel(
   }
 }
 
-
-// =============================================
-// Error
-// =============================================
 
 function renderHouseError() {
   const container =
@@ -376,15 +350,11 @@ function renderHouseError() {
       class="alert alert-danger"
       role="alert"
     >
-      Não foi possível carregar suas Houses.
+      Não foi possível carregar suas Crônicas.
     </div>
   `;
 }
 
-
-// =============================================
-// Escape
-// =============================================
 
 function escapeHouseHtml(
   value
@@ -405,12 +375,9 @@ function escapeHouseHtml(
 }
 
 
-// =============================================
-// Temporary globals
-// =============================================
-
 window.loadHouses =
   loadHouses;
+
 
 window.renderHouses =
   renderHouses;

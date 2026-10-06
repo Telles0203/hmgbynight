@@ -3,15 +3,12 @@ import {
 } from "./houses.js";
 
 
-// =============================================
-// House form
-// =============================================
-
 function setupHouseFormHandlers() {
   const form =
     document.getElementById(
       "createHouseForm"
     );
+
 
   if (!form) {
     return;
@@ -42,22 +39,16 @@ function setupHouseFormHandlers() {
     );
 
 
-  if (modalElement) {
-    modalElement.addEventListener(
-      "hidden.bs.modal",
-      () => {
-        form.reset();
+  modalElement?.addEventListener(
+    "hidden.bs.modal",
+    () => {
+      form.reset();
 
-        hideHouseAlert();
-      }
-    );
-  }
+      hideHouseAlert();
+    }
+  );
 }
 
-
-// =============================================
-// Submit
-// =============================================
 
 async function handleCreateHouseSubmit(
   event
@@ -83,7 +74,8 @@ async function handleCreateHouseSubmit(
 
   const name =
     String(
-      nameInput?.value || ""
+      nameInput?.value ||
+      ""
     ).trim();
 
 
@@ -92,8 +84,9 @@ async function handleCreateHouseSubmit(
 
   if (!name) {
     showHouseAlert(
-      "Informe o nome da House."
+      "Informe o nome da Crônica."
     );
+
 
     nameInput?.focus();
 
@@ -134,7 +127,9 @@ async function handleCreateHouseSubmit(
     const data =
       await response
         .json()
-        .catch(() => ({}));
+        .catch(
+          () => ({})
+        );
 
 
     if (
@@ -143,16 +138,13 @@ async function handleCreateHouseSubmit(
     ) {
       showHouseAlert(
         data?.error ||
-          "Não foi possível criar a House."
+          "Não foi possível criar a Crônica."
       );
+
 
       return;
     }
 
-
-    // =============================================
-    // Atualiza a lista antes de fechar o modal
-    // =============================================
 
     await loadHouses();
 
@@ -164,7 +156,7 @@ async function handleCreateHouseSubmit(
 
   } catch (error) {
     console.error(
-      "[HOUSE] Erro ao criar House:",
+      "[CHRONICLE] Erro ao criar Crônica:",
       error
     );
 
@@ -181,10 +173,6 @@ async function handleCreateHouseSubmit(
   }
 }
 
-
-// =============================================
-// Modal
-// =============================================
 
 function closeCreateHouseModal() {
   const modalElement =
@@ -212,10 +200,6 @@ function closeCreateHouseModal() {
 }
 
 
-// =============================================
-// Loading
-// =============================================
-
 function setHouseLoading(
   button,
   loading
@@ -232,13 +216,9 @@ function setHouseLoading(
   button.textContent =
     loading
       ? "Criando..."
-      : "Criar House";
+      : "Criar Crônica";
 }
 
-
-// =============================================
-// Alert
-// =============================================
 
 function showHouseAlert(
   message
@@ -283,10 +263,6 @@ function hideHouseAlert() {
     "alert d-none";
 }
 
-
-// =============================================
-// Global
-// =============================================
 
 window.setupHouseFormHandlers =
   setupHouseFormHandlers;

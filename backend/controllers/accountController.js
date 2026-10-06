@@ -21,10 +21,6 @@ const {
 const PASSWORD_MIN_LENGTH = 6;
 
 
-// ==============================
-// Update name
-// ==============================
-
 async function updateAccountName(
   req,
   res
@@ -69,8 +65,11 @@ async function updateAccountName(
           },
         },
         {
-          new: true,
-          runValidators: true,
+          returnDocument:
+            "after",
+
+          runValidators:
+            true,
         }
       );
 
@@ -114,10 +113,6 @@ async function updateAccountName(
   }
 }
 
-
-// ==============================
-// Update password
-// ==============================
 
 async function updateAccountPassword(
   req,
@@ -273,10 +268,6 @@ async function updateAccountPassword(
   }
 }
 
-
-// ==============================
-// Anonymize account
-// ==============================
 
 async function anonymizeAccount(
   req,

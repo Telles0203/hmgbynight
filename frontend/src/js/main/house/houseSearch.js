@@ -1,12 +1,3 @@
-// =============================================
-// House Search
-// =============================================
-
-
-// =============================================
-// Search available Houses
-// =============================================
-
 export async function searchAvailableHouses(
   searchTerm = "",
   {
@@ -62,7 +53,9 @@ export async function searchAvailableHouses(
   const data =
     await response
       .json()
-      .catch(() => ({}));
+      .catch(
+        () => ({})
+      );
 
 
   if (
@@ -71,7 +64,7 @@ export async function searchAvailableHouses(
   ) {
     throw new Error(
       data?.error ||
-      "Não foi possível pesquisar as Houses."
+      "Não foi possível pesquisar as Crônicas."
     );
   }
 
@@ -83,9 +76,6 @@ export async function searchAvailableHouses(
       ? data.houses
       : [];
 
-
-  // Ordenação adicional no navegador
-  // para garantir a apresentação PT-BR.
 
   return [
     ...houses,
@@ -114,10 +104,6 @@ export async function searchAvailableHouses(
   );
 }
 
-
-// =============================================
-// Escape HTML
-// =============================================
 
 export function escapeHouseHtml(
   value

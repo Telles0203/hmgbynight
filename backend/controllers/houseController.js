@@ -22,10 +22,6 @@ const HOUSE_SEARCH_MAX_LIMIT =
   20;
 
 
-// =============================================
-// Helpers
-// =============================================
-
 function escapeRegex(
   value
 ) {
@@ -37,10 +33,6 @@ function escapeRegex(
   );
 }
 
-
-// =============================================
-// Create House
-// =============================================
 
 async function createHouse(
   req,
@@ -83,7 +75,7 @@ async function createHouse(
             false,
 
           error:
-            "Informe o nome da House.",
+            "Informe o nome da Crônica.",
         });
     }
 
@@ -101,14 +93,10 @@ async function createHouse(
             false,
 
           error:
-            `O nome da House deve possuir entre ${HOUSE_NAME_MIN_LENGTH} e ${HOUSE_NAME_MAX_LENGTH} caracteres.`,
+            `O nome da Crônica deve possuir entre ${HOUSE_NAME_MIN_LENGTH} e ${HOUSE_NAME_MAX_LENGTH} caracteres.`,
         });
     }
 
-
-    // =============================================
-    // Create House
-    // =============================================
 
     createdHouse =
       await House.create({
@@ -124,10 +112,6 @@ async function createHouse(
           true,
       });
 
-
-    // =============================================
-    // Creator becomes owner
-    // =============================================
 
     await HouseMember.create({
       house:
@@ -187,14 +171,10 @@ async function createHouse(
 
   } catch (error) {
     console.error(
-      "[HOUSE] Erro ao criar House:",
+      "[CHRONICLE] Erro ao criar Crônica:",
       error
     );
 
-
-    // =============================================
-    // Prevent orphan House
-    // =============================================
 
     if (
       createdHouse?._id
@@ -209,7 +189,7 @@ async function createHouse(
         cleanupError
       ) {
         console.error(
-          "[HOUSE] Erro ao limpar House incompleta:",
+          "[CHRONICLE] Erro ao limpar Crônica incompleta:",
           cleanupError
         );
       }
@@ -223,17 +203,11 @@ async function createHouse(
           false,
 
         error:
-          "Não foi possível criar a House.",
+          "Não foi possível criar a Crônica.",
       });
   }
 }
 
-
-// =============================================
-// List user's Houses
-//
-// Usado no painel "Minhas Houses".
-// =============================================
 
 async function listHouses(
   req,
@@ -345,7 +319,7 @@ async function listHouses(
 
   } catch (error) {
     console.error(
-      "[HOUSE] Erro ao listar Houses:",
+      "[CHRONICLE] Erro ao listar Crônicas:",
       error
     );
 
@@ -357,17 +331,11 @@ async function listHouses(
           false,
 
         error:
-          "Não foi possível carregar suas Houses.",
+          "Não foi possível carregar suas Crônicas.",
       });
   }
 }
 
-
-// =============================================
-// Search active Houses
-//
-// Usado ao escolher House mãe.
-// =============================================
 
 async function searchHouses(
   req,
@@ -424,10 +392,6 @@ async function searchHouses(
         true,
     };
 
-
-    // =============================================
-    // Search by name
-    // =============================================
 
     if (query) {
       filter.name = {
@@ -486,7 +450,7 @@ async function searchHouses(
 
   } catch (error) {
     console.error(
-      "[HOUSE] Erro ao pesquisar Houses:",
+      "[CHRONICLE] Erro ao pesquisar Crônicas:",
       error
     );
 
@@ -498,15 +462,11 @@ async function searchHouses(
           false,
 
         error:
-          "Não foi possível pesquisar as Houses.",
+          "Não foi possível pesquisar as Crônicas.",
       });
   }
 }
 
-
-// =============================================
-// Exports
-// =============================================
 
 module.exports = {
   createHouse,
