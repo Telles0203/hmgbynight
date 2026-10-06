@@ -1,5 +1,5 @@
-let horizontalAnimationFrame =
-  null;
+let horizontalAnimations =
+  [];
 
 let characterDetailsAnimation =
   null;
@@ -496,7 +496,7 @@ async function expandElement(
 }
 
 
-export function animateHorizontalPanels({
+export async function animateHorizontalPanels({
   panelsContainer,
   characterPanel,
   housePanel,
@@ -506,195 +506,269 @@ export function animateHorizontalPanels({
   cancelHorizontalAnimation();
 
 
-  return new Promise((resolve) => {
-    const containerWidth =
+  const containerWidth =
+    panelsContainer
+      .getBoundingClientRect()
+      .width;
+
+
+  const styles =
+    window.getComputedStyle(
       panelsContainer
-        .getBoundingClientRect()
-        .width;
+    );
 
 
-    const styles =
-      window.getComputedStyle(
-        panelsContainer
-      );
+  const gap =
+    Number.parseFloat(
+      styles.columnGap ||
+      styles.gap ||
+      "0"
+    ) || 0;
 
 
-    const gap =
-      Number.parseFloat(
-        styles.columnGap ||
-        styles.gap ||
-        "0"
-      ) || 0;
+  const mobile =
+    window.matchMedia(
+      "(max-width: 991.98px)"
+    ).matches;
 
 
-    const mobile =
-      window.matchMedia(
-        "(max-width: 991.98px)"
-      ).matches;
+  const normalWidth =
+    mobile
+      ? containerWidth
+      : (
+          containerWidth -
+          gap
+        ) / 2;
 
 
-    const normalWidth =
-      mobile
-        ? containerWidth
-        : (
-            containerWidth -
-            gap
-          ) / 2;
+  const fullWidth =
+    containerWidth;
 
 
-    const fullWidth =
-      containerWidth;
+  const startWidth =
+    characterPanel
+      .getBoundingClientRect()
+      .width;
 
 
-    const startWidth =
-      characterPanel
-        .getBoundingClientRect()
-        .width;
+  const targetWidth =
+    opening
+      ? fullWidth
+      : normalWidth;
 
 
-    const targetWidth =
-      opening
-        ? fullWidth
-        : normalWidth;
+  const startHouseOffset =
+    opening
+      ? 0
+      : 115;
 
 
-    const startHouseOffset =
-      opening
-        ? 0
-        : 115;
+  const targetHouseOffset =
+    opening
+      ? 115
+      : 0;
 
 
-    const targetHouseOffset =
-      opening
-        ? 115
-        : 0;
+  const startHouseOpacity =
+    opening
+      ? 1
+      : 0;
 
 
-    const startHouseOpacity =
-      opening
-        ? 1
-        : 0;
+  const targetHouseOpacity =
+    opening
+      ? 0
+      : 1;
 
 
-    const targetHouseOpacity =
-      opening
-        ? 0
-        : 1;
+  const keyframes =
+    createHorizontalKeyframes({
+      startWidth,
+      targetWidth,
+      startHouseOffset,
+      targetHouseOffset,
+      startHouseOpacity,
+      targetHouseOpacity,
+    });
 
 
-    const startedAt =
-      performance.now();
+  const characterAnimation =
+    characterPanel.animate(
+      keyframes.character,
+      {
+        duration,
 
+        easing:
+          "linear",
 
-    function update(now) {
-      const progress =
-        Math.min(
-          (
-            now -
-            startedAt
-          ) /
-          duration,
-          1
-        );
-
-
-      const eased =
-        easeInOutSine(
-          progress
-        );
-
-
-      const width =
-        startWidth +
-        (
-          targetWidth -
-          startWidth
-        ) *
-        eased;
-
-
-      const houseOffset =
-        startHouseOffset +
-        (
-          targetHouseOffset -
-          startHouseOffset
-        ) *
-        eased;
-
-
-      const houseOpacity =
-        startHouseOpacity +
-        (
-          targetHouseOpacity -
-          startHouseOpacity
-        ) *
-        eased;
-
-
-      characterPanel.style.width =
-        `${width}px`;
-
-
-      housePanel.style.transform =
-        `translateX(${houseOffset}%)`;
-
-
-      housePanel.style.opacity =
-        String(
-          houseOpacity
-        );
-
-
-      if (progress < 1) {
-        horizontalAnimationFrame =
-          requestAnimationFrame(
-            update
-          );
-
-
-        return;
+        fill:
+          "both",
       }
+    );
 
 
-      horizontalAnimationFrame =
-        null;
+  const houseAnimation =
+    housePanel.animate(
+      keyframes.house,
+      {
+        duration,
 
+        easing:
+          "linear",
 
-      if (opening) {
-        characterPanel.style.width =
-          `${fullWidth}px`;
-
-
-        housePanel.style.transform =
-          "translateX(115%)";
-
-
-        housePanel.style.opacity =
-          "0";
-
-      } else {
-        characterPanel.style.width =
-          "";
-
-
-        housePanel.style.transform =
-          "";
-
-
-        housePanel.style.opacity =
-          "";
+        fill:
+          "both",
       }
+    );
 
 
-      resolve();
+  horizontalAnimations = [
+    characterAnimation,
+    houseAnimation,
+  ];
+
+
+  try {
+    await Promise.all(
+      horizontalAnimations.map(
+        (animation) =>
+          animation.finished
+      )
+    );
+
+  } catch (error) {
+    if (
+      error?.name !==
+      "AbortError"
+    ) {
+      throw error;
     }
 
 
-    horizontalAnimationFrame =
-      requestAnimationFrame(
-        update
+    return;
+  }
+
+
+  if (
+    horizontalAnimations[0] !==
+      characterAnimation ||
+    horizontalAnimations[1] !==
+      houseAnimation
+  ) {
+    return;
+  }
+
+
+  if (opening) {
+    panelsContainer.classList.add(
+      "character-horizontal-open"
+    );
+
+  } else {
+    panelsContainer.classList.remove(
+      "character-horizontal-open"
+    );
+  }
+
+
+  horizontalAnimations =
+    [];
+
+
+  characterAnimation.cancel();
+  houseAnimation.cancel();
+}
+
+
+function createHorizontalKeyframes({
+  startWidth,
+  targetWidth,
+  startHouseOffset,
+  targetHouseOffset,
+  startHouseOpacity,
+  targetHouseOpacity,
+}) {
+  const steps =
+    60;
+
+
+  const character =
+    [];
+
+
+  const house =
+    [];
+
+
+  for (
+    let index = 0;
+    index <= steps;
+    index += 1
+  ) {
+    const progress =
+      index /
+      steps;
+
+
+    const eased =
+      easeInOutSine(
+        progress
       );
-  });
+
+
+    const width =
+      startWidth +
+      (
+        targetWidth -
+        startWidth
+      ) *
+      eased;
+
+
+    const houseOffset =
+      startHouseOffset +
+      (
+        targetHouseOffset -
+        startHouseOffset
+      ) *
+      eased;
+
+
+    const houseOpacity =
+      startHouseOpacity +
+      (
+        targetHouseOpacity -
+        startHouseOpacity
+      ) *
+      eased;
+
+
+    character.push({
+      offset:
+        progress,
+
+      width:
+        `${width}px`,
+    });
+
+
+    house.push({
+      offset:
+        progress,
+
+      transform:
+        `translateX(${houseOffset}%)`,
+
+      opacity:
+        houseOpacity,
+    });
+  }
+
+
+  return {
+    character,
+    house,
+  };
 }
 
 
@@ -711,20 +785,26 @@ function easeInOutSine(
 
 function cancelHorizontalAnimation() {
   if (
-    horizontalAnimationFrame ===
-    null
+    horizontalAnimations.length ===
+    0
   ) {
     return;
   }
 
 
-  cancelAnimationFrame(
-    horizontalAnimationFrame
+  const animations =
+    horizontalAnimations;
+
+
+  horizontalAnimations =
+    [];
+
+
+  animations.forEach(
+    (animation) => {
+      animation.cancel();
+    }
   );
-
-
-  horizontalAnimationFrame =
-    null;
 }
 
 

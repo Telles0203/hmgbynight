@@ -36,3 +36,14 @@
     height: auto;
     opacity: 1;
 }
+
+.main-dashboard-panels.character-horizontal-open
+.main-character-panel {
+    width: 100%;
+}
+
+.main-dashboard-panels.character-horizontal-open
+.main-house-panel {
+    transform: translateX(115%);
+    opacity: 0;
+}
