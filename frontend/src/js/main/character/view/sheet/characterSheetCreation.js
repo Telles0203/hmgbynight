@@ -311,6 +311,39 @@ function createWillpowerContent(
 }
 
 
+function createGenerationResourceTitle(
+  label,
+  firstValue,
+  secondValue
+) {
+  const first =
+    Number(
+      firstValue
+    );
+
+
+  const second =
+    Number(
+      secondValue
+    );
+
+
+  if (
+    !Number.isInteger(
+      first
+    ) ||
+    !Number.isInteger(
+      second
+    )
+  ) {
+    return label;
+  }
+
+
+  return `${label} (${first}/${second})`;
+}
+
+
 function createMeritFlawContent(
   state
 ) {
@@ -383,6 +416,24 @@ export function createCharacterCreationSections(
     {};
 
 
+  const bloodTitle =
+    createGenerationResourceTitle(
+      "Sangue Máximo",
+      derived.bloodMaximum,
+      derived.bloodPerTurn
+    );
+
+
+  const willpowerTitle =
+    createGenerationResourceTitle(
+      "Força de Vontade",
+      derived
+        ?.generationRules
+        ?.willpowerStart,
+      derived.willpowerMaximum
+    );
+
+
   return `
     <div
       class="character-creation-root"
@@ -403,7 +454,7 @@ export function createCharacterCreationSections(
             character.id,
 
           title:
-            "Sangue Máximo",
+            bloodTitle,
 
           content:
             createBloodContent(
@@ -416,7 +467,7 @@ export function createCharacterCreationSections(
             character.id,
 
           title:
-            "Força de Vontade",
+            willpowerTitle,
 
           content:
             createWillpowerContent(

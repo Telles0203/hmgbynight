@@ -24,6 +24,10 @@ import {
 } from "./virtues/characterVirtueView.js";
 
 import {
+  refreshCharacterCreationView,
+} from "./virtues/characterVirtueCreationView.js";
+
+import {
   updateCharacterSheetDraftLocal,
 } from "./draft/characterDraftState.js";
 
@@ -629,11 +633,30 @@ async function saveVirtueDraft(
         }
       );
 
+
+      if (
+        data.creation
+      ) {
+        character.draftCreation =
+          data.creation;
+      }
+
     } else {
       updateCharacterVirtueLocalState(
         character,
         data.character
       );
+
+
+      if (
+        data.creation
+      ) {
+        character.creation =
+          data.creation;
+
+        character.draftCreation =
+          null;
+      }
     }
 
 
@@ -644,6 +667,11 @@ async function saveVirtueDraft(
 
     renderSavedVirtueState(
       section,
+      character
+    );
+
+
+    refreshCharacterCreationView(
       character
     );
 

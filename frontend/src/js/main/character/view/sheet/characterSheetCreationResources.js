@@ -6,11 +6,11 @@ import {
 
 
 const BLOOD_HELP_TEXT =
-  "Laws of the Night Revised, página 95. Na tabela de Geração, Blood indica o número máximo de Blood Traits que o personagem pode armazenar. O número depois da barra indica quantos Blood Traits podem ser gastos em um único turno.";
+  "Laws of the Night Revised, página 95. O formato exibido no título é (Pool Máximo/Gasto Máximo por Turno). Esses dois valores são definidos pela Geração do personagem.";
 
 
 const WILLPOWER_HELP_TEXT =
-  "Laws of the Night Revised, páginas 95 e 107. A tabela de Geração mostra a Força de Vontade inicial antes da barra e o máximo depois da barra. A seção Willpower também determina que os valores inicial e máximo são definidos pela Geração.";
+  "Laws of the Night Revised, páginas 95 e 107. O formato exibido no título é (Valor Inicial/Máximo). Esses valores são definidos pela Geração do personagem.";
 
 
 function createHelpButton(
@@ -70,16 +70,18 @@ function getResourceHelpText(
 
 
   if (
-    normalized ===
-    "sangue máximo"
+    normalized.startsWith(
+      "sangue máximo"
+    )
   ) {
     return BLOOD_HELP_TEXT;
   }
 
 
   if (
-    normalized ===
-    "força de vontade"
+    normalized.startsWith(
+      "força de vontade"
+    )
   ) {
     return WILLPOWER_HELP_TEXT;
   }

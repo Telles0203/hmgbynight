@@ -355,6 +355,57 @@ test(
 
 
 test(
+  "blood and Willpower titles expose generation limits",
+  () => {
+    const source =
+      readFile(
+        creationSheetPath
+      );
+
+
+    assert.equal(
+      source.includes(
+        "createGenerationResourceTitle"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "derived.bloodMaximum"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "derived.bloodPerTurn"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "willpowerStart"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "derived.willpowerMaximum"
+      ),
+      true
+    );
+  }
+);
+
+
+test(
   "Humanity resource renders ten pips from current value",
   () => {
     const source =

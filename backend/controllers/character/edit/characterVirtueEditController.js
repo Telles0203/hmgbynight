@@ -38,6 +38,12 @@ const {
   "./characterEditPersistence"
 );
 
+const {
+  buildCharacterCreationAfterVirtueChange,
+} = require(
+  "./characterVirtueCreationSync"
+);
+
 
 function getCurrentVirtueValues(
   character
@@ -102,6 +108,9 @@ async function getEditableCharacter(
       "moralityPath",
       "moralityRating",
       "virtues",
+      "creation",
+      "sect",
+      "clan",
     ]
   );
 }
@@ -309,7 +318,9 @@ async function updateCharacterVirtues(
       !userId
     ) {
       return res
-        .status(401)
+        .status(
+          401
+        )
         .json({
           ok:
             false,
@@ -327,7 +338,9 @@ async function updateCharacterVirtues(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -347,7 +360,9 @@ async function updateCharacterVirtues(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -369,7 +384,9 @@ async function updateCharacterVirtues(
       !character
     ) {
       return res
-        .status(404)
+        .status(
+          404
+        )
         .json({
           ok:
             false,
@@ -408,7 +425,9 @@ async function updateCharacterVirtues(
       !validation.ok
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -451,6 +470,14 @@ async function updateCharacterVirtues(
       );
 
 
+    const creation =
+      buildCharacterCreationAfterVirtueChange(
+        effective.character,
+        validation
+          .proposedVirtues
+      );
+
+
     return res.json({
       ok:
         true,
@@ -461,6 +488,8 @@ async function updateCharacterVirtues(
 
       sheetDraft:
         persisted.sheetDraft,
+
+      creation,
 
       character: {
         id:
@@ -485,7 +514,9 @@ async function updateCharacterVirtues(
 
 
     return res
-      .status(500)
+      .status(
+        500
+      )
       .json({
         ok:
           false,
@@ -530,7 +561,9 @@ async function updateCharacterVirtue(
       !userId
     ) {
       return res
-        .status(401)
+        .status(
+          401
+        )
         .json({
           ok:
             false,
@@ -551,7 +584,9 @@ async function updateCharacterVirtue(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -573,7 +608,9 @@ async function updateCharacterVirtue(
       !character
     ) {
       return res
-        .status(404)
+        .status(
+          404
+        )
         .json({
           ok:
             false,
@@ -605,7 +642,9 @@ async function updateCharacterVirtue(
       )
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -630,7 +669,9 @@ async function updateCharacterVirtue(
         VIRTUE_MAX
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -665,7 +706,9 @@ async function updateCharacterVirtue(
       virtuePoints.total
     ) {
       return res
-        .status(400)
+        .status(
+          400
+        )
         .json({
           ok:
             false,
@@ -706,6 +749,13 @@ async function updateCharacterVirtue(
       );
 
 
+    const creation =
+      buildCharacterCreationAfterVirtueChange(
+        effective.character,
+        proposedVirtues
+      );
+
+
     return res.json({
       ok:
         true,
@@ -716,6 +766,8 @@ async function updateCharacterVirtue(
 
       sheetDraft:
         persisted.sheetDraft,
+
+      creation,
 
       character: {
         id:
@@ -740,7 +792,9 @@ async function updateCharacterVirtue(
 
 
     return res
-      .status(500)
+      .status(
+        500
+      )
       .json({
         ok:
           false,
