@@ -1,5 +1,8 @@
 import {
   cloneCreationState,
+} from "./characterCreationState.js";
+
+import {
   appendCharacterCreationMapRow,
 } from "./form/characterCreationFormCommon.js";
 

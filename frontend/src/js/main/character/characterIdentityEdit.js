@@ -1,4 +1,8 @@
 import {
+  getCharacterById as getCharacter,
+} from "./characterLookup.js";
+
+import {
   CHARACTER_IDENTITY_FIELD_CONFIG,
   getIdentityInputDisplayValue,
   getTitleMaxLength,
@@ -712,29 +716,6 @@ function finishEditor(
     config,
     value,
     displayValue
-  );
-}
-
-
-function getCharacter(
-  characterId
-) {
-  return (
-    window.ByNightMain
-      ?.character
-      ?.characters
-      ?.find(
-        (
-          character
-        ) =>
-          String(
-            character.id
-          ) ===
-          String(
-            characterId
-          )
-      ) ||
-    null
   );
 }
 

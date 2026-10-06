@@ -135,7 +135,7 @@ function createEditButton({
 }
 
 
-function createFreeTraitCostNotice(
+export function createFreeTraitCostNotice(
   cost
 ) {
   const normalized =

@@ -3,18 +3,6 @@ import {
 } from "../../view/sheet/characterSheetCommon.js";
 
 
-export function cloneCreationState(
-  value
-) {
-  return JSON.parse(
-    JSON.stringify(
-      value ||
-      {}
-    )
-  );
-}
-
-
 export function createCreationActions(
   character
 ) {

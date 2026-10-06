@@ -3,29 +3,6 @@ import {
 } from "../draft/characterDraftState.js";
 
 
-export function getCharacterById(
-  characterId
-) {
-  return (
-    window.ByNightMain
-      ?.character
-      ?.characters
-      ?.find(
-        (
-          character
-        ) =>
-          String(
-            character.id
-          ) ===
-          String(
-            characterId
-          )
-      ) ||
-    null
-  );
-}
-
-
 export function cloneCreationState(
   value
 ) {

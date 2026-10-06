@@ -1,16 +1,16 @@
 import {
   escapeSheetHtml,
   createSheetPips,
-} from "./characterSheetCommon.js";
+  } from "./characterSheetCommon.js";
 
 import {
   createCreationMapList,
-} from "./characterSheetCreationLists.js";
+  } from "./characterSheetCreationLists.js";
 
 import {
   createCreationSectionTitle,
   createAttributeSection,
-} from "./characterSheetCreationAttributes.js";
+  } from "./characterSheetCreationAttributes.js";
 
 import {
   createPendingCreationNotice,
@@ -19,6 +19,7 @@ import {
   createMoralityResourceContent,
   createFreeTraitContent,
   createFreeTraitSpending,
+  createFreeTraitCostNotice,
 } from "./characterSheetCreationResources.js";
 
 
@@ -74,35 +75,6 @@ function createStaticGroup(
       </div>
 
     </div>
-  `;
-}
-
-
-function createFreeTraitCostNotice(
-  cost
-) {
-  const normalized =
-    Number(
-      cost
-    );
-
-
-  if (
-    !Number.isFinite(
-      normalized
-    ) ||
-    normalized <=
-      0
-  ) {
-    return "";
-  }
-
-
-  return `
-    <small class="character-free-trait-inline-cost">
-      Extra da criação:
-      -${normalized} Free Traits
-    </small>
   `;
 }
 

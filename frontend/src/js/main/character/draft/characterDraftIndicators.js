@@ -1,4 +1,8 @@
 import {
+  getCharacterById as getCharacter,
+} from "../characterLookup.js";
+
+import {
   getCharacterDraftChanges,
   getCharacterDraftDisplayChanges,
 } from "./characterDraftState.js";
@@ -589,27 +593,4 @@ function clearDraftIndicators(
         indicator.remove();
       }
     );
-}
-
-
-function getCharacter(
-  characterId
-) {
-  return (
-    window.ByNightMain
-      ?.character
-      ?.characters
-      ?.find(
-        (
-          character
-        ) =>
-          String(
-            character.id
-          ) ===
-          String(
-            characterId
-          )
-      ) ||
-    null
-  );
 }

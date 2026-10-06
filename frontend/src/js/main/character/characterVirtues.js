@@ -1,14 +1,17 @@
 import {
+  getCharacterById,
+} from "./characterLookup.js";
+
+import {
   VIRTUE_DRAFT_VERSION,
   loadVirtueDraft,
   saveVirtueDraftLocal,
   removeVirtueDraft,
-} from "./virtues/characterVirtueDraftStore.js";
+  } from "./virtues/characterVirtueDraftStore.js";
 
 import {
   calculateVirtueProgress,
   getActiveVirtue,
-  getCharacterById,
   getEditableActiveVirtueValues,
   hasVirtueDraftChanges,
   isValidVirtueDraft,

@@ -1,9 +1,12 @@
 import {
+  getCharacterById,
+} from "./characterLookup.js";
+
+import {
   CHARACTER_INLINE_FIELD_CONFIG,
 } from "./inline/characterInlineConfig.js";
 
 import {
-  getCharacterById,
   loadCharacterArchetypes,
 } from "./inline/characterInlineData.js";
 

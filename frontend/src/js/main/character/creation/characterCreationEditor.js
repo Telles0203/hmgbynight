@@ -1,5 +1,8 @@
 import {
   getCharacterById,
+} from "../characterLookup.js";
+
+import {
   getEditableCreationState,
   applyCreationSaveResult,
 } from "./characterCreationState.js";
