@@ -230,8 +230,10 @@ function createHouseCard(
             btn-sm
           "
           data-house-id="${id}"
+          aria-label="Abrir Crônica"
+          title="Abrir Crônica"
         >
-          Abrir →
+          ›
         </button>
 
       </div>

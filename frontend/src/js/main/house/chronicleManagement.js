@@ -248,15 +248,31 @@ export async function openChronicleManagement(
     );
 
 
-    selectedCard
-      .querySelector(
+    const openButton =
+      selectedCard.querySelector(
         ".chronicle-open-button"
-      )
-      ?.replaceChildren(
+      );
+
+
+    if (openButton) {
+      openButton.replaceChildren(
         document.createTextNode(
-          "← Minhas Crônicas"
+          "‹"
         )
       );
+
+
+      openButton.setAttribute(
+        "aria-label",
+        "Voltar para minhas Crônicas"
+      );
+
+
+      openButton.setAttribute(
+        "title",
+        "Voltar para minhas Crônicas"
+      );
+    }
 
 
     bindManagementEvents(
@@ -425,15 +441,31 @@ export async function closeChronicleManagement() {
     );
 
 
-    selectedCard
-      .querySelector(
+    const openButton =
+      selectedCard.querySelector(
         ".chronicle-open-button"
-      )
-      ?.replaceChildren(
+      );
+
+
+    if (openButton) {
+      openButton.replaceChildren(
         document.createTextNode(
-          "Abrir →"
+          "›"
         )
       );
+
+
+      openButton.setAttribute(
+        "aria-label",
+        "Abrir Crônica"
+      );
+
+
+      openButton.setAttribute(
+        "title",
+        "Abrir Crônica"
+      );
+    }
 
 
     detailsContainer.replaceChildren();

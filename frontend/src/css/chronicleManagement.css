@@ -141,18 +141,32 @@
 
 
 .chronicle-open-button {
-    flex:
-        0 0 auto;
+    width:
+        38px;
+
+    height:
+        46px;
 
     min-width:
-        88px;
+        38px;
+
+    flex:
+        0 0 38px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
 
     padding:
-        0.42rem
-        0.8rem;
+        0;
 
     color:
-        #f0f0f0 !important;
+        #eeeeee !important;
 
     background:
         linear-gradient(
@@ -163,13 +177,23 @@
 
     border:
         1px solid
-        #686868 !important;
+        #7a2a31 !important;
 
     border-radius:
-        0.4rem;
+        0.45rem;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size:
+        1.75rem;
 
     font-weight:
-        600;
+        300;
+
+    line-height:
+        1;
 
     box-shadow:
         inset
@@ -203,27 +227,24 @@
         ) !important;
 
     border-color:
-        #a52a34 !important;
+        #dc3545 !important;
 
     box-shadow:
-        0 0 0 2px
+        0 0 8px
         rgba(
             139,
             0,
             0,
-            0.12
+            0.28
         );
 
     transform:
-        translateY(-1px);
+        translateX(2px);
 }
 
 
 .chronicle-card.is-selected
 .chronicle-open-button {
-    min-width:
-        145px;
-
     color:
         #ffffff !important;
 
@@ -235,7 +256,16 @@
         ) !important;
 
     border-color:
-        #b3323d !important;
+        #dc3545 !important;
+}
+
+
+.chronicle-card.is-selected
+.chronicle-open-button:hover,
+.chronicle-card.is-selected
+.chronicle-open-button:focus {
+    transform:
+        translateX(-2px);
 }
 
 
@@ -685,18 +715,20 @@
 
 
     .chronicle-open-button {
+        width:
+            36px;
+
+        height:
+            42px;
+
         min-width:
-            80px;
+            36px;
+
+        flex-basis:
+            36px;
 
         font-size:
-            0.75rem;
-    }
-
-
-    .chronicle-card.is-selected
-    .chronicle-open-button {
-        min-width:
-            auto;
+            1.6rem;
     }
 
 
