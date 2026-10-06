@@ -1,251 +1,481 @@
-import { escapeSheetHtml } from "./characterSheetCommon.js";
+import {
+  escapeSheetHtml,
+} from "./characterSheetCommon.js";
+
 
 const GENERATION_HELP_TEXT =
-  "Laws of the Night Revised — referência: tabela de Geração / Blood Traits, na seção de criação do personagem. A geração define limites importantes da ficha, como sangue máximo, gasto de sangue por turno e outros limites vinculados à linhagem. A paginação pode variar conforme a edição utilizada.";
+  "Laws of the Night Revised, página 95. Um personagem começa normalmente na 13ª Geração. Cada nível do Antecedente Geração reduz a geração em um passo, até a 8ª Geração com cinco níveis. A Geração também determina limites como Sangue, gasto de Sangue por turno e Força de Vontade.";
 
-function escapeAttribute(value) {
-  return escapeSheetHtml(value).replace(/"/g, "&quot;");
-}
 
-function getCharacterValue(character, paths, fallback = "—") {
-  for (const path of paths) {
-    const parts = path.split(".");
-    let current = character;
+function createIdentityFieldRow({
+  characterId,
+  field,
+  label,
+  value,
+  displayValue,
+  editable,
+}) {
+  const safeCharacterId =
+    escapeSheetHtml(
+      characterId
+    );
 
-    for (const part of parts) {
-      if (
-        current === null ||
-        current === undefined ||
-        typeof current !== "object"
-      ) {
-        current = undefined;
-        break;
-      }
 
-      current = current[part];
-    }
+  const safeField =
+    escapeSheetHtml(
+      field
+    );
 
-    if (
-      current !== null &&
-      current !== undefined &&
-      String(current).trim() !== ""
-    ) {
-      return String(current);
-    }
-  }
 
-  return fallback;
-}
+  const safeLabel =
+    escapeSheetHtml(
+      label
+    );
 
-function normalizeGenerationValue(character) {
-  const rawValue = getCharacterValue(
-    character,
-    [
-      "generationLabel",
-      "sheet.generationLabel",
-      "generation",
-      "sheet.generation",
-      "creation.generation",
-    ],
-    ""
-  );
 
-  if (!rawValue) {
-    return "13ª";
-  }
+  const safeDisplayValue =
+    escapeSheetHtml(
+      displayValue ||
+      value ||
+      ""
+    );
 
-  if (/^\d+$/.test(rawValue)) {
-    return `${rawValue}ª`;
-  }
 
-  return rawValue;
-}
-
-function normalizeChronicleValue(character) {
-  return getCharacterValue(
-    character,
-    [
-      "chronicle.name",
-      "chronicleName",
-      "sheet.chronicleName",
-      "chronicle.label",
-    ],
-    "Sem Crônica"
-  );
-}
-
-function canSelectChronicle(character) {
-  if (character?.canSelectChronicle === true) {
-    return true;
-  }
-
-  if (character?.canAttachChronicle === true) {
-    return true;
-  }
-
-  if (character?.chronicleStatus === "none") {
-    return true;
-  }
-
-  return normalizeChronicleValue(character) === "Sem Crônica";
-}
-
-function createHelpButton(helpText) {
   return `
-    <button
-      type="button"
-      class="character-sheet-help-button"
-      title="${escapeAttribute(helpText)}"
-      aria-label="${escapeAttribute(helpText)}"
+    <div
+      class="
+        character-sheet-row
+        character-identity-row
+      "
+      data-character-id="${safeCharacterId}"
+      data-character-field="${safeField}"
     >
-      ?
-    </button>
+
+      <span class="character-sheet-label">
+        ${safeLabel}
+      </span>
+
+      <span
+        class="
+          character-sheet-value
+          character-identity-value
+        "
+      >
+
+        <span class="character-inline-display">
+
+          <span class="character-field-display">
+            ${safeDisplayValue || "—"}
+          </span>
+
+          ${
+            editable
+              ? `
+                <button
+                  type="button"
+                  class="
+                    btn
+                    btn-link
+                    btn-sm
+                    text-secondary
+                    text-decoration-none
+                    p-0
+                    character-inline-edit-button
+                  "
+                  data-character-identity-action="edit"
+                  aria-label="Editar ${safeLabel}"
+                  title="Editar ${safeLabel}"
+                >
+                  ✎
+                </button>
+              `
+              : ""
+          }
+
+        </span>
+
+      </span>
+
+    </div>
   `;
 }
 
-function createEditButton(fieldName, label) {
+
+function createEditableFieldRow({
+  characterId,
+  field,
+  label,
+  value,
+  editLabel,
+  editable,
+}) {
+  const safeCharacterId =
+    escapeSheetHtml(
+      characterId
+    );
+
+
+  const safeField =
+    escapeSheetHtml(
+      field
+    );
+
+
+  const safeLabel =
+    escapeSheetHtml(
+      label
+    );
+
+
+  const safeValue =
+    escapeSheetHtml(
+      value ||
+      ""
+    );
+
+
+  const safeEditLabel =
+    escapeSheetHtml(
+      editLabel
+    );
+
+
   return `
-    <button
-      type="button"
-      class="character-sheet-edit-button"
-      data-character-inline-edit="${escapeAttribute(fieldName)}"
-      aria-label="${escapeAttribute(label)}"
-      title="${escapeAttribute(label)}"
+    <div
+      class="
+        character-sheet-row
+        character-editable-row
+      "
+      data-character-id="${safeCharacterId}"
+      data-character-field="${safeField}"
     >
-      ✎
-    </button>
+
+      <span class="character-sheet-label">
+        ${safeLabel}
+      </span>
+
+      <span
+        class="
+          character-sheet-value
+          character-editable-value
+        "
+      >
+
+        <span class="character-inline-display">
+
+          <span class="character-field-display">
+            ${safeValue || "—"}
+          </span>
+
+          ${
+            editable
+              ? `
+                <button
+                  type="button"
+                  class="
+                    btn
+                    btn-link
+                    btn-sm
+                    text-secondary
+                    text-decoration-none
+                    p-0
+                    character-inline-edit-button
+                  "
+                  data-character-inline-action="edit"
+                  aria-label="${safeEditLabel}"
+                  title="${safeEditLabel}"
+                >
+                  ✎
+                </button>
+              `
+              : ""
+          }
+
+        </span>
+
+      </span>
+
+    </div>
   `;
 }
 
-function createSection({ title, bodyHtml, toolsHtml = "", extraClass = "" }) {
+
+function createGenerationRow(
+  generation
+) {
+  const displayValue =
+    formatGeneration(
+      generation
+    );
+
+
+  const safeHelpText =
+    escapeSheetHtml(
+      GENERATION_HELP_TEXT
+    );
+
+
   return `
-    <section class="character-sheet-section ${extraClass}">
-      <div class="character-sheet-section-header">
-        <div class="character-sheet-title-wrap">
-          <h3 class="character-sheet-section-title">${escapeSheetHtml(title)}</h3>
-        </div>
-        ${toolsHtml ? `<div class="character-sheet-section-tools">${toolsHtml}</div>` : ""}
+    <div class="character-sheet-row">
+
+      <span
+        class="
+          character-sheet-label
+          d-inline-flex
+          align-items-center
+          gap-1
+        "
+      >
+
+        <span>
+          Geração
+        </span>
+
+        <button
+          type="button"
+          class="
+            btn
+            btn-outline-secondary
+            rounded-circle
+            p-0
+            character-sheet-help-button
+            character-generation-help
+          "
+          aria-label="Informações sobre Geração"
+          data-bs-toggle="popover"
+          data-bs-trigger="focus"
+          data-bs-placement="top"
+          data-bs-container="body"
+          data-bs-title="Geração"
+          data-bs-content="${safeHelpText}"
+          title="Geração"
+        >
+          ?
+        </button>
+
+      </span>
+
+      <span class="character-sheet-value">
+        ${escapeSheetHtml(
+          displayValue
+        )}
+      </span>
+
+    </div>
+  `;
+}
+
+
+function formatGeneration(
+  generation
+) {
+  const numeric =
+    Number(
+      generation
+    );
+
+
+  if (
+    Number.isInteger(
+      numeric
+    ) &&
+    numeric >
+      0
+  ) {
+    return `${numeric}ª`;
+  }
+
+
+  const normalized =
+    String(
+      generation ||
+      ""
+    ).trim();
+
+
+  if (
+    normalized
+  ) {
+    return normalized;
+  }
+
+
+  return "13ª";
+}
+
+
+export function createVampireSection({
+  characterId,
+  concept,
+  clan,
+  clanValue,
+  generation,
+  sect,
+  house,
+  editable,
+}) {
+  return `
+    <section
+      class="
+        character-section-card
+        character-sheet-section
+      "
+    >
+
+      <h4 class="character-sheet-title">
+        Vampiro
+      </h4>
+
+      ${createEditableFieldRow({
+        characterId,
+
+        field:
+          "concept",
+
+        label:
+          "Conceito",
+
+        value:
+          concept,
+
+        editLabel:
+          "Editar conceito",
+
+        editable,
+      })}
+
+      ${createIdentityFieldRow({
+        characterId,
+
+        field:
+          "clan",
+
+        label:
+          "Clã",
+
+        value:
+          clanValue,
+
+        displayValue:
+          clan,
+
+        editable,
+      })}
+
+      ${createGenerationRow(
+        generation
+      )}
+
+      <div class="character-sheet-row">
+
+        <span class="character-sheet-label">
+          Seita
+        </span>
+
+        <span class="character-sheet-value">
+          ${escapeSheetHtml(
+            sect ||
+            "—"
+          )}
+        </span>
+
       </div>
-      <div class="character-sheet-section-divider"></div>
-      ${bodyHtml}
+
+      <div class="character-sheet-row">
+
+        <span class="character-sheet-label">
+          Crônica
+        </span>
+
+        <span class="character-sheet-value">
+          ${house}
+        </span>
+
+      </div>
+
     </section>
   `;
 }
 
-function createInfoRow(labelHtml, valueHtml, trailingHtml = "") {
+
+export function createPersonalitySection({
+  characterId,
+  title,
+  natureLabel,
+  demeanorLabel,
+  editable,
+}) {
   return `
-    <div class="character-sheet-info-row">
-      <div class="character-sheet-info-label">
-        ${labelHtml}
-      </div>
-      <div class="character-sheet-info-value">
-        ${valueHtml}
-        ${trailingHtml}
-      </div>
-    </div>
+    <section
+      class="
+        character-section-card
+        character-sheet-section
+      "
+    >
+
+      <h4 class="character-sheet-title">
+        Personalidade
+      </h4>
+
+      ${createEditableFieldRow({
+        characterId,
+
+        field:
+          "nature",
+
+        label:
+          "Natureza",
+
+        value:
+          natureLabel,
+
+        editLabel:
+          "Editar Natureza",
+
+        editable,
+      })}
+
+      ${createEditableFieldRow({
+        characterId,
+
+        field:
+          "demeanor",
+
+        label:
+          "Comportamento",
+
+        value:
+          demeanorLabel,
+
+        editLabel:
+          "Editar Comportamento",
+
+        editable,
+      })}
+
+      ${createIdentityFieldRow({
+        characterId,
+
+        field:
+          "title",
+
+        label:
+          "Título",
+
+        value:
+          title,
+
+        displayValue:
+          title,
+
+        editable,
+      })}
+
+    </section>
   `;
 }
 
-function createActionRow(character) {
-  if (!canSelectChronicle(character)) {
-    return "";
-  }
 
-  return `
-    <div class="character-sheet-action-row">
-      <button
-        type="button"
-        class="character-sheet-select-button"
-        data-character-open-chronicle-selector
-      >
-        Selecionar Crônica
-      </button>
-    </div>
-  `;
-}
-
-export function createVampireSection(character) {
-  const concept = getCharacterValue(character, ["concept", "sheet.concept"], "—");
-  const clan = getCharacterValue(character, ["clan", "sheet.clan"], "—");
-  const generation = normalizeGenerationValue(character);
-  const sect = getCharacterValue(character, ["sect", "sheet.sect"], "—");
-  const chronicle = normalizeChronicleValue(character);
-
-  const rowsHtml = `
-    <div class="character-sheet-info-list">
-      ${createInfoRow(
-        "Conceito",
-        escapeSheetHtml(concept),
-        createEditButton("concept", "Editar conceito")
-      )}
-
-      ${createInfoRow(
-        "Clã",
-        escapeSheetHtml(clan),
-        createEditButton("clan", "Editar clã")
-      )}
-
-      ${createInfoRow(
-        `<span class="character-sheet-inline-label">Geração ${createHelpButton(GENERATION_HELP_TEXT)}</span>`,
-        escapeSheetHtml(generation)
-      )}
-
-      ${createInfoRow(
-        "Seita",
-        escapeSheetHtml(sect)
-      )}
-
-      ${createInfoRow(
-        "Crônica",
-        `<span class="${chronicle === "Sem Crônica" ? "character-sheet-info-value--muted" : ""}">${escapeSheetHtml(chronicle)}</span>`
-      )}
-    </div>
-
-    ${createActionRow(character)}
-  `;
-
-  return createSection({
-    title: "Vampiro",
-    bodyHtml: rowsHtml,
-  });
-}
-
-export function createPersonalitySection(character) {
-  const nature = getCharacterValue(character, ["nature", "sheet.nature"], "—");
-  const demeanor = getCharacterValue(
-    character,
-    ["demeanor", "sheet.demeanor"],
-    "—"
-  );
-  const title = getCharacterValue(character, ["title", "sheet.title"], "—");
-
-  const rowsHtml = `
-    <div class="character-sheet-info-list">
-      ${createInfoRow(
-        "Natureza",
-        escapeSheetHtml(nature),
-        createEditButton("nature", "Editar natureza")
-      )}
-
-      ${createInfoRow(
-        "Comportamento",
-        escapeSheetHtml(demeanor),
-        createEditButton("demeanor", "Editar comportamento")
-      )}
-
-      ${createInfoRow(
-        "Título",
-        escapeSheetHtml(title),
-        createEditButton("title", "Editar título")
-      )}
-    </div>
-  `;
-
-  return createSection({
-    title: "Personalidade",
-    bodyHtml: rowsHtml,
-  });
-}
-
-export const createCharacterVampireSection = createVampireSection;
-export const createCharacterPersonalitySection = createPersonalitySection;
+export {
+  GENERATION_HELP_TEXT,
+};

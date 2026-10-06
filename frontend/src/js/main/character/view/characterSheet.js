@@ -54,6 +54,14 @@ export function createCharacterSheet({
       : editable;
 
 
+  const generation =
+    character
+      ?.creation
+      ?.derived
+      ?.generation ??
+    13;
+
+
   return `
     <div class="character-card-details">
 
@@ -85,6 +93,8 @@ export function createCharacterSheet({
                 clanValue ||
                 character?.clan ||
                 "",
+
+              generation,
 
               sect:
                 sect ||

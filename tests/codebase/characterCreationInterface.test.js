@@ -295,7 +295,23 @@ test(
 
     assert.equal(
       source.includes(
-        "createHelpButton"
+        "character-generation-help"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        'data-bs-toggle="popover"'
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        'data-bs-title="Geração"'
       ),
       true
     );
