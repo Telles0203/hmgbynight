@@ -78,6 +78,35 @@ function createStaticGroup(
 }
 
 
+function createFreeTraitCostNotice(
+  cost
+) {
+  const normalized =
+    Number(
+      cost
+    );
+
+
+  if (
+    !Number.isFinite(
+      normalized
+    ) ||
+    normalized <=
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <small class="character-free-trait-inline-cost">
+      Extra da criação:
+      -${normalized} Free Traits
+    </small>
+  `;
+}
+
+
 function createBloodContent(
   maximum
 ) {
@@ -100,7 +129,8 @@ function createBloodContent(
 
 function createWillpowerContent(
   value,
-  maximum
+  maximum,
+  freeTraitCost = 0
 ) {
   return `
     <div class="character-sheet-pips">
@@ -120,6 +150,10 @@ function createWillpowerContent(
       )}
 
     </div>
+
+    ${createFreeTraitCostNotice(
+      freeTraitCost
+    )}
   `;
 }
 
@@ -234,6 +268,13 @@ export function createCharacterCreationSections(
     {};
 
 
+  const freeTraitSpending =
+    creation
+      ?.freeTraits
+      ?.spending ||
+    {};
+
+
   const bloodTitle =
     createGenerationResourceTitle(
       "Sangue Máximo",
@@ -290,7 +331,9 @@ export function createCharacterCreationSections(
           content:
             createWillpowerContent(
               derived.willpower,
-              derived.willpowerMaximum
+              derived.willpowerMaximum,
+              freeTraitSpending
+                .willpower
             ),
 
           editSection:
@@ -317,7 +360,9 @@ export function createCharacterCreationSections(
 
           content:
             createMoralityResourceContent(
-              derived.morality
+              derived.morality,
+              freeTraitSpending
+                .morality
             ),
 
           editSection:

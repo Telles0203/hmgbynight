@@ -16,11 +16,14 @@ import {
 import {
   createAttributeTraitPicker,
   formatAttributeTraitSummary,
+} from "./characterCreationAttributeTraitPicker.js";
+
+import {
   readSelectedTraitValues,
   addAttributeTraitSelection,
   removeAttributeTraitSelection,
   updateAttributeTraitTarget,
-} from "./characterCreationAttributeTraitPicker.js";
+} from "./characterCreationAttributeTraitActions.js";
 
 
 const ATTRIBUTE_LABELS = {
@@ -134,6 +137,13 @@ export function createAttributeCreationEditor(
     );
 
 
+  const hasExtraTraits =
+    baseTarget >
+      0 &&
+    traits.length >
+      baseTarget;
+
+
   return `
     <form
       class="character-creation-inline-editor"
@@ -157,6 +167,11 @@ export function createAttributeCreationEditor(
 
           <span
             data-creation-attribute-summary
+            class="${
+              hasExtraTraits
+                ? "is-free-trait-spend"
+                : ""
+            }"
           >
             ${escapeSheetHtml(
               summary
@@ -196,6 +211,8 @@ export function createAttributeCreationEditor(
 
         values:
           traits,
+
+        baseTarget,
       })}
 
       ${createAttributeTraitPicker({

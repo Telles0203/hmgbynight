@@ -8,6 +8,10 @@ import {
 } from "../data/attributeTraitCatalog.js";
 
 
+const EXTRA_TRAIT_HELP_TEXT =
+  "Trait adicional da criação: consome 1 Free Trait.";
+
+
 function createPositiveTraitOptions(
   category
 ) {
@@ -80,10 +84,11 @@ function createNegativeTraitOptions(
 }
 
 
-function createSelectedTraitRow({
+export function createSelectedTraitRow({
   category,
   value,
   negative = false,
+  extra = false,
 }) {
   const displayValue =
     negative
@@ -95,6 +100,11 @@ function createSelectedTraitRow({
           category,
           value
         );
+
+
+  const isExtra =
+    !negative &&
+    extra;
 
 
   return `
@@ -109,11 +119,26 @@ function createSelectedTraitRow({
         rounded
         px-2
         py-1
+        character-creation-attribute-trait-row
+        ${
+          isExtra
+            ? "is-free-trait-spend"
+            : ""
+        }
       "
       data-creation-attribute-trait-row
+      ${
+        isExtra
+          ? `
+            title="${escapeSheetHtml(
+              EXTRA_TRAIT_HELP_TEXT
+            )}"
+          `
+          : ""
+      }
     >
 
-      <span class="small text-light">
+      <span class="small character-creation-attribute-trait-label">
         ${escapeSheetHtml(
           displayValue
         )}
@@ -158,6 +183,7 @@ function createSelectedTraitRows({
   category,
   values,
   negative = false,
+  baseTarget = 0,
 }) {
   if (
     !Array.isArray(
@@ -183,12 +209,29 @@ function createSelectedTraitRows({
   return values
     .map(
       (
-        value
+        value,
+        index
       ) =>
         createSelectedTraitRow({
           category,
           value,
           negative,
+
+          extra:
+            !negative &&
+            Number.isInteger(
+              Number(
+                baseTarget
+              )
+            ) &&
+            Number(
+              baseTarget
+            ) >
+              0 &&
+            index >=
+              Number(
+                baseTarget
+              ),
         })
     )
     .join("");
@@ -200,6 +243,7 @@ export function createAttributeTraitPicker({
   title,
   values,
   negative = false,
+  baseTarget = 0,
 }) {
   return `
     <div
@@ -282,6 +326,7 @@ export function createAttributeTraitPicker({
           category,
           values,
           negative,
+          baseTarget,
         })}
       </div>
 
@@ -345,400 +390,6 @@ export function formatAttributeTraitSummary(
 }
 
 
-function getPositiveTraitCount(
-  form
-) {
-  return form
-    .querySelectorAll(
-      "[data-creation-attribute-trait-value]"
-    )
-    .length;
-}
-
-
-function getGenerationMaximum(
-  form
-) {
-  const maximum =
-    Number(
-      form.dataset
-        .creationAttributeGenerationMaximum
-    );
-
-
-  return Number.isInteger(
-    maximum
-  ) &&
-  maximum >
-    0
-    ? maximum
-    : 10;
-}
-
-
-function refreshAddButtonState(
-  form
-) {
-  const maximum =
-    getGenerationMaximum(
-      form
-    );
-
-
-  const current =
-    getPositiveTraitCount(
-      form
-    );
-
-
-  const picker =
-    form.querySelector(
-      '[data-creation-attribute-negative="false"]'
-    );
-
-
-  const button =
-    picker?.querySelector(
-      "[data-character-creation-add-attribute-trait]"
-    );
-
-
-  const select =
-    picker?.querySelector(
-      "[data-creation-attribute-trait-choice]"
-    );
-
-
-  const reachedMaximum =
-    current >=
-    maximum;
-
-
-  if (
-    button
-  ) {
-    button.disabled =
-      reachedMaximum;
-  }
-
-
-  if (
-    select
-  ) {
-    select.disabled =
-      reachedMaximum;
-  }
-}
-
-
-export function refreshAttributeTraitSummary(
-  form
-) {
-  if (
-    !form
-  ) {
-    return;
-  }
-
-
-  const current =
-    getPositiveTraitCount(
-      form
-    );
-
-
-  const target =
-    Number(
-      form.dataset
-        .creationAttributeBaseTarget
-    );
-
-
-  const maximum =
-    getGenerationMaximum(
-      form
-    );
-
-
-  const summary =
-    form.querySelector(
-      "[data-creation-attribute-summary]"
-    );
-
-
-  if (
-    summary
-  ) {
-    summary.textContent =
-      formatAttributeTraitSummary(
-        current,
-        target,
-        maximum
-      );
-  }
-
-
-  refreshAddButtonState(
-    form
-  );
-}
-
-
-export function updateAttributeTraitTarget(
-  form,
-  target
-) {
-  if (
-    !form
-  ) {
-    return;
-  }
-
-
-  form.dataset
-    .creationAttributeBaseTarget =
-      String(
-        Number.isInteger(
-          Number(
-            target
-          )
-        )
-          ? Number(
-              target
-            )
-          : 0
-      );
-
-
-  refreshAttributeTraitSummary(
-    form
-  );
-}
-
-
-export function readSelectedTraitValues(
-  form,
-  selector
-) {
-  return Array.from(
-    form.querySelectorAll(
-      selector
-    )
-  )
-    .map(
-      (
-        input
-      ) =>
-        String(
-          input.value ||
-          ""
-        ).trim()
-    )
-    .filter(
-      Boolean
-    );
-}
-
-
-export function addAttributeTraitSelection(
-  button
-) {
-  const picker =
-    button.closest(
-      "[data-creation-attribute-trait-picker]"
-    );
-
-
-  const form =
-    button.closest(
-      "[data-character-creation-inline-form]"
-    );
-
-
-  if (
-    !picker ||
-    !form
-  ) {
-    return;
-  }
-
-
-  const select =
-    picker.querySelector(
-      "[data-creation-attribute-trait-choice]"
-    );
-
-
-  const list =
-    picker.querySelector(
-      "[data-creation-attribute-trait-list]"
-    );
-
-
-  const value =
-    String(
-      select?.value ||
-      ""
-    ).trim();
-
-
-  const category =
-    String(
-      picker.dataset
-        .creationAttributeCategory ||
-      ""
-    );
-
-
-  const negative =
-    picker.dataset
-      .creationAttributeNegative ===
-    "true";
-
-
-  if (
-    !select ||
-    !list ||
-    !value ||
-    !category
-  ) {
-    return;
-  }
-
-
-  if (
-    !negative &&
-    getPositiveTraitCount(
-      form
-    ) >=
-      getGenerationMaximum(
-        form
-      )
-  ) {
-    refreshAttributeTraitSummary(
-      form
-    );
-
-
-    return;
-  }
-
-
-  list
-    .querySelector(
-      "[data-creation-attribute-trait-empty]"
-    )
-    ?.remove();
-
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-
-  wrapper.innerHTML =
-    createSelectedTraitRow({
-      category,
-      value,
-      negative,
-    });
-
-
-  const row =
-    wrapper.firstElementChild;
-
-
-  if (
-    row
-  ) {
-    list.appendChild(
-      row
-    );
-  }
-
-
-  select.value =
-    "";
-
-
-  refreshAttributeTraitSummary(
-    form
-  );
-}
-
-
-export function removeAttributeTraitSelection(
-  button
-) {
-  const picker =
-    button.closest(
-      "[data-creation-attribute-trait-picker]"
-    );
-
-
-  const row =
-    button.closest(
-      "[data-creation-attribute-trait-row]"
-    );
-
-
-  const form =
-    button.closest(
-      "[data-character-creation-inline-form]"
-    );
-
-
-  const list =
-    picker?.querySelector(
-      "[data-creation-attribute-trait-list]"
-    );
-
-
-  if (
-    !picker ||
-    !row ||
-    !list
-  ) {
-    return;
-  }
-
-
-  row.remove();
-
-
-  if (
-    !list.querySelector(
-      "[data-creation-attribute-trait-row]"
-    )
-  ) {
-    const empty =
-      document.createElement(
-        "div"
-      );
-
-
-    empty.className =
-      "character-sheet-empty py-2";
-
-
-    empty.setAttribute(
-      "data-creation-attribute-trait-empty",
-      ""
-    );
-
-
-    empty.textContent =
-      "Nenhum Trait selecionado.";
-
-
-    list.appendChild(
-      empty
-    );
-  }
-
-
-  refreshAttributeTraitSummary(
-    form
-  );
-}
+export {
+  EXTRA_TRAIT_HELP_TEXT,
+};

@@ -12,7 +12,11 @@ import {
 
 
 const ATTRIBUTE_CREATION_HELP_TEXT =
-  "O formato (Atual/Criação) mostra quantos Traits esta categoria possui atualmente e quantos Traits correspondem à sua distribuição-base durante a criação inicial do personagem. Primário recebe 7, Secundário 5 e Terciário 3. Este valor é mantido separadamente para permitir outros usos no futuro; por enquanto, ele serve apenas como referência da criação inicial.";
+  "O formato (Atual/Criação) mostra quantos Traits esta categoria possui atualmente e quantos Traits correspondem à sua distribuição-base durante a criação inicial do personagem. Primário recebe 7, Secundário 5 e Terciário 3. Traits acima dessa distribuição consomem Free Traits. O limite Máx. continua sendo determinado pela Geração.";
+
+
+const ATTRIBUTE_EXTRA_TRAIT_HELP_TEXT =
+  "Este Trait ultrapassa a distribuição-base da criação e consome 1 Free Trait.";
 
 
 function createEditButton({
@@ -151,7 +155,7 @@ function getAttributeSummary(
     rawTarget >
       0
       ? rawTarget
-      : "—";
+      : null;
 
 
   const rawMaximum =
@@ -173,9 +177,96 @@ function getAttributeSummary(
 
   return {
     current,
+
     target,
+
     maximum,
+
+    extra:
+      target
+        ? Math.max(
+            0,
+            current -
+              target
+          )
+        : 0,
   };
+}
+
+
+function createAttributeTraitList(
+  category,
+  traits,
+  target
+) {
+  if (
+    !Array.isArray(
+      traits
+    ) ||
+    traits.length ===
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <ul class="character-creation-list">
+
+      ${traits
+        .map(
+          (
+            trait,
+            index
+          ) => {
+            const extra =
+              Number.isInteger(
+                target
+              ) &&
+              target >
+                0 &&
+              index >=
+                target;
+
+
+            const label =
+              getAttributeTraitLabel(
+                category,
+                trait
+              );
+
+
+            return `
+              <li
+                class="
+                  character-creation-attribute-trait
+                  ${
+                    extra
+                      ? "is-free-trait-spend"
+                      : ""
+                  }
+                "
+                ${
+                  extra
+                    ? `
+                      title="${escapeSheetHtml(
+                        ATTRIBUTE_EXTRA_TRAIT_HELP_TEXT
+                      )}"
+                    `
+                    : ""
+                }
+              >
+                ${escapeSheetHtml(
+                  label
+                )}
+              </li>
+            `;
+          }
+        )
+        .join("")}
+
+    </ul>
+  `;
 }
 
 
@@ -187,9 +278,15 @@ function createAttributeSectionTitle({
   current,
   target,
   maximum,
+  extra,
 }) {
   const label =
     `${title} / Negativos`;
+
+
+  const targetLabel =
+    target ||
+    "—";
 
 
   return `
@@ -218,11 +315,31 @@ function createAttributeSectionTitle({
           )}
         </span>
 
-        <span>
+        <span
+          class="
+            character-creation-attribute-progress
+            ${
+              extra >
+                0
+                ? "is-free-trait-spend"
+                : ""
+            }
+          "
+          ${
+            extra >
+              0
+              ? `
+                title="${escapeSheetHtml(
+                  `${extra} Trait adicional da criação consome ${extra} Free Trait${extra === 1 ? "" : "s"}.`
+                )}"
+              `
+              : ""
+          }
+        >
           (${escapeSheetHtml(
             current
           )}/${escapeSheetHtml(
-            target
+            targetLabel
           )})
         </span>
 
@@ -245,31 +362,6 @@ function createAttributeSectionTitle({
 
     </h4>
   `;
-}
-
-
-function getDisplayTraits(
-  category,
-  traits
-) {
-  if (
-    !Array.isArray(
-      traits
-    )
-  ) {
-    return [];
-  }
-
-
-  return traits.map(
-    (
-      trait
-    ) =>
-      getAttributeTraitLabel(
-        category,
-        trait
-      )
-  );
 }
 
 
@@ -299,13 +391,6 @@ export function createAttributeSection({
     [];
 
 
-  const displayTraits =
-    getDisplayTraits(
-      category,
-      traits
-    );
-
-
   const categoryProgress =
     progress
       ?.categories
@@ -319,6 +404,7 @@ export function createAttributeSection({
     current,
     target,
     maximum,
+    extra,
   } =
     getAttributeSummary(
       traits,
@@ -359,6 +445,7 @@ export function createAttributeSection({
         current,
         target,
         maximum,
+        extra,
       })}
 
       ${
@@ -370,7 +457,7 @@ export function createAttributeSection({
           `
           : `
             ${
-              displayTraits.length >
+              traits.length >
                 0
                 ? `
                   <div class="character-sheet-group">
@@ -379,9 +466,10 @@ export function createAttributeSection({
                       Traits
                     </div>
 
-                    ${createCreationList(
-                      displayTraits,
-                      ""
+                    ${createAttributeTraitList(
+                      category,
+                      traits,
+                      target
                     )}
 
                   </div>

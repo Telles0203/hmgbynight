@@ -1,6 +1,5 @@
 import {
   escapeSheetHtml,
-  humanizeSheetKey,
   createSheetPips,
 } from "./characterSheetCommon.js";
 
@@ -132,6 +131,35 @@ function createEditButton({
     >
       ✎
     </button>
+  `;
+}
+
+
+function createFreeTraitCostNotice(
+  cost
+) {
+  const normalized =
+    Number(
+      cost
+    );
+
+
+  if (
+    !Number.isFinite(
+      normalized
+    ) ||
+    normalized <=
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <small class="character-free-trait-inline-cost">
+      Extra da criação:
+      -${normalized} Free Traits
+    </small>
   `;
 }
 
@@ -456,7 +484,8 @@ export function createCreationResourceCard({
 
 
 export function createMoralityResourceContent(
-  morality
+  morality,
+  freeTraitCost = 0
 ) {
   const value =
     Number(
@@ -487,136 +516,15 @@ export function createMoralityResourceContent(
       )}
 
     </div>
+
+    ${createFreeTraitCostNotice(
+      freeTraitCost
+    )}
   `;
 }
 
 
-export function createFreeTraitContent(
-  creation
-) {
-  const freeTraits =
-    creation
-      ?.freeTraits ||
-    {};
-
-
-  return `
-    <div class="character-creation-free-compact">
-
-      <div class="character-sheet-row">
-
-        <span class="character-sheet-label">
-          Disponíveis
-        </span>
-
-        <span class="character-sheet-value">
-          ${Number(
-            freeTraits.available ||
-            0
-          )}
-        </span>
-
-      </div>
-
-      <div class="character-sheet-row">
-
-        <span class="character-sheet-label">
-          Gastos
-        </span>
-
-        <span class="character-sheet-value">
-          ${Number(
-            freeTraits.spent ||
-            0
-          )}
-        </span>
-
-      </div>
-
-      <div class="character-sheet-row">
-
-        <span class="character-sheet-label">
-          Restantes
-        </span>
-
-        <span class="character-sheet-value">
-          ${Number(
-            freeTraits.remaining ||
-            0
-          )}
-        </span>
-
-      </div>
-
-    </div>
-  `;
-}
-
-
-export function createFreeTraitSpending(
-  creation
-) {
-  const spending =
-    creation
-      ?.freeTraits
-      ?.spending ||
-    {};
-
-
-  const entries =
-    Object.entries(
-      spending
-    )
-      .filter(
-        ([
-          ,
-          value,
-        ]) =>
-          Number(
-            value
-          ) >
-          0
-      );
-
-
-  if (
-    entries.length ===
-      0
-  ) {
-    return "";
-  }
-
-
-  return `
-    <div class="mt-2">
-
-      ${entries
-        .map(
-          ([
-            key,
-            value,
-          ]) => `
-            <div class="character-sheet-row">
-
-              <span class="character-sheet-label">
-                ${escapeSheetHtml(
-                  humanizeSheetKey(
-                    key
-                  )
-                )}
-              </span>
-
-              <span class="character-sheet-value">
-                ${Number(
-                  value
-                )}
-              </span>
-
-            </div>
-          `
-        )
-        .join("")}
-
-    </div>
-  `;
-}
+export {
+  createFreeTraitContent,
+  createFreeTraitSpending,
+} from "./characterSheetFreeTraits.js";

@@ -1,0 +1,96 @@
+.character-creation-attribute-progress.is-free-trait-spend {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.character-creation-attribute-trait.is-free-trait-spend {
+  color: #ff6b6b !important;
+  font-weight: 600;
+}
+
+.character-creation-attribute-trait-row.is-free-trait-spend {
+  border-color: rgba(
+    220,
+    53,
+    69,
+    0.8
+  ) !important;
+
+  background:
+    rgba(
+      220,
+      53,
+      69,
+      0.08
+    );
+}
+
+.character-creation-attribute-trait-row.is-free-trait-spend
+.character-creation-attribute-trait-label {
+  color: #ff6b6b !important;
+  font-weight: 600;
+}
+
+[data-creation-attribute-summary].is-free-trait-spend {
+  color: #ff6b6b;
+}
+
+.character-free-trait-spending {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+
+  border-top:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.12
+    );
+}
+
+.character-free-trait-spending-title {
+  margin-bottom: 0.35rem;
+
+  color: #cfcfcf;
+
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  letter-spacing: 0.04rem;
+
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.character-sheet-value.character-free-trait-cost {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.character-sheet-section
+.character-free-trait-inline-cost {
+  display: block;
+
+  margin-top: 0.45rem;
+
+  color: #ff6b6b !important;
+
+  font-size: 0.66rem;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+.character-free-trait-cost::selection,
+.character-free-trait-inline-cost::selection,
+.character-creation-attribute-progress.is-free-trait-spend::selection,
+.character-creation-attribute-trait.is-free-trait-spend::selection {
+  background:
+    rgba(
+      220,
+      53,
+      69,
+      0.35
+    );
+}
