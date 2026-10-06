@@ -1,16 +1,12 @@
-// =============================================
-// Character Animations
-// =============================================
+let horizontalAnimationFrame =
+  null;
 
-let horizontalAnimationFrame = null;
-let characterDetailsAnimationFrame = null;
+let characterDetailsAnimationFrame =
+  null;
 
-const verticalMetrics = new WeakMap();
+const verticalMetrics =
+  new WeakMap();
 
-
-// =============================================
-// Character details
-// =============================================
 
 export function animateCharacterDetails(
   card,
@@ -19,9 +15,10 @@ export function animateCharacterDetails(
 ) {
   cancelCharacterDetailsAnimation();
 
-  const details = card.querySelector(
-    ".character-card-details"
-  );
+  const details =
+    card.querySelector(
+      ".character-card-details"
+    );
 
   if (!details) {
     return Promise.resolve();
@@ -36,30 +33,23 @@ export function animateCharacterDetails(
         "is-closing"
       );
 
-      details.style.height = "0px";
-      details.style.opacity = "0";
+      details.style.height =
+        "0px";
 
-      /*
-       * Registra o estado fechado.
-       */
+      details.style.opacity =
+        "0";
+
       details.getBoundingClientRect();
 
-      /*
-       * O CSS anima somente
-       * o conteúdo interno.
-       */
       card.classList.add(
         "is-open"
       );
 
-      /*
-       * Altura natural completa
-       * da ficha.
-       */
       targetHeight =
         details.scrollHeight;
 
-      startHeight = 0;
+      startHeight =
+        0;
 
     } else {
       startHeight =
@@ -67,17 +57,15 @@ export function animateCharacterDetails(
           .getBoundingClientRect()
           .height;
 
-      targetHeight = 0;
+      targetHeight =
+        0;
 
       details.style.height =
         `${startHeight}px`;
 
-      details.style.opacity = "1";
+      details.style.opacity =
+        "1";
 
-      /*
-       * Mantém is-open durante
-       * toda a retração.
-       */
       card.classList.add(
         "is-closing"
       );
@@ -171,10 +159,6 @@ export function animateCharacterDetails(
 }
 
 
-// =============================================
-// Collapse elements
-// =============================================
-
 export async function collapseElements(
   elements,
   duration
@@ -247,11 +231,14 @@ async function collapseElement(
     metrics
   );
 
-  element.style.overflow =
-    "hidden";
+  element.classList.remove(
+    "character-view-collapsed",
+    "character-view-expanding"
+  );
 
-  element.style.pointerEvents =
-    "none";
+  element.classList.add(
+    "character-view-collapsing"
+  );
 
   const animation =
     element.animate(
@@ -286,15 +273,29 @@ async function collapseElement(
         },
 
         {
-          height: "0px",
-          marginTop: "0px",
-          marginBottom: "0px",
-          paddingTop: "0px",
-          paddingBottom: "0px",
-          borderTopWidth: "0px",
-          borderBottomWidth: "0px",
+          height:
+            "0px",
 
-          opacity: 0,
+          marginTop:
+            "0px",
+
+          marginBottom:
+            "0px",
+
+          paddingTop:
+            "0px",
+
+          paddingBottom:
+            "0px",
+
+          borderTopWidth:
+            "0px",
+
+          borderBottomWidth:
+            "0px",
+
+          opacity:
+            0,
 
           transform:
             "translateY(-16px)",
@@ -313,40 +314,17 @@ async function collapseElement(
 
   await animation.finished;
 
-  element.style.height =
-    "0px";
+  element.classList.add(
+    "character-view-collapsed"
+  );
 
-  element.style.marginTop =
-    "0px";
-
-  element.style.marginBottom =
-    "0px";
-
-  element.style.paddingTop =
-    "0px";
-
-  element.style.paddingBottom =
-    "0px";
-
-  element.style.borderTopWidth =
-    "0px";
-
-  element.style.borderBottomWidth =
-    "0px";
-
-  element.style.opacity =
-    "0";
-
-  element.style.transform =
-    "translateY(-16px)";
+  element.classList.remove(
+    "character-view-collapsing"
+  );
 
   animation.cancel();
 }
 
-
-// =============================================
-// Expand elements
-// =============================================
 
 export async function expandElements(
   elements,
@@ -377,19 +355,41 @@ async function expandElement(
     return;
   }
 
+  element.classList.remove(
+    "character-view-collapsing"
+  );
+
+  element.classList.add(
+    "character-view-expanding"
+  );
+
   const animation =
     element.animate(
       [
         {
-          height: "0px",
-          marginTop: "0px",
-          marginBottom: "0px",
-          paddingTop: "0px",
-          paddingBottom: "0px",
-          borderTopWidth: "0px",
-          borderBottomWidth: "0px",
+          height:
+            "0px",
 
-          opacity: 0,
+          marginTop:
+            "0px",
+
+          marginBottom:
+            "0px",
+
+          paddingTop:
+            "0px",
+
+          paddingBottom:
+            "0px",
+
+          borderTopWidth:
+            "0px",
+
+          borderBottomWidth:
+            "0px",
+
+          opacity:
+            0,
 
           transform:
             "translateY(-16px)",
@@ -437,42 +437,18 @@ async function expandElement(
 
   await animation.finished;
 
-  animation.cancel();
-
-  clearVerticalStyles(
-    element
+  element.classList.remove(
+    "character-view-collapsed",
+    "character-view-expanding"
   );
+
+  animation.cancel();
 
   verticalMetrics.delete(
     element
   );
 }
 
-
-// =============================================
-// Clear vertical styles
-// =============================================
-
-function clearVerticalStyles(
-  element
-) {
-  element.style.height = "";
-  element.style.marginTop = "";
-  element.style.marginBottom = "";
-  element.style.paddingTop = "";
-  element.style.paddingBottom = "";
-  element.style.borderTopWidth = "";
-  element.style.borderBottomWidth = "";
-  element.style.opacity = "";
-  element.style.transform = "";
-  element.style.overflow = "";
-  element.style.pointerEvents = "";
-}
-
-
-// =============================================
-// Horizontal animation
-// =============================================
 
 export function animateHorizontalPanels({
   panelsContainer,
@@ -645,10 +621,6 @@ export function animateHorizontalPanels({
 }
 
 
-// =============================================
-// Easing
-// =============================================
-
 function easeInOutSine(
   value
 ) {
@@ -659,10 +631,6 @@ function easeInOutSine(
   ) / 2;
 }
 
-
-// =============================================
-// Cancel animations
-// =============================================
 
 function cancelHorizontalAnimation() {
   if (

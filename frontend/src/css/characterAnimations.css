@@ -1,0 +1,32 @@
+#characterPanelHeader.character-view-collapsing,
+#characterCreateArea.character-view-collapsing,
+.character-card.character-view-collapsing,
+#characterPanelHeader.character-view-expanding,
+#characterCreateArea.character-view-expanding,
+.character-card.character-view-expanding {
+    overflow: hidden;
+    pointer-events: none;
+}
+
+#characterPanelHeader.character-view-collapsed,
+#characterCreateArea.character-view-collapsed,
+.character-card.character-view-collapsed {
+    height: 0;
+
+    margin-top: 0;
+    margin-bottom: 0;
+
+    padding-top: 0;
+    padding-bottom: 0;
+
+    border-top-width: 0;
+    border-bottom-width: 0;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    transform: translateY(-16px);
+
+    pointer-events: none;
+}
