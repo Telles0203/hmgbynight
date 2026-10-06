@@ -1,0 +1,335 @@
+export function calculateVirtueProgress(
+  character,
+  values
+) {
+  const total =
+    Number.isFinite(
+      character
+        ?.virtuePoints
+        ?.total
+    )
+      ? character
+          .virtuePoints
+          .total
+      : 7;
+
+
+  let spent =
+    0;
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
+    (
+      virtue
+    ) => {
+      const minimum =
+        Number.isFinite(
+          virtue.minimum
+        )
+          ? virtue.minimum
+          : 0;
+
+
+      const value =
+        Number.isFinite(
+          values?.[
+            virtue.key
+          ]
+        )
+          ? values[
+              virtue.key
+            ]
+          : minimum;
+
+
+      spent +=
+        Math.max(
+          0,
+          value -
+            minimum
+        );
+    }
+  );
+
+
+  return {
+    total,
+
+    spent,
+
+    remaining:
+      Math.max(
+        0,
+        total -
+          spent
+      ),
+
+    complete:
+      spent ===
+      total,
+  };
+}
+
+
+export function isValidVirtueDraft(
+  character,
+  values
+) {
+  if (
+    !values ||
+    typeof values !==
+      "object"
+  ) {
+    return false;
+  }
+
+
+  const virtues =
+    getActiveVirtues(
+      character
+    );
+
+
+  for (
+    const virtue
+    of virtues
+  ) {
+    const minimum =
+      Number.isFinite(
+        virtue.minimum
+      )
+        ? virtue.minimum
+        : 0;
+
+
+    const maximum =
+      Number.isFinite(
+        virtue.maximum
+      )
+        ? virtue.maximum
+        : 5;
+
+
+    const value =
+      values[
+        virtue.key
+      ];
+
+
+    if (
+      !Number.isInteger(
+        value
+      ) ||
+      value <
+        minimum ||
+      value >
+        maximum
+    ) {
+      return false;
+    }
+  }
+
+
+  const progress =
+    calculateVirtueProgress(
+      character,
+      values
+    );
+
+
+  return (
+    progress.spent <=
+    progress.total
+  );
+}
+
+
+export function hasVirtueDraftChanges(
+  character,
+  values
+) {
+  return getActiveVirtues(
+    character
+  ).some(
+    (
+      virtue
+    ) => {
+      const minimum =
+        Number.isFinite(
+          virtue.minimum
+        )
+          ? virtue.minimum
+          : 0;
+
+
+      const saved =
+        Number.isFinite(
+          virtue.value
+        )
+          ? virtue.value
+          : minimum;
+
+
+      const draft =
+        Number.isFinite(
+          values?.[
+            virtue.key
+          ]
+        )
+          ? values[
+              virtue.key
+            ]
+          : saved;
+
+
+      return (
+        saved !==
+        draft
+      );
+    }
+  );
+}
+
+
+export function getSavedActiveVirtueValues(
+  character
+) {
+  const values = {};
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
+    (
+      virtue
+    ) => {
+      const minimum =
+        Number.isFinite(
+          virtue.minimum
+        )
+          ? virtue.minimum
+          : 0;
+
+
+      values[
+        virtue.key
+      ] =
+        Number.isFinite(
+          virtue.value
+        )
+          ? virtue.value
+          : minimum;
+    }
+  );
+
+
+  return values;
+}
+
+
+export function updateCharacterVirtueLocalState(
+  character,
+  updated
+) {
+  if (
+    updated.virtues &&
+    typeof updated.virtues ===
+      "object"
+  ) {
+    character.virtues =
+      updated.virtues;
+  }
+
+
+  if (
+    Array.isArray(
+      updated.activeVirtues
+    )
+  ) {
+    character.activeVirtues =
+      updated.activeVirtues;
+  }
+
+
+  if (
+    updated.virtuePoints &&
+    typeof updated.virtuePoints ===
+      "object"
+  ) {
+    character.virtuePoints =
+      updated.virtuePoints;
+  }
+}
+
+
+export function getActiveVirtues(
+  character
+) {
+  return Array.isArray(
+    character
+      ?.activeVirtues
+  )
+    ? character
+        .activeVirtues
+    : [];
+}
+
+
+export function getActiveVirtue(
+  character,
+  virtueKey
+) {
+  return (
+    getActiveVirtues(
+      character
+    ).find(
+      (
+        virtue
+      ) =>
+        String(
+          virtue.key
+        ) ===
+        String(
+          virtueKey
+        )
+    ) ||
+    null
+  );
+}
+
+
+export function getCharacterById(
+  characterId
+) {
+  const characters =
+    window.ByNightMain
+      ?.character
+      ?.characters;
+
+
+  if (
+    !Array.isArray(
+      characters
+    )
+  ) {
+    return null;
+  }
+
+
+  return (
+    characters.find(
+      (
+        character
+      ) =>
+        String(
+          character.id
+        ) ===
+        String(
+          characterId
+        )
+    ) ||
+    null
+  );
+}

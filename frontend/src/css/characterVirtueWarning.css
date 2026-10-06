@@ -1,0 +1,143 @@
+.character-virtue-points-warning {
+    width:
+        20px;
+
+    height:
+        20px;
+
+    min-width:
+        20px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        0;
+
+    margin:
+        0;
+
+    color:
+        #ffffff;
+
+    background:
+        #7b1019;
+
+    border:
+        1px solid
+        #dc3545;
+
+    border-radius:
+        50%;
+
+    font-size:
+        0.72rem;
+
+    font-weight:
+        700;
+
+    line-height:
+        1;
+
+    cursor:
+        help;
+
+    box-shadow:
+        0 0 5px
+        rgba(
+            220,
+            53,
+            69,
+            0.25
+        );
+
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+.character-virtue-points-warning:hover,
+.character-virtue-points-warning:focus {
+    color:
+        #ffffff;
+
+    background:
+        #a21825;
+
+    border-color:
+        #ff5968;
+
+    box-shadow:
+        0 0 8px
+        rgba(
+            220,
+            53,
+            69,
+            0.45
+        );
+
+    transform:
+        scale(1.08);
+
+    outline:
+        none;
+}
+
+
+.character-virtue-warning-popover {
+    --bs-popover-bg:
+        #2b1014;
+
+    --bs-popover-border-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.8
+        );
+
+    --bs-popover-header-bg:
+        #3a1117;
+
+    --bs-popover-header-color:
+        #ffffff;
+
+    --bs-popover-body-color:
+        #ffd9dd;
+
+    max-width:
+        300px;
+}
+
+
+.character-virtue-warning-popover
+.popover-header {
+    border-bottom-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.4
+        );
+}
+
+
+@media (
+    prefers-reduced-motion:
+        reduce
+) {
+
+    .character-virtue-points-warning {
+        transition:
+            none;
+    }
+}
