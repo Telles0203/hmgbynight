@@ -25,7 +25,7 @@ import {
 
 import {
   refreshCharacterCreationView,
-} from "./virtues/characterVirtueCreationView.js";
+} from "./creation/characterCreationViewRefresh.js";
 
 import {
   updateCharacterSheetDraftLocal,
