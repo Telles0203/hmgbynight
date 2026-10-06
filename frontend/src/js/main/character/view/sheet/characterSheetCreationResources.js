@@ -302,7 +302,7 @@ export function createPendingCreationNotice(
 
   if (
     sections.length ===
-    0
+      0
   ) {
     return "";
   }
@@ -417,6 +417,7 @@ export function createCreationResourceCard({
           align-items-center
           justify-content-center
           gap-2
+          w-100
         "
       >
 
@@ -578,7 +579,7 @@ export function createFreeTraitSpending(
 
   if (
     entries.length ===
-    0
+      0
   ) {
     return "";
   }
