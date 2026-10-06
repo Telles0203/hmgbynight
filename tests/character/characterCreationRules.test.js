@@ -11,26 +11,15 @@ const {
   CHARACTER_CREATION_RULES,
   getInitialDisciplineTotal,
   getInitialBackgroundTotal,
-  getCharacterCreationRuleSummary,
+  getGenerationRules,
+  createEmptyCharacterCreationState,
 } = require(
-  "../../backend/rules/vampire/lawsOfTheNightRevised"
-);
-
-const {
-  createPointProgress,
-  createUntrackedPointProgress,
-} = require(
-  "../../backend/rules/characterCreation/pointTracker"
-);
-
-const {
-  getCharacterCreationProgress,
-} = require(
-  "../../backend/rules/characterCreation/characterCreationProgress"
+  "../../backend/rules/vampire/lotnr/ruleset"
 );
 
 const {
   DEFAULT_MORALITY_PATH,
+  calculateStartingMorality,
 } = require(
   "../../backend/data/vampire/moralityPaths"
 );
@@ -41,9 +30,167 @@ const {
   "../../backend/data/vampire/virtues"
 );
 
+const {
+  validateAttributes,
+  validateAbilities,
+  validateDisciplines,
+  validateBackgrounds,
+  validateVirtues,
+} = require(
+  "../../backend/rules/vampire/lotnr/allocationRules"
+);
+
+const {
+  deriveGeneration,
+  deriveMorality,
+  deriveWillpower,
+  deriveBlood,
+} = require(
+  "../../backend/rules/vampire/lotnr/derivedRules"
+);
+
+const {
+  calculateFreeTraitBudget,
+} = require(
+  "../../backend/rules/vampire/lotnr/freeTraits"
+);
+
+const {
+  validateCharacterCreation,
+} = require(
+  "../../backend/rules/vampire/lotnr/validation"
+);
+
+
+function createCharacter(
+  overrides = {}
+) {
+  return {
+    sect:
+      "camarilla",
+
+    clan:
+      "brujah",
+
+    moralityPath:
+      DEFAULT_MORALITY_PATH,
+
+    virtues: {
+      conscience:
+        3,
+
+      selfControl:
+        3,
+
+      courage:
+        4,
+
+      conviction:
+        null,
+
+      instinct:
+        null,
+    },
+
+    creation: {
+      ...createEmptyCharacterCreationState(),
+
+      attributePriorities: {
+        primary:
+          "physical",
+
+        secondary:
+          "mental",
+
+        tertiary:
+          "social",
+      },
+
+      attributes: {
+        physical: [
+          "Brawny",
+          "Quick",
+          "Quick",
+          "Enduring",
+          "Athletic",
+          "Steady",
+          "Wiry",
+        ],
+
+        mental: [
+          "Alert",
+          "Observant",
+          "Disciplined",
+          "Determined",
+          "Clever",
+        ],
+
+        social: [
+          "Intimidating",
+          "Persuasive",
+          "Magnetic",
+        ],
+      },
+
+      abilities: {
+        brawl:
+          1,
+
+        firearms:
+          1,
+
+        dodge:
+          1,
+
+        empathy:
+          1,
+
+        streetwise:
+          1,
+      },
+
+      disciplines: {
+        celerity:
+          1,
+
+        potence:
+          1,
+
+        presence:
+          1,
+      },
+
+      backgrounds: {
+        generation:
+          0,
+
+        allies:
+          1,
+
+        contacts:
+          1,
+
+        resources:
+          1,
+
+        mentor:
+          1,
+
+        status:
+          1,
+      },
+
+      meritPoints:
+        5,
+    },
+
+    ...overrides,
+  };
+}
+
 
 test(
-  "Laws of the Night Revised ruleset defines core creation pools",
+  "ruleset defines Laws of the Night Revised core pools",
   () => {
     assert.equal(
       RULESET_ID,
@@ -97,8 +244,24 @@ test(
 
 
 test(
-  "Sabbat uses different initial Discipline and Background totals",
+  "Sabbat receives four Discipline Traits and no free Background Traits",
   () => {
+    assert.equal(
+      getInitialDisciplineTotal(
+        "sabbat"
+      ),
+      4
+    );
+
+
+    assert.equal(
+      getInitialBackgroundTotal(
+        "sabbat"
+      ),
+      0
+    );
+
+
     assert.equal(
       getInitialDisciplineTotal(
         "camarilla"
@@ -108,221 +271,729 @@ test(
 
 
     assert.equal(
-      getInitialDisciplineTotal(
-        "sabbat"
-      ),
-      4
-    );
-
-
-    assert.equal(
       getInitialBackgroundTotal(
         "camarilla"
       ),
       5
     );
-
-
-    assert.equal(
-      getInitialBackgroundTotal(
-        "sabbat"
-      ),
-      0
-    );
   }
 );
 
 
 test(
-  "rule summary resolves sect-specific creation values",
-  () => {
-    const rules =
-      getCharacterCreationRuleSummary(
-        "sabbat"
-      );
-
-
-    assert.equal(
-      rules.ruleset.id,
-      RULESET_ID
-    );
-
-
-    assert.equal(
-      rules.disciplines.total,
-      4
-    );
-
-
-    assert.equal(
-      rules.backgrounds.total,
-      0
-    );
-  }
-);
-
-
-test(
-  "point tracker reports remaining and overspending",
+  "generation table returns blood Willpower and limits",
   () => {
     assert.deepEqual(
-      createPointProgress({
-        total:
-          7,
-
-        spent:
-          4,
-      }),
-      {
-        total:
-          7,
-
-        spent:
-          4,
-
-        remaining:
-          3,
-
-        complete:
-          false,
-
-        overSpent:
-          false,
-      }
-    );
-
-
-    assert.deepEqual(
-      createPointProgress({
-        total:
-          5,
-
-        spent:
-          6,
-      }),
-      {
-        total:
-          5,
-
-        spent:
-          6,
-
-        remaining:
-          0,
-
-        complete:
-          false,
-
-        overSpent:
-          true,
-      }
-    );
-  }
-);
-
-
-test(
-  "unimplemented point sections do not pretend to have progress",
-  () => {
-    assert.deepEqual(
-      createUntrackedPointProgress(
-        15
+      getGenerationRules(
+        13
       ),
       {
-        total:
-          15,
+        generation:
+          13,
 
-        spent:
-          null,
+        maximumAttributeTraits:
+          10,
 
-        remaining:
-          null,
+        maximumAbilityLevel:
+          5,
 
-        complete:
-          false,
+        bloodMaximum:
+          10,
 
-        overSpent:
-          false,
+        bloodPerTurn:
+          1,
+
+        willpowerStart:
+          2,
+
+        willpowerMaximum:
+          6,
       }
     );
-  }
-);
-
-
-test(
-  "character creation progress tracks Virtues without faking unfinished sections",
-  () => {
-    const virtues =
-      getStartingVirtueValues(
-        DEFAULT_MORALITY_PATH
-      );
-
-
-    const progress =
-      getCharacterCreationProgress({
-        sect:
-          "camarilla",
-
-        moralityPath:
-          DEFAULT_MORALITY_PATH,
-
-        virtues,
-      });
 
 
     assert.equal(
-      progress.ruleset.id,
-      RULESET_ID
-    );
-
-
-    assert.equal(
-      progress.sections
-        .attributes
-        .implemented,
-      false
-    );
-
-
-    assert.equal(
-      progress.sections
-        .attributes
-        .points
-        .total,
+      getGenerationRules(
+        8
+      ).bloodMaximum,
       15
     );
 
 
     assert.equal(
-      progress.sections
-        .virtues
-        .implemented,
+      getGenerationRules(
+        8
+      ).bloodPerTurn,
+      3
+    );
+  }
+);
+
+
+test(
+  "Generation Background lowers generation from thirteen",
+  () => {
+    assert.equal(
+      deriveGeneration(
+        0
+      ).generation,
+      13
+    );
+
+
+    assert.equal(
+      deriveGeneration(
+        3
+      ).generation,
+      10
+    );
+
+
+    assert.equal(
+      deriveGeneration(
+        5
+      ).generation,
+      8
+    );
+  }
+);
+
+
+test(
+  "attribute priorities validate seven five three distribution",
+  () => {
+    const character =
+      createCharacter();
+
+
+    const generation =
+      deriveGeneration(
+        0
+      );
+
+
+    const attributes =
+      validateAttributes(
+        character.creation,
+        generation.rules
+      );
+
+
+    assert.equal(
+      attributes.points.total,
+      15
+    );
+
+
+    assert.equal(
+      attributes.points.spent,
+      15
+    );
+
+
+    assert.equal(
+      attributes.complete,
       true
     );
 
 
     assert.equal(
-      progress.sections
-        .virtues
-        .points
-        .total,
+      attributes.extraTraits,
+      0
+    );
+  }
+);
+
+
+test(
+  "additional Attributes are tracked as Free Trait spending",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .attributes
+      .social
+      .push(
+        "Commanding"
+      );
+
+
+    const generation =
+      deriveGeneration(
+        0
+      );
+
+
+    const attributes =
+      validateAttributes(
+        character.creation,
+        generation.rules
+      );
+
+
+    assert.equal(
+      attributes.complete,
+      true
+    );
+
+
+    assert.equal(
+      attributes.extraTraits,
+      1
+    );
+  }
+);
+
+
+test(
+  "Ability level cannot exceed generation maximum",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .abilities
+      .brawl =
+        6;
+
+
+    const generation =
+      deriveGeneration(
+        0
+      );
+
+
+    const abilities =
+      validateAbilities(
+        character.creation,
+        generation.rules
+      );
+
+
+    assert.equal(
+      abilities.errors.length >
+        0,
+      true
+    );
+  }
+);
+
+
+test(
+  "Ability specializations require the Ability",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .specializations = {
+        occult:
+          "Vampires",
+      };
+
+
+    const generation =
+      deriveGeneration(
+        0
+      );
+
+
+    const abilities =
+      validateAbilities(
+        character.creation,
+        generation.rules
+      );
+
+
+    assert.equal(
+      abilities.errors.length,
+      1
+    );
+  }
+);
+
+
+test(
+  "out of clan Discipline is marked for approval",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .disciplines = {
+        celerity:
+          1,
+
+        potence:
+          1,
+
+        thaumaturgy:
+          1,
+      };
+
+
+    const disciplines =
+      validateDisciplines(
+        character,
+        character.creation
+      );
+
+
+    assert.deepEqual(
+      disciplines
+        .requiresApproval,
+      [
+        "thaumaturgy",
+      ]
+    );
+
+
+    assert.equal(
+      disciplines.complete,
+      true
+    );
+  }
+);
+
+
+test(
+  "Background Generation obeys five Trait maximum",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .backgrounds
+      .generation =
+        6;
+
+
+    const backgrounds =
+      validateBackgrounds(
+        character,
+        character.creation
+      );
+
+
+    assert.equal(
+      backgrounds.errors.length >
+        0,
+      true
+    );
+  }
+);
+
+
+test(
+  "Humanity is average of Conscience and Self Control rounded up",
+  () => {
+    assert.equal(
+      calculateStartingMorality(
+        DEFAULT_MORALITY_PATH,
+        {
+          conscience:
+            2,
+
+          selfControl:
+            3,
+        }
+      ),
+      3
+    );
+
+
+    assert.equal(
+      calculateStartingMorality(
+        DEFAULT_MORALITY_PATH,
+        {
+          conscience:
+            4,
+
+          selfControl:
+            2,
+        }
+      ),
+      3
+    );
+  }
+);
+
+
+test(
+  "Virtue allocation supports seven base Traits and Free Trait extras",
+  () => {
+    const character =
+      createCharacter();
+
+
+    const virtues =
+      validateVirtues(
+        character
+      );
+
+
+    assert.equal(
+      virtues.distributed,
       7
     );
 
 
     assert.equal(
-      progress.sections
-        .virtues
-        .points
-        .spent,
+      virtues.extraTraits,
       0
     );
 
 
     assert.equal(
-      progress.summary
-        .implementedSections,
+      virtues.complete,
+      true
+    );
+
+
+    character.virtues.courage =
+      5;
+
+
+    const withExtra =
+      validateVirtues(
+        character
+      );
+
+
+    assert.equal(
+      withExtra.extraTraits,
       1
+    );
+  }
+);
+
+
+test(
+  "Willpower begins and caps according to generation",
+  () => {
+    const generation =
+      deriveGeneration(
+        3
+      );
+
+
+    const base =
+      deriveWillpower(
+        generation.rules,
+        {
+          willpowerBonus:
+            0,
+        }
+      );
+
+
+    assert.equal(
+      base.start,
+      4
+    );
+
+
+    assert.equal(
+      base.maximum,
+      10
+    );
+
+
+    const invalid =
+      deriveWillpower(
+        generation.rules,
+        {
+          willpowerBonus:
+            7,
+        }
+      );
+
+
+    assert.equal(
+      invalid.valid,
+      false
+    );
+  }
+);
+
+
+test(
+  "Blood Pool and Blood per turn come from generation",
+  () => {
+    const generation =
+      deriveGeneration(
+        4
+      );
+
+
+    const blood =
+      deriveBlood(
+        generation.rules,
+        {
+          bloodCurrent:
+            14,
+        }
+      );
+
+
+    assert.equal(
+      generation.generation,
+      9
+    );
+
+
+    assert.equal(
+      blood.maximum,
+      14
+    );
+
+
+    assert.equal(
+      blood.perTurn,
+      2
+    );
+
+
+    assert.equal(
+      blood.valid,
+      true
+    );
+  }
+);
+
+
+test(
+  "Free Trait engine calculates sources costs and remainder",
+  () => {
+    const character =
+      createCharacter();
+
+
+    const generation =
+      deriveGeneration(
+        0
+      );
+
+
+    const attributes =
+      validateAttributes(
+        character.creation,
+        generation.rules
+      );
+
+
+    const abilities =
+      validateAbilities(
+        character.creation,
+        generation.rules
+      );
+
+
+    const disciplines =
+      validateDisciplines(
+        character,
+        character.creation
+      );
+
+
+    const backgrounds =
+      validateBackgrounds(
+        character,
+        character.creation
+      );
+
+
+    const virtues =
+      validateVirtues(
+        character
+      );
+
+
+    const morality =
+      deriveMorality(
+        character,
+        character.creation
+      );
+
+
+    const willpower =
+      deriveWillpower(
+        generation.rules,
+        character.creation
+      );
+
+
+    const freeTraits =
+      calculateFreeTraitBudget({
+        creation:
+          character.creation,
+
+        attributes,
+        abilities,
+        disciplines,
+        backgrounds,
+        virtues,
+        morality,
+        willpower,
+      });
+
+
+    assert.equal(
+      freeTraits.available,
+      5
+    );
+
+
+    assert.equal(
+      freeTraits.spent,
+      5
+    );
+
+
+    assert.equal(
+      freeTraits.remaining,
+      0
+    );
+
+
+    assert.equal(
+      freeTraits.complete,
+      true
+    );
+  }
+);
+
+
+test(
+  "selling one Morality Trait adds two Free Traits",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .moralityAdjustment =
+        -1;
+
+
+    const result =
+      validateCharacterCreation(
+        character
+      );
+
+
+    assert.equal(
+      result
+        .sections
+        .morality
+        .sacrificedTraits,
+      1
+    );
+
+
+    assert.equal(
+      result
+        .freeTraits
+        .sources
+        .moralitySacrifice,
+      2
+    );
+  }
+);
+
+
+test(
+  "complete character creation passes central validation",
+  () => {
+    const result =
+      validateCharacterCreation(
+        createCharacter()
+      );
+
+
+    assert.equal(
+      result
+        .validation
+        .valid,
+      true
+    );
+
+
+    assert.equal(
+      result
+        .validation
+        .complete,
+      true
+    );
+
+
+    assert.deepEqual(
+      result
+        .validation
+        .incompleteSections,
+      []
+    );
+  }
+);
+
+
+test(
+  "incomplete character reports exact sections",
+  () => {
+    const character =
+      createCharacter();
+
+
+    character.creation
+      .attributes
+      .physical =
+        [];
+
+
+    character.creation
+      .abilities =
+        {};
+
+
+    const result =
+      validateCharacterCreation(
+        character
+      );
+
+
+    assert.equal(
+      result
+        .validation
+        .complete,
+      false
+    );
+
+
+    assert.equal(
+      result
+        .validation
+        .incompleteSections
+        .includes(
+          "attributes"
+        ),
+      true
+    );
+
+
+    assert.equal(
+      result
+        .validation
+        .incompleteSections
+        .includes(
+          "abilities"
+        ),
+      true
     );
   }
 );

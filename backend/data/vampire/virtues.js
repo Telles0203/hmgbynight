@@ -7,7 +7,7 @@ const {
 const {
   CHARACTER_CREATION_RULES,
 } = require(
-  "../../rules/vampire/lawsOfTheNightRevised"
+  "../../rules/vampire/lotnr/ruleset"
 );
 
 
@@ -16,7 +16,9 @@ const VIRTUE_MIN =
 
 
 const VIRTUE_MAX =
-  5;
+  CHARACTER_CREATION_RULES
+    .virtues
+    .maximumPerVirtue;
 
 
 const VIRTUE_CREATION_BUDGET =
@@ -360,8 +362,15 @@ function getVirtueCreationProgress(
     remaining,
 
     complete:
-      spent ===
+      spent >=
       VIRTUE_CREATION_BUDGET,
+
+    extra:
+      Math.max(
+        0,
+        spent -
+          VIRTUE_CREATION_BUDGET
+      ),
   };
 }
 

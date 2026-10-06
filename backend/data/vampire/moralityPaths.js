@@ -1,45 +1,14 @@
-// =============================================
-// Vampire Morality Paths
-//
-// Catálogo base de Trilhas de Moralidade.
-//
-// As Crônicas NÃO devem copiar esta lista.
-//
-// Futuramente poderão armazenar somente:
-// - opções padrão desativadas;
-// - opções próprias;
-// - regras adicionais de aprovação.
-//
-// OWBN:
-// Moralidade utiliza escala de 10 pontos.
-//
-// A Moralidade INICIAL é igual à soma das
-// Virtudes correspondentes:
-//
-// Consciência / Convicção
-// +
-// Autocontrole / Instinto
-//
-// Depois da criação, a Moralidade possui
-// progressão própria e não deve continuar
-// sendo recalculada automaticamente.
-// =============================================
-
-
 const CORE_MORALITY_PATH_PREFIX =
   "core:";
 
 
 const MORALITY_MIN =
-  0;
+  1;
+
 
 const MORALITY_MAX =
-  10;
+  5;
 
-
-// =============================================
-// Core morality paths
-// =============================================
 
 const MORALITY_PATH_OPTIONS = [
   {
@@ -61,7 +30,6 @@ const MORALITY_PATH_OPTIONS = [
     ],
   },
 
-
   {
     key:
       "sangue",
@@ -80,7 +48,6 @@ const MORALITY_PATH_OPTIONS = [
       "selfControl",
     ],
   },
-
 
   {
     key:
@@ -101,7 +68,6 @@ const MORALITY_PATH_OPTIONS = [
     ],
   },
 
-
   {
     key:
       "metamorfose",
@@ -120,7 +86,6 @@ const MORALITY_PATH_OPTIONS = [
       "instinct",
     ],
   },
-
 
   {
     key:
@@ -141,7 +106,6 @@ const MORALITY_PATH_OPTIONS = [
     ],
   },
 
-
   {
     key:
       "paradoxo",
@@ -160,7 +124,6 @@ const MORALITY_PATH_OPTIONS = [
       "selfControl",
     ],
   },
-
 
   {
     key:
@@ -183,14 +146,12 @@ const MORALITY_PATH_OPTIONS = [
 ];
 
 
-// =============================================
-// Lookup
-// =============================================
-
 const MORALITY_PATH_BY_REF =
   new Map(
     MORALITY_PATH_OPTIONS.map(
-      (option) => [
+      (
+        option
+      ) => [
         option.ref,
         option,
       ]
@@ -198,24 +159,17 @@ const MORALITY_PATH_BY_REF =
   );
 
 
-// =============================================
-// Default
-// =============================================
-
 const DEFAULT_MORALITY_PATH =
   "core:humanidade";
 
-
-// =============================================
-// Helpers
-// =============================================
 
 function isCoreMoralityPathRef(
   value
 ) {
   return MORALITY_PATH_BY_REF.has(
     String(
-      value || ""
+      value ||
+      ""
     )
   );
 }
@@ -227,7 +181,8 @@ function getCoreMoralityPathByRef(
   return (
     MORALITY_PATH_BY_REF.get(
       String(
-        value || ""
+        value ||
+        ""
       )
     ) ||
     null
@@ -249,7 +204,9 @@ function getCoreMoralityPathLabel(
 
 function getCoreMoralityPaths() {
   return MORALITY_PATH_OPTIONS.map(
-    (option) => ({
+    (
+      option
+    ) => ({
       ...option,
 
       moralityVirtues: [
@@ -261,20 +218,6 @@ function getCoreMoralityPaths() {
 }
 
 
-// =============================================
-// Starting Morality
-//
-// Utilizaremos quando as Virtudes forem
-// implementadas.
-//
-// Exemplo:
-//
-// Consciência 3
-// Autocontrole 4
-//
-// Moralidade inicial = 7
-// =============================================
-
 function calculateStartingMorality(
   moralityPathRef,
   virtues = {}
@@ -285,7 +228,9 @@ function calculateStartingMorality(
     );
 
 
-  if (!path) {
+  if (
+    !path
+  ) {
     return null;
   }
 
@@ -325,9 +270,14 @@ function calculateStartingMorality(
   }
 
 
-  const total =
-    firstValue +
-    secondValue;
+  const average =
+    Math.ceil(
+      (
+        firstValue +
+        secondValue
+      ) /
+      2
+    );
 
 
   return Math.min(
@@ -335,15 +285,11 @@ function calculateStartingMorality(
 
     Math.max(
       MORALITY_MIN,
-      total
+      average
     )
   );
 }
 
-
-// =============================================
-// Exports
-// =============================================
 
 module.exports = {
   CORE_MORALITY_PATH_PREFIX,
