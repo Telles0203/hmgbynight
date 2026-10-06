@@ -25,6 +25,11 @@ import {
   readSingleNumberCreationSection,
 } from "./form/characterCreationAdjustmentForm.js";
 
+import {
+  createWillpowerCreationEditor,
+  readWillpowerCreationSection,
+} from "./form/characterCreationWillpowerForm.js";
+
 
 export function createCharacterCreationSectionEditor(
   character,
@@ -118,25 +123,9 @@ export function createCharacterCreationSectionEditor(
     section ===
     "willpower"
   ) {
-    return createSingleNumberCreationEditor(
+    return createWillpowerCreationEditor(
       character,
-      state,
-      {
-        section:
-          "willpower",
-
-        field:
-          "willpowerBonus",
-
-        title:
-          "Força de Vontade",
-
-        minimum:
-          0,
-
-        maximum:
-          20,
-      }
+      state
     );
   }
 
@@ -254,10 +243,9 @@ export function readCharacterCreationSection(
     section ===
     "willpower"
   ) {
-    return readSingleNumberCreationSection(
+    return readWillpowerCreationSection(
       form,
-      state,
-      "willpowerBonus"
+      state
     );
   }
 

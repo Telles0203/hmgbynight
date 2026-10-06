@@ -28,6 +28,12 @@ const {
 );
 
 const {
+  getCreationBlockingError,
+} = require(
+  "./characterCreationValidation"
+);
+
+const {
   findOwnedCharacterForEdit,
   persistCharacterChanges,
   respondCharacterEditFailure,
@@ -166,6 +172,29 @@ async function updateCharacterCreation(
       validateCharacterCreation(
         proposedCharacter
       );
+
+
+    const blockingError =
+      getCreationBlockingError(
+        validation
+      );
+
+
+    if (
+      blockingError
+    ) {
+      return res
+        .status(
+          400
+        )
+        .json({
+          ok:
+            false,
+
+          error:
+            blockingError,
+        });
+    }
 
 
     const persisted =

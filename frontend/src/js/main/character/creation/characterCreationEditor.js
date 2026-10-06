@@ -14,6 +14,10 @@ import {
 } from "./characterCreationForm.js";
 
 import {
+  adjustWillpowerCreation,
+} from "./form/characterCreationWillpowerForm.js";
+
+import {
   refreshCharacterCreationView,
 } from "./characterCreationViewRefresh.js";
 
@@ -94,6 +98,27 @@ function handleDocumentClick(
 
 
     cancelEditor();
+
+
+    return;
+  }
+
+
+  const willpowerButton =
+    target.closest(
+      "[data-character-creation-willpower-action]"
+    );
+
+
+  if (
+    willpowerButton
+  ) {
+    event.preventDefault();
+
+
+    adjustWillpowerCreation(
+      willpowerButton
+    );
 
 
     return;
