@@ -1,13 +1,21 @@
-const CHARACTER_STATES = {
-  building: {
+const {
+  CHARACTER_SHEET_LIFECYCLES,
+  normalizeCharacterSheetLifecycle,
+} = require(
+  "../../data/characterSheetLifecycle"
+);
+
+
+const CHRONICLE_STATES = {
+  none: {
     key:
-      "building",
+      "none",
 
     label:
-      "EM CONSTRUÇÃO INICIAL",
+      "SEM CRÔNICA",
 
     description:
-      "Este personagem ainda está sendo montado. Enquanto não for aprovado por uma Crônica, sua ficha pode ser alterada livremente utilizando os pontos de criação inicial.",
+      "Este personagem ainda não está vinculado a uma Crônica.",
   },
 
   pending: {
@@ -18,31 +26,79 @@ const CHARACTER_STATES = {
       "VÍNCULO PENDENTE",
 
     description:
-      "Este personagem solicitou vínculo com uma Crônica, mas ainda não foi aprovado. Enquanto aguarda a aprovação, sua ficha continua editável.",
+      "Este personagem solicitou vínculo com uma Crônica e aguarda aprovação.",
   },
 
-  approved: {
+  linked: {
     key:
-      "approved",
+      "linked",
 
     label:
-      "APROVADO",
+      "CRÔNICA VINCULADA",
 
     description:
-      "Este personagem foi aprovado pela Crônica. Alterações que afetam a ficha não podem mais ser feitas diretamente pelo jogador.",
+      "Este personagem já está vinculado a uma Crônica.",
   },
 };
 
 
-function getCharacterLifecycleStatus(
+const SHEET_STATES = {
+  [
+    CHARACTER_SHEET_LIFECYCLES
+      .INITIAL_DISTRIBUTION_PENDING
+  ]: {
+    key:
+      CHARACTER_SHEET_LIFECYCLES
+        .INITIAL_DISTRIBUTION_PENDING,
+
+    label:
+      "PONTOS DE ATENÇÃO",
+
+    description:
+      "Ficha aguardando distribuição inicial de pontos. A criação inicial deste personagem ainda não foi concluída. Os pontos e campos obrigatórios da ficha ainda precisam ser finalizados.",
+  },
+
+  [
+    CHARACTER_SHEET_LIFECYCLES
+      .INITIAL_REVIEW_PENDING
+  ]: {
+    key:
+      CHARACTER_SHEET_LIFECYCLES
+        .INITIAL_REVIEW_PENDING,
+
+    label:
+      "FICHA INICIAL AGUARDANDO APROVAÇÃO DA CRÔNICA",
+
+    description:
+      "A distribuição inicial foi enviada para a Crônica e aguarda análise da Narração.",
+  },
+
+  [
+    CHARACTER_SHEET_LIFECYCLES
+      .ACTIVE
+  ]: {
+    key:
+      CHARACTER_SHEET_LIFECYCLES
+        .ACTIVE,
+
+    label:
+      "FICHA ATIVA",
+
+    description:
+      "A criação inicial deste personagem foi concluída.",
+  },
+};
+
+
+function getChronicleLinkStatus(
   character
 ) {
   if (
     character?.motherHouse
   ) {
     return {
-      ...CHARACTER_STATES
-        .approved,
+      ...CHRONICLE_STATES
+        .linked,
     };
   }
 
@@ -52,33 +108,182 @@ function getCharacterLifecycleStatus(
       ?.pendingMotherHouse
   ) {
     return {
-      ...CHARACTER_STATES
+      ...CHRONICLE_STATES
         .pending,
     };
   }
 
 
   return {
-    ...CHARACTER_STATES
-      .building,
+    ...CHRONICLE_STATES
+      .none,
   };
+}
+
+
+function getCharacterSheetStatus(
+  character
+) {
+  const lifecycle =
+    normalizeCharacterSheetLifecycle(
+      character?.sheetLifecycle
+    );
+
+
+  return {
+    ...SHEET_STATES[
+      lifecycle
+    ],
+  };
+}
+
+
+function getCharacterLifecycleStatus(
+  character
+) {
+  return getChronicleLinkStatus(
+    character
+  );
+}
+
+
+function canEditCharacterSheet(
+  character
+) {
+  const lifecycle =
+    normalizeCharacterSheetLifecycle(
+      character?.sheetLifecycle
+    );
+
+
+  return (
+    lifecycle ===
+    CHARACTER_SHEET_LIFECYCLES
+      .INITIAL_DISTRIBUTION_PENDING
+  );
 }
 
 
 function canDirectlyEditCharacter(
   character
 ) {
-  return !Boolean(
-    character?.motherHouse
+  return (
+    canEditCharacterSheet(
+      character
+    ) &&
+    !character?.motherHouse
   );
+}
+
+
+function requiresChronicleApproval(
+  character
+) {
+  return (
+    canEditCharacterSheet(
+      character
+    ) &&
+    Boolean(
+      character?.motherHouse
+    )
+  );
+}
+
+
+function getEditMode(
+  character
+) {
+  if (
+    canDirectlyEditCharacter(
+      character
+    )
+  ) {
+    return "direct";
+  }
+
+
+  if (
+    requiresChronicleApproval(
+      character
+    )
+  ) {
+    return "approval_draft";
+  }
+
+
+  return "locked";
+}
+
+
+function getEditReason(
+  character
+) {
+  const lifecycle =
+    normalizeCharacterSheetLifecycle(
+      character?.sheetLifecycle
+    );
+
+
+  if (
+    lifecycle ===
+    CHARACTER_SHEET_LIFECYCLES
+      .INITIAL_REVIEW_PENDING
+  ) {
+    return "initial_review_pending";
+  }
+
+
+  if (
+    lifecycle ===
+    CHARACTER_SHEET_LIFECYCLES
+      .ACTIVE
+  ) {
+    return "sheet_active";
+  }
+
+
+  if (
+    character?.motherHouse
+  ) {
+    return "chronicle_approval_required";
+  }
+
+
+  if (
+    character
+      ?.pendingMotherHouse
+  ) {
+    return "pending_chronicle_link";
+  }
+
+
+  return "initial_distribution";
 }
 
 
 function serializeCharacterState(
   character
 ) {
-  const status =
-    getCharacterLifecycleStatus(
+  const sheetLifecycle =
+    normalizeCharacterSheetLifecycle(
+      character?.sheetLifecycle
+    );
+
+
+  const sheetStatus =
+    getCharacterSheetStatus(
+      character
+    );
+
+
+  const chronicleStatus =
+    getChronicleLinkStatus(
+      character
+    );
+
+
+  const canEdit =
+    canEditCharacterSheet(
       character
     );
 
@@ -89,45 +294,62 @@ function serializeCharacterState(
     );
 
 
+  const approvalRequired =
+    requiresChronicleApproval(
+      character
+    );
+
+
   return {
-    status,
+    sheetLifecycle,
+
+    sheetStatus,
+
+    chronicleStatus,
+
+    status:
+      chronicleStatus,
 
     editState: {
+      canEdit,
+
       directEdit,
 
       requiresChronicleApproval:
-        !directEdit,
+        approvalRequired,
+
+      mode:
+        getEditMode(
+          character
+        ),
 
       reason:
-        status.key ===
-          "approved"
-          ? "chronicle_approval_required"
-          : status.key ===
-              "pending"
-            ? "pending_chronicle_link"
-            : "initial_creation",
+        getEditReason(
+          character
+        ),
 
       fields: {
         title:
-          directEdit,
+          canEdit,
 
         clan:
-          directEdit,
+          canEdit,
 
         concept:
-          directEdit,
+          canEdit,
 
         nature:
-          directEdit,
+          canEdit,
 
         demeanor:
-          directEdit,
+          canEdit,
 
         virtues:
-          directEdit,
+          canEdit,
 
         chronicle:
-          directEdit,
+          canEdit &&
+          !character?.motherHouse,
       },
     },
   };
@@ -135,7 +357,11 @@ function serializeCharacterState(
 
 
 module.exports = {
+  getChronicleLinkStatus,
+  getCharacterSheetStatus,
   getCharacterLifecycleStatus,
+  canEditCharacterSheet,
   canDirectlyEditCharacter,
+  requiresChronicleApproval,
   serializeCharacterState,
 };

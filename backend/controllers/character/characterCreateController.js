@@ -41,6 +41,12 @@ const {
 );
 
 const {
+  DEFAULT_CHARACTER_SHEET_LIFECYCLE,
+} = require(
+  "../../data/characterSheetLifecycle"
+);
+
+const {
   CHARACTER_NAME_MIN_LENGTH,
   CHARACTER_NAME_MAX_LENGTH,
   serializeHouse,
@@ -228,6 +234,9 @@ async function createCharacter(
         type:
           "PC",
 
+        sheetLifecycle:
+          DEFAULT_CHARACTER_SHEET_LIFECYCLE,
+
         concept:
           "",
 
@@ -356,6 +365,15 @@ async function createCharacter(
             serializeHouse(
               requestedHouse
             ),
+
+          sheetLifecycle:
+            state.sheetLifecycle,
+
+          sheetStatus:
+            state.sheetStatus,
+
+          chronicleStatus:
+            state.chronicleStatus,
 
           status:
             state.status,

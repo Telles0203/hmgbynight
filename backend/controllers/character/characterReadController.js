@@ -124,7 +124,7 @@ async function listCharacters(
       })
 
         .select(
-          "name title concept nature demeanor moralityPath moralityRating virtues type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name title sheetLifecycle concept nature demeanor moralityPath moralityRating virtues type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -157,7 +157,9 @@ async function listCharacters(
 
       characters:
         characters.map(
-          (character) => {
+          (
+            character
+          ) => {
             const nature =
               serializeArchetype(
                 character.nature
@@ -263,6 +265,15 @@ async function listCharacters(
                   character
                     .pendingMotherHouse
                 ),
+
+              sheetLifecycle:
+                state.sheetLifecycle,
+
+              sheetStatus:
+                state.sheetStatus,
+
+              chronicleStatus:
+                state.chronicleStatus,
 
               status:
                 state.status,
@@ -378,7 +389,9 @@ async function getCharacterArchetypes(
 
       archetypes:
         archetypes.map(
-          (archetype) => ({
+          (
+            archetype
+          ) => ({
             ref:
               archetype.ref,
 

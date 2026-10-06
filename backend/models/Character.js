@@ -38,6 +38,13 @@ const {
   "../data/characterLimits"
 );
 
+const {
+  CHARACTER_SHEET_LIFECYCLE_VALUES,
+  DEFAULT_CHARACTER_SHEET_LIFECYCLE,
+} = require(
+  "../data/characterSheetLifecycle"
+);
+
 
 const validSects =
   SECT_OPTIONS.map(
@@ -98,6 +105,20 @@ const CharacterSchema =
           "PC",
           "NPC",
         ],
+      },
+
+      sheetLifecycle: {
+        type:
+          String,
+
+        enum:
+          CHARACTER_SHEET_LIFECYCLE_VALUES,
+
+        default:
+          DEFAULT_CHARACTER_SHEET_LIFECYCLE,
+
+        index:
+          true,
       },
 
       concept: {
@@ -381,13 +402,16 @@ CharacterSchema.pre(
       this.virtues
         ?.conscience;
 
+
     const conviction =
       this.virtues
         ?.conviction;
 
+
     const selfControl =
       this.virtues
         ?.selfControl;
+
 
     const instinct =
       this.virtues

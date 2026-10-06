@@ -1,13 +1,20 @@
 import {
-  createCharacterSheet,
-} from "./view/characterSheet.js";
-
-import {
   toggleCharacterView,
 } from "./view/characterView.js";
 
 import {
-  createCharacterDeleteControls,
+  createCharacterCard,
+  createCharacterStatuses,
+  getCharacterHouseSummary,
+  setupCharacterPopovers,
+} from "./view/characterCard.js";
+
+import {
+  createCharacterCreationNotice,
+  setupCharacterCreationNotice,
+} from "./characterCreationNotice.js";
+
+import {
   handleCharacterDeleteClick,
   setupCharacterDeleteModal,
 } from "./characterDelete.js";
@@ -29,20 +36,9 @@ import {
 } from "./characterVirtues.js";
 
 
-// =============================================
-// Character creation notice
-// =============================================
-
-const CHARACTER_CREATION_NOTICE_KEY =
-  "bynight_character_creation_notice";
-
-
-// =============================================
-// ByNight Main
-// =============================================
-
 window.ByNightMain =
   window.ByNightMain || {};
+
 
 window.ByNightMain.character =
   window.ByNightMain.character || {
@@ -53,10 +49,6 @@ window.ByNightMain.character =
       [],
   };
 
-
-// =============================================
-// Load characters
-// =============================================
 
 async function loadCharacters() {
   try {
@@ -79,7 +71,9 @@ async function loadCharacters() {
     const data =
       await response
         .json()
-        .catch(() => ({}));
+        .catch(
+          () => ({})
+        );
 
 
     if (
@@ -88,7 +82,7 @@ async function loadCharacters() {
     ) {
       throw new Error(
         data?.error ||
-          "Não foi possível carregar os personagens."
+        "Não foi possível carregar os personagens."
       );
     }
 
@@ -129,10 +123,6 @@ async function loadCharacters() {
 }
 
 
-// =============================================
-// Render
-// =============================================
-
 function renderCharacters(
   characters
 ) {
@@ -161,10 +151,6 @@ function renderCharacters(
     handleCharacterHouseRequestCompleted
   );
 
-
-  // =============================================
-  // Empty
-  // =============================================
 
   if (
     characters.length ===
@@ -203,14 +189,12 @@ function renderCharacters(
   }
 
 
-  // =============================================
-  // Cards
-  // =============================================
-
   const cards =
     characters
       .map(
-        (character) =>
+        (
+          character
+        ) =>
           createCharacterCard(
             character
           )
@@ -240,7 +224,6 @@ function renderCharacters(
         + Criar personagem
       </button>
 
-
       <p class="character-delete-note">
         Personagens vinculados a uma Crônica
         não podem ser excluídos por esta tela.
@@ -267,648 +250,6 @@ function renderCharacters(
 }
 
 
-// =============================================
-// Creation notice preference
-// =============================================
-
-function isCharacterCreationNoticeHidden() {
-  try {
-    return (
-      localStorage.getItem(
-        CHARACTER_CREATION_NOTICE_KEY
-      ) ===
-      "hidden"
-    );
-
-  } catch (error) {
-    console.warn(
-      "[CHARACTER] Não foi possível consultar a preferência do aviso de criação:",
-      error
-    );
-
-
-    return false;
-  }
-}
-
-
-function saveCharacterCreationNoticeHidden() {
-  try {
-    localStorage.setItem(
-      CHARACTER_CREATION_NOTICE_KEY,
-      "hidden"
-    );
-
-
-    return true;
-
-  } catch (error) {
-    console.warn(
-      "[CHARACTER] Não foi possível salvar a preferência do aviso de criação:",
-      error
-    );
-
-
-    return false;
-  }
-}
-
-
-// =============================================
-// Creation notice
-// =============================================
-
-function createCharacterCreationNotice() {
-  if (
-    isCharacterCreationNoticeHidden()
-  ) {
-    return "";
-  }
-
-
-  return `
-    <div
-      id="characterCreationNotice"
-      class="
-        alert
-        alert-dark
-        character-creation-notice
-        border
-        border-secondary
-        small
-        mb-3
-      "
-      role="note"
-    >
-
-      <div
-        class="fw-semibold text-light mb-1"
-      >
-        Criação de personagem
-      </div>
-
-
-      <div
-        class="text-secondary"
-      >
-        Enquanto um personagem não for aprovado
-        por uma Crônica, ele permanece em criação inicial.
-        Monte a ficha utilizando apenas os pontos previstos
-        para a criação do personagem.
-        Pontos de Experiência e evoluções ficam indisponíveis
-        até a aprovação.
-      </div>
-
-
-      <div
-        class="character-creation-notice-footer"
-      >
-
-        <label
-          class="character-creation-notice-check"
-          for="characterCreationNoticeConfirm"
-        >
-
-          <input
-            id="characterCreationNoticeConfirm"
-            class="form-check-input"
-            type="checkbox"
-          >
-
-          <span>
-            Entendi este aviso
-          </span>
-
-        </label>
-
-
-        <button
-          id="hideCharacterCreationNotice"
-          type="button"
-          class="
-            btn
-            btn-sm
-            character-creation-notice-hide-button
-          "
-          disabled
-        >
-          Não mostrar mais
-        </button>
-
-      </div>
-
-    </div>
-  `;
-}
-
-
-// =============================================
-// Creation notice events
-// =============================================
-
-function setupCharacterCreationNotice(
-  container
-) {
-  const notice =
-    container.querySelector(
-      "#characterCreationNotice"
-    );
-
-
-  if (!notice) {
-    return;
-  }
-
-
-  const checkbox =
-    notice.querySelector(
-      "#characterCreationNoticeConfirm"
-    );
-
-
-  const hideButton =
-    notice.querySelector(
-      "#hideCharacterCreationNotice"
-    );
-
-
-  if (
-    !checkbox ||
-    !hideButton
-  ) {
-    return;
-  }
-
-
-  checkbox.addEventListener(
-    "change",
-    () => {
-      hideButton.disabled =
-        !checkbox.checked;
-    }
-  );
-
-
-  hideButton.addEventListener(
-    "click",
-    () => {
-      if (
-        !checkbox.checked
-      ) {
-        return;
-      }
-
-
-      saveCharacterCreationNoticeHidden();
-
-
-      notice.remove();
-    }
-  );
-}
-
-
-// =============================================
-// Bootstrap popovers
-// =============================================
-
-function setupCharacterPopovers(
-  container
-) {
-  if (
-    !window.bootstrap?.Popover
-  ) {
-    console.warn(
-      "[CHARACTER] Bootstrap Popover não disponível."
-    );
-
-    return;
-  }
-
-
-  const elements =
-    container.querySelectorAll(
-      '[data-bs-toggle="popover"]'
-    );
-
-
-  elements.forEach(
-    (element) => {
-      window.bootstrap.Popover
-        .getOrCreateInstance(
-          element
-        );
-    }
-  );
-}
-
-
-// =============================================
-// Character card
-// =============================================
-
-function createCharacterCard(
-  character
-) {
-  const id =
-    escapeCharacterHtml(
-      character.id
-    );
-
-
-  const name =
-    escapeCharacterHtml(
-      character.name
-    );
-
-
-  const clan =
-    escapeCharacterHtml(
-      character.clanDisplayName ||
-      character.clan ||
-      ""
-    );
-
-
-  const sect =
-    escapeCharacterHtml(
-      window.getSectLabel?.(
-        character.sect
-      ) ||
-      character.sect ||
-      ""
-    );
-
-
-  const hasHouse =
-    Boolean(
-      character.motherHouse
-    );
-
-
-  const houseSummary =
-    getCharacterHouseSummary(
-      character
-    );
-
-
-  const houseField =
-    createCharacterHouseField(
-      character
-    );
-
-
-  return `
-    <article
-      class="character-card"
-      data-character-id="${id}"
-    >
-
-      <div
-        class="character-card-header"
-      >
-
-        <div
-          class="character-card-identity"
-        >
-
-          <h3
-            class="character-card-name h6 text-light mb-1"
-          >
-            ${name}
-          </h3>
-
-
-          <div
-            class="character-status-slot mb-2"
-          >
-            ${createCharacterStatus(
-              character
-            )}
-          </div>
-
-
-          ${
-            clan
-              ? `
-                <div
-                  class="text-secondary small"
-                >
-                  ${clan}
-                </div>
-              `
-              : ""
-          }
-
-
-          <div
-            class="text-secondary small character-house-summary"
-          >
-            ${
-              sect
-                ? `${sect} · `
-                : ""
-            }${escapeCharacterHtml(
-              houseSummary
-            )}
-          </div>
-
-        </div>
-
-
-        ${
-          !hasHouse
-            ? createCharacterDeleteControls(
-                id
-              )
-            : ""
-        }
-
-
-        <button
-          type="button"
-          class="btn btn-outline-light btn-sm character-open-button"
-          data-character-id="${id}"
-        >
-          Abrir →
-        </button>
-
-      </div>
-
-
-      ${createCharacterSheet({
-        characterId:
-          character.id,
-
-        concept:
-          character.concept ||
-          "",
-
-        natureLabel:
-          character.natureLabel ||
-          "",
-
-        demeanorLabel:
-          character.demeanorLabel ||
-          "",
-
-        moralityPathLabel:
-          character.moralityPathLabel ||
-          "Humanidade",
-
-        moralityRating:
-          Number.isFinite(
-            character.moralityRating
-          )
-            ? character.moralityRating
-            : null,
-
-        activeVirtues:
-          Array.isArray(
-            character.activeVirtues
-          )
-            ? character.activeVirtues
-            : [],
-
-        virtuePoints:
-          character.virtuePoints ||
-          {
-            total:
-              7,
-
-            spent:
-              0,
-
-            remaining:
-              7,
-
-            complete:
-              false,
-          },
-
-        canEditVirtues:
-          !hasHouse,
-
-        clan,
-
-        sect,
-
-        house:
-          houseField,
-      })}
-
-    </article>
-  `;
-}
-
-
-// =============================================
-// Character status
-// =============================================
-
-function getCharacterStatus(
-  character
-) {
-  // =============================================
-  // Approved
-  // =============================================
-
-  if (
-    character.motherHouse
-  ) {
-    return {
-      key:
-        "approved",
-
-      label:
-        "APROVADO",
-
-      badgeClass:
-        "border border-success text-success bg-transparent",
-
-      description:
-        "Este personagem foi aprovado pela Crônica. A partir deste estado, XP, evoluções e alterações passam a seguir as regras e aprovações da Narração.",
-    };
-  }
-
-
-  // =============================================
-  // Pending Chronicle link
-  // =============================================
-
-  if (
-    character.pendingMotherHouse
-  ) {
-    return {
-      key:
-        "pending",
-
-      label:
-        "VÍNCULO PENDENTE",
-
-      badgeClass:
-        "border border-info text-info bg-transparent",
-
-      description:
-        "Este personagem solicitou vínculo com uma Crônica, mas ainda não foi aprovado. Até a aprovação, ele continua em criação inicial e pode ter sua ficha e a própria Crônica solicitada alteradas livremente.",
-    };
-  }
-
-
-  // =============================================
-  // Initial construction
-  // =============================================
-
-  return {
-    key:
-      "building",
-
-    label:
-      "EM CONSTRUÇÃO INICIAL",
-
-    badgeClass:
-      "border border-warning text-warning bg-transparent",
-
-    description:
-      "Este personagem ainda está sendo montado. Enquanto não for aprovado por uma Crônica, sua ficha pode ser alterada livremente utilizando os pontos de criação inicial. Pontos de Experiência e evoluções ainda não estão disponíveis.",
-  };
-}
-
-
-// =============================================
-// Character status markup
-// =============================================
-
-function createCharacterStatus(
-  character
-) {
-  const status =
-    getCharacterStatus(
-      character
-    );
-
-
-  const label =
-    escapeCharacterHtml(
-      status.label
-    );
-
-
-  const description =
-    escapeCharacterHtml(
-      status.description
-    );
-
-
-  return `
-    <div
-      class="
-        d-flex
-        align-items-center
-        flex-wrap
-        gap-1
-      "
-      data-character-status="${status.key}"
-    >
-
-      <span
-        class="
-          badge
-          rounded-pill
-          ${status.badgeClass}
-        "
-      >
-        ${label}
-      </span>
-
-
-      <button
-        type="button"
-        class="
-          btn
-          btn-sm
-          p-0
-          border-0
-          bg-transparent
-          text-secondary
-          character-status-help
-        "
-        data-bs-toggle="popover"
-        data-bs-trigger="focus"
-        data-bs-placement="top"
-        data-bs-title="Status do personagem"
-        data-bs-content="${description}"
-        aria-label="Explicação do status do personagem"
-        title="Explicação do status"
-      >
-        <span
-          class="
-            badge
-            rounded-circle
-            border
-            border-secondary
-            text-secondary
-            bg-transparent
-          "
-        >
-          ?
-        </span>
-      </button>
-
-    </div>
-  `;
-}
-
-
-// =============================================
-// Chronicle summary
-// =============================================
-
-function getCharacterHouseSummary(
-  character
-) {
-  // =============================================
-  // Approved Chronicle
-  // =============================================
-
-  if (
-    character.motherHouse
-  ) {
-    return (
-      character.motherHouse.name ||
-      "Crônica vinculada"
-    );
-  }
-
-
-  // =============================================
-  // Pending Chronicle
-  // =============================================
-
-  if (
-    character.pendingMotherHouse
-  ) {
-    return (
-      character
-        .pendingMotherHouse
-        .name ||
-      "Crônica solicitada"
-    );
-  }
-
-
-  // =============================================
-  // No Chronicle
-  // =============================================
-
-  return "Sem Crônica";
-}
-
-
-// =============================================
-// Chronicle request completed
-// =============================================
-
 async function handleCharacterHouseRequestCompleted({
   characterId,
   pendingMotherHouse,
@@ -926,13 +267,16 @@ async function handleCharacterHouseRequestCompleted({
   ) {
     await loadCharacters();
 
+
     return;
   }
 
 
   const character =
     characters.find(
-      (item) =>
+      (
+        item
+      ) =>
         String(
           item.id
         ) ===
@@ -945,24 +289,18 @@ async function handleCharacterHouseRequestCompleted({
   if (!character) {
     await loadCharacters();
 
+
     return;
   }
 
 
-  // =============================================
-  // Update local state
-  // =============================================
-
   character.motherHouse =
     null;
+
 
   character.pendingMotherHouse =
     pendingMotherHouse;
 
-
-  // =============================================
-  // Find card
-  // =============================================
 
   const card =
     document.querySelector(
@@ -977,13 +315,10 @@ async function handleCharacterHouseRequestCompleted({
   if (!card) {
     await loadCharacters();
 
+
     return;
   }
 
-
-  // =============================================
-  // Update status
-  // =============================================
 
   const statusSlot =
     card.querySelector(
@@ -993,15 +328,11 @@ async function handleCharacterHouseRequestCompleted({
 
   if (statusSlot) {
     statusSlot.innerHTML =
-      createCharacterStatus(
+      createCharacterStatuses(
         character
       );
   }
 
-
-  // =============================================
-  // Update Chronicle summary
-  // =============================================
 
   const summary =
     card.querySelector(
@@ -1037,10 +368,6 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Update Chronicle field
-  // =============================================
-
   const houseField =
     card.querySelector(
       ".character-house-field"
@@ -1055,19 +382,11 @@ async function handleCharacterHouseRequestCompleted({
   }
 
 
-  // =============================================
-  // Reinitialize new popover
-  // =============================================
-
   setupCharacterPopovers(
     card
   );
 }
 
-
-// =============================================
-// Events
-// =============================================
 
 function setupCharacterListEvents(
   container
@@ -1092,10 +411,6 @@ async function handleCharacterListClick(
     event.currentTarget;
 
 
-  // =============================================
-  // Inline fields
-  // =============================================
-
   if (
     await handleCharacterInlineEditClick(
       event,
@@ -1107,7 +422,8 @@ async function handleCharacterListClick(
 
 
   const target =
-    event.target instanceof Element
+    event.target instanceof
+      Element
       ? event.target
       : null;
 
@@ -1116,10 +432,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Virtues
-  // =============================================
 
   if (
     await handleCharacterVirtueClick(
@@ -1131,10 +443,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Status help
-  // =============================================
-
   if (
     target.closest(
       ".character-status-help"
@@ -1144,10 +452,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Generation help
-  // =============================================
-
   if (
     target.closest(
       ".character-generation-help"
@@ -1156,10 +460,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Delete
-  // =============================================
 
   const deleteAction =
     target.closest(
@@ -1197,10 +497,6 @@ async function handleCharacterListClick(
     return;
   }
 
-
-  // =============================================
-  // Chronicle
-  // =============================================
 
   const houseAction =
     target.closest(
@@ -1243,10 +539,6 @@ async function handleCharacterListClick(
   }
 
 
-  // =============================================
-  // Open / close character
-  // =============================================
-
   const openButton =
     target.closest(
       ".character-open-button"
@@ -1264,8 +556,7 @@ async function handleCharacterListClick(
 
 
   const characterId =
-    openButton
-      .dataset
+    openButton.dataset
       .characterId;
 
 
@@ -1288,10 +579,6 @@ async function handleCharacterListClick(
   );
 }
 
-
-// =============================================
-// Error
-// =============================================
 
 function renderCharacterError() {
   const container =
@@ -1326,10 +613,6 @@ function renderCharacterError() {
 }
 
 
-// =============================================
-// Escape
-// =============================================
-
 function escapeCharacterHtml(
   value
 ) {
@@ -1349,12 +632,9 @@ function escapeCharacterHtml(
 }
 
 
-// =============================================
-// Globals
-// =============================================
-
 window.loadCharacters =
   loadCharacters;
+
 
 window.renderCharacters =
   renderCharacters;

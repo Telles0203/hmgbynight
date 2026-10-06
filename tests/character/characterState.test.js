@@ -7,8 +7,18 @@ const assert = require(
 );
 
 const {
+  CHARACTER_SHEET_LIFECYCLES,
+} = require(
+  "../../backend/data/characterSheetLifecycle"
+);
+
+const {
+  getChronicleLinkStatus,
+  getCharacterSheetStatus,
   getCharacterLifecycleStatus,
+  canEditCharacterSheet,
   canDirectlyEditCharacter,
+  requiresChronicleApproval,
   serializeCharacterState,
 } = require(
   "../../backend/controllers/character/characterState"
@@ -16,70 +26,31 @@ const {
 
 
 test(
-  "character without Chronicle is in initial construction",
+  "legacy character defaults to initial distribution pending",
   () => {
-    const character = {
-      motherHouse:
-        null,
-
-      pendingMotherHouse:
-        null,
-    };
-
-
     const status =
-      getCharacterLifecycleStatus(
-        character
-      );
+      getCharacterSheetStatus({
+        motherHouse:
+          null,
+      });
 
 
     assert.equal(
       status.key,
-      "building"
+      CHARACTER_SHEET_LIFECYCLES
+        .INITIAL_DISTRIBUTION_PENDING
     );
 
 
     assert.equal(
       status.label,
-      "EM CONSTRUÇÃO INICIAL"
-    );
-  }
-);
-
-
-test(
-  "character with pending Chronicle remains directly editable",
-  () => {
-    const character = {
-      motherHouse:
-        null,
-
-      pendingMotherHouse:
-        "pending-house",
-    };
-
-
-    const status =
-      getCharacterLifecycleStatus(
-        character
-      );
-
-
-    assert.equal(
-      status.key,
-      "pending"
+      "PONTOS DE ATENÇÃO"
     );
 
 
     assert.equal(
-      status.label,
-      "VÍNCULO PENDENTE"
-    );
-
-
-    assert.equal(
-      canDirectlyEditCharacter(
-        character
+      status.description.includes(
+        "Ficha aguardando distribuição inicial de pontos"
       ),
       true
     );
@@ -88,56 +59,37 @@ test(
 
 
 test(
-  "approved character cannot be directly edited",
+  "character without Chronicle can edit initial sheet directly",
   () => {
     const character = {
+      sheetLifecycle:
+        CHARACTER_SHEET_LIFECYCLES
+          .INITIAL_DISTRIBUTION_PENDING,
+
       motherHouse:
-        "approved-house",
+        null,
 
       pendingMotherHouse:
         null,
     };
 
 
-    const status =
-      getCharacterLifecycleStatus(
+    const state =
+      serializeCharacterState(
         character
       );
 
 
     assert.equal(
-      status.key,
-      "approved"
+      state.chronicleStatus.key,
+      "none"
     );
 
 
     assert.equal(
-      status.label,
-      "APROVADO"
+      state.editState.canEdit,
+      true
     );
-
-
-    assert.equal(
-      canDirectlyEditCharacter(
-        character
-      ),
-      false
-    );
-  }
-);
-
-
-test(
-  "building character exposes editable creation fields",
-  () => {
-    const state =
-      serializeCharacterState({
-        motherHouse:
-          null,
-
-        pendingMotherHouse:
-          null,
-      });
 
 
     assert.equal(
@@ -147,37 +99,55 @@ test(
 
 
     assert.equal(
-      state.editState.fields.title,
+      state.editState.requiresChronicleApproval,
+      false
+    );
+
+
+    assert.equal(
+      state.editState.mode,
+      "direct"
+    );
+  }
+);
+
+
+test(
+  "pending Chronicle link does not block initial distribution",
+  () => {
+    const character = {
+      sheetLifecycle:
+        CHARACTER_SHEET_LIFECYCLES
+          .INITIAL_DISTRIBUTION_PENDING,
+
+      motherHouse:
+        null,
+
+      pendingMotherHouse:
+        "pending-house",
+    };
+
+
+    assert.equal(
+      getChronicleLinkStatus(
+        character
+      ).key,
+      "pending"
+    );
+
+
+    assert.equal(
+      canEditCharacterSheet(
+        character
+      ),
       true
     );
 
 
     assert.equal(
-      state.editState.fields.clan,
-      true
-    );
-
-
-    assert.equal(
-      state.editState.fields.concept,
-      true
-    );
-
-
-    assert.equal(
-      state.editState.fields.nature,
-      true
-    );
-
-
-    assert.equal(
-      state.editState.fields.demeanor,
-      true
-    );
-
-
-    assert.equal(
-      state.editState.fields.virtues,
+      canDirectlyEditCharacter(
+        character
+      ),
       true
     );
   }
@@ -185,16 +155,50 @@ test(
 
 
 test(
-  "approved character exposes protected creation fields",
+  "linked Chronicle requires approval draft during initial distribution",
   () => {
-    const state =
-      serializeCharacterState({
-        motherHouse:
-          "approved-house",
+    const character = {
+      sheetLifecycle:
+        CHARACTER_SHEET_LIFECYCLES
+          .INITIAL_DISTRIBUTION_PENDING,
 
-        pendingMotherHouse:
-          null,
-      });
+      motherHouse:
+        "approved-house",
+
+      pendingMotherHouse:
+        null,
+    };
+
+
+    const state =
+      serializeCharacterState(
+        character
+      );
+
+
+    assert.equal(
+      state.chronicleStatus.key,
+      "linked"
+    );
+
+
+    assert.equal(
+      state.sheetStatus.key,
+      CHARACTER_SHEET_LIFECYCLES
+        .INITIAL_DISTRIBUTION_PENDING
+    );
+
+
+    assert.equal(
+      state.sheetStatus.label,
+      "PONTOS DE ATENÇÃO"
+    );
+
+
+    assert.equal(
+      state.editState.canEdit,
+      true
+    );
 
 
     assert.equal(
@@ -210,26 +214,150 @@ test(
 
 
     assert.equal(
+      state.editState.mode,
+      "approval_draft"
+    );
+
+
+    assert.equal(
       state.editState.fields.title,
-      false
-    );
-
-
-    assert.equal(
-      state.editState.fields.clan,
-      false
-    );
-
-
-    assert.equal(
-      state.editState.fields.concept,
-      false
+      true
     );
 
 
     assert.equal(
       state.editState.fields.virtues,
+      true
+    );
+  }
+);
+
+
+test(
+  "initial review pending locks direct creation editing",
+  () => {
+    const character = {
+      sheetLifecycle:
+        CHARACTER_SHEET_LIFECYCLES
+          .INITIAL_REVIEW_PENDING,
+
+      motherHouse:
+        "approved-house",
+    };
+
+
+    const state =
+      serializeCharacterState(
+        character
+      );
+
+
+    assert.equal(
+      state.sheetStatus.key,
+      CHARACTER_SHEET_LIFECYCLES
+        .INITIAL_REVIEW_PENDING
+    );
+
+
+    assert.equal(
+      state.editState.canEdit,
       false
+    );
+
+
+    assert.equal(
+      state.editState.directEdit,
+      false
+    );
+
+
+    assert.equal(
+      state.editState.mode,
+      "locked"
+    );
+  }
+);
+
+
+test(
+  "active sheet is no longer in initial creation editing mode",
+  () => {
+    const character = {
+      sheetLifecycle:
+        CHARACTER_SHEET_LIFECYCLES
+          .ACTIVE,
+
+      motherHouse:
+        null,
+    };
+
+
+    const state =
+      serializeCharacterState(
+        character
+      );
+
+
+    assert.equal(
+      state.sheetStatus.key,
+      CHARACTER_SHEET_LIFECYCLES
+        .ACTIVE
+    );
+
+
+    assert.equal(
+      state.editState.canEdit,
+      false
+    );
+
+
+    assert.equal(
+      state.editState.directEdit,
+      false
+    );
+
+
+    assert.equal(
+      state.editState.reason,
+      "sheet_active"
+    );
+  }
+);
+
+
+test(
+  "legacy lifecycle status remains Chronicle status during migration",
+  () => {
+    const character = {
+      motherHouse:
+        "approved-house",
+
+      pendingMotherHouse:
+        null,
+    };
+
+
+    const legacyStatus =
+      getCharacterLifecycleStatus(
+        character
+      );
+
+
+    assert.equal(
+      legacyStatus.key,
+      "linked"
+    );
+
+
+    assert.equal(
+      requiresChronicleApproval({
+        ...character,
+
+        sheetLifecycle:
+          CHARACTER_SHEET_LIFECYCLES
+            .INITIAL_DISTRIBUTION_PENDING,
+      }),
+      true
     );
   }
 );
