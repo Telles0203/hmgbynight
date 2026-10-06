@@ -131,33 +131,112 @@ function createPointProgress(
 }
 
 
+function normalizeAttributePriority(
+  value
+) {
+  const normalized =
+    String(
+      value ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  return ATTRIBUTE_CATEGORIES
+    .includes(
+      normalized
+    )
+      ? normalized
+      : "";
+}
+
+
+function createPartialPriorityTargets(
+  priorities
+) {
+  const targets =
+    {};
+
+
+  const assignedCategories =
+    new Set();
+
+
+  [
+    [
+      "primary",
+      ATTRIBUTE_PRIORITY_POOLS
+        .primary,
+    ],
+
+    [
+      "secondary",
+      ATTRIBUTE_PRIORITY_POOLS
+        .secondary,
+    ],
+
+    [
+      "tertiary",
+      ATTRIBUTE_PRIORITY_POOLS
+        .tertiary,
+    ],
+  ].forEach(
+    ([
+      priority,
+      target,
+    ]) => {
+      const category =
+        priorities[
+          priority
+        ];
+
+
+      if (
+        !category ||
+        assignedCategories.has(
+          category
+        )
+      ) {
+        return;
+      }
+
+
+      targets[
+        category
+      ] =
+        target;
+
+
+      assignedCategories.add(
+        category
+      );
+    }
+  );
+
+
+  return targets;
+}
+
+
 function getPriorityTargets(
   priorities
 ) {
   const normalized = {
     primary:
-      String(
-        priorities?.primary ||
-        ""
-      )
-        .trim()
-        .toLowerCase(),
+      normalizeAttributePriority(
+        priorities?.primary
+      ),
 
     secondary:
-      String(
-        priorities?.secondary ||
-        ""
-      )
-        .trim()
-        .toLowerCase(),
+      normalizeAttributePriority(
+        priorities?.secondary
+      ),
 
     tertiary:
-      String(
-        priorities?.tertiary ||
-        ""
-      )
-        .trim()
-        .toLowerCase(),
+      normalizeAttributePriority(
+        priorities?.tertiary
+      ),
   };
 
 
@@ -167,64 +246,34 @@ function getPriorityTargets(
     );
 
 
+  const assignedValues =
+    values.filter(
+      Boolean
+    );
+
+
   const valid =
-    values.every(
-      (
-        category
-      ) =>
-        ATTRIBUTE_CATEGORIES
-          .includes(
-            category
-          )
-    ) &&
+    assignedValues.length ===
+      ATTRIBUTE_CATEGORIES.length &&
     new Set(
-      values
+      assignedValues
     ).size ===
       ATTRIBUTE_CATEGORIES.length;
 
 
-  if (
-    !valid
-  ) {
-    return {
-      valid:
-        false,
-
-      priorities:
-        normalized,
-
-      targets:
-        {},
-    };
-  }
+  const targets =
+    createPartialPriorityTargets(
+      normalized
+    );
 
 
   return {
-    valid:
-      true,
+    valid,
 
     priorities:
       normalized,
 
-    targets: {
-      [
-        normalized.primary
-      ]:
-        ATTRIBUTE_PRIORITY_POOLS
-          .primary,
-
-      [
-        normalized.secondary
-      ]:
-        ATTRIBUTE_PRIORITY_POOLS
-          .secondary,
-
-      [
-        normalized.tertiary
-      ]:
-        ATTRIBUTE_PRIORITY_POOLS
-          .tertiary,
-    },
+    targets,
   };
 }
 
