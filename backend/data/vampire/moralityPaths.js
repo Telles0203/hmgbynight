@@ -3,7 +3,7 @@ const CORE_MORALITY_PATH_PREFIX =
 
 
 const MORALITY_MIN =
-  1;
+  0;
 
 
 const MORALITY_MAX =

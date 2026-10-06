@@ -414,10 +414,10 @@ function sanitizeCharacterCreationPayload(
         source.moralityAdjustment,
         {
           minimum:
-            -5,
+            -10,
 
           maximum:
-            5,
+            10,
 
           fallback:
             0,

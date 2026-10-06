@@ -164,6 +164,35 @@ function createFreeTraitCostNotice(
 }
 
 
+function createFreeTraitGainNotice(
+  gain
+) {
+  const normalized =
+    Number(
+      gain
+    );
+
+
+  if (
+    !Number.isFinite(
+      normalized
+    ) ||
+    normalized <=
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <small class="character-free-trait-inline-gain">
+      Sacrifício da criação:
+      +${normalized} Free Traits
+    </small>
+  `;
+}
+
+
 export function createPendingCreationNotice(
   character
 ) {
@@ -485,7 +514,8 @@ export function createCreationResourceCard({
 
 export function createMoralityResourceContent(
   morality,
-  freeTraitCost = 0
+  freeTraitCost = 0,
+  freeTraitGain = 0
 ) {
   const value =
     Number(
@@ -519,6 +549,10 @@ export function createMoralityResourceContent(
 
     ${createFreeTraitCostNotice(
       freeTraitCost
+    )}
+
+    ${createFreeTraitGainNotice(
+      freeTraitGain
     )}
   `;
 }

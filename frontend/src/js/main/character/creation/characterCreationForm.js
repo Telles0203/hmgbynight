@@ -20,15 +20,18 @@ import {
 
 import {
   createMeritsFlawsCreationEditor,
-  createSingleNumberCreationEditor,
   readMeritsFlawsCreationSection,
-  readSingleNumberCreationSection,
 } from "./form/characterCreationAdjustmentForm.js";
 
 import {
   createWillpowerCreationEditor,
   readWillpowerCreationSection,
 } from "./form/characterCreationWillpowerForm.js";
+
+import {
+  createMoralityCreationEditor,
+  readMoralityCreationSection,
+} from "./form/characterCreationMoralityForm.js";
 
 
 export function createCharacterCreationSectionEditor(
@@ -134,27 +137,9 @@ export function createCharacterCreationSectionEditor(
     section ===
     "morality"
   ) {
-    return createSingleNumberCreationEditor(
+    return createMoralityCreationEditor(
       character,
-      state,
-      {
-        section:
-          "morality",
-
-        field:
-          "moralityAdjustment",
-
-        title:
-          character
-            ?.moralityPathLabel ||
-          "Humanidade",
-
-        minimum:
-          -5,
-
-        maximum:
-          5,
-      }
+      state
     );
   }
 
@@ -254,10 +239,9 @@ export function readCharacterCreationSection(
     section ===
     "morality"
   ) {
-    return readSingleNumberCreationSection(
+    return readMoralityCreationSection(
       form,
-      state,
-      "moralityAdjustment"
+      state
     );
   }
 

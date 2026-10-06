@@ -275,6 +275,13 @@ export function createCharacterCreationSections(
     {};
 
 
+  const freeTraitSources =
+    creation
+      ?.freeTraits
+      ?.sources ||
+    {};
+
+
   const bloodTitle =
     createGenerationResourceTitle(
       "Sangue Máximo",
@@ -361,8 +368,12 @@ export function createCharacterCreationSections(
           content:
             createMoralityResourceContent(
               derived.morality,
+
               freeTraitSpending
-                .morality
+                .morality,
+
+              freeTraitSources
+                .moralitySacrifice
             ),
 
           editSection:

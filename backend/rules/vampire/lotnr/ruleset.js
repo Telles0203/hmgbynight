@@ -150,7 +150,7 @@ const CHARACTER_CREATION_RULES =
     morality:
       Object.freeze({
         minimum:
-          1,
+          0,
 
         maximum:
           10,

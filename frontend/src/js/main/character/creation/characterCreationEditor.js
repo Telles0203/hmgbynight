@@ -18,6 +18,10 @@ import {
 } from "./form/characterCreationWillpowerForm.js";
 
 import {
+  adjustMoralityCreation,
+} from "./form/characterCreationMoralityForm.js";
+
+import {
   refreshCharacterCreationView,
 } from "./characterCreationViewRefresh.js";
 
@@ -118,6 +122,27 @@ function handleDocumentClick(
 
     adjustWillpowerCreation(
       willpowerButton
+    );
+
+
+    return;
+  }
+
+
+  const moralityButton =
+    target.closest(
+      "[data-character-creation-morality-action]"
+    );
+
+
+  if (
+    moralityButton
+  ) {
+    event.preventDefault();
+
+
+    adjustMoralityCreation(
+      moralityButton
     );
 
 
