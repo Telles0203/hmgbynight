@@ -81,6 +81,13 @@ const srcPath =
   );
 
 
+const bootstrapDistPath =
+  path.join(
+    __dirname,
+    "../node_modules/bootstrap/dist"
+  );
+
+
 const indexPath =
   path.join(
     publicPath,
@@ -111,6 +118,7 @@ function validateConfiguredUrl(
     if (!required) {
       return null;
     }
+
 
     throw new Error(
       `${variableName} não configurado.`
@@ -285,7 +293,6 @@ app.use(
 
         scriptSrc: [
           "'self'",
-          "https://cdn.jsdelivr.net",
         ],
 
         scriptSrcAttr: [
@@ -294,7 +301,6 @@ app.use(
 
         styleSrc: [
           "'self'",
-          "https://cdn.jsdelivr.net",
           "https://fonts.googleapis.com",
         ],
 
@@ -381,6 +387,14 @@ app.use(
 app.use(
   "/api/houses",
   houseRoutes
+);
+
+
+app.use(
+  "/vendor/bootstrap",
+  express.static(
+    bootstrapDistPath
+  )
 );
 
 
