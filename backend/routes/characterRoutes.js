@@ -8,13 +8,14 @@ const {
   "express-rate-limit"
 );
 
-
 const {
   getCharacterOptions,
   createCharacter,
   listCharacters,
   getCharacterArchetypes,
   updateCharacterConcept,
+  updateCharacterTitle,
+  updateCharacterClan,
   updateCharacterNature,
   updateCharacterDemeanor,
   updateCharacterVirtues,
@@ -25,7 +26,6 @@ const {
 } = require(
   "../controllers/characterController"
 );
-
 
 const {
   requireAuth,
@@ -38,10 +38,6 @@ const {
 const router =
   express.Router();
 
-
-// =============================================
-// Delete rate limit
-// =============================================
 
 const characterDeleteLimiter =
   rateLimit({
@@ -70,172 +66,115 @@ const characterDeleteLimiter =
   });
 
 
-// =============================================
-// Character creation options
-// =============================================
-
 router.get(
   "/options",
-
   requireAuth,
   requireVerifiedEmail,
-
   getCharacterOptions
 );
 
 
-// =============================================
-// List user's PCs
-// =============================================
-
 router.get(
   "/",
-
   requireAuth,
   requireVerifiedEmail,
-
   listCharacters
 );
 
 
-// =============================================
-// Create PC
-// =============================================
-
 router.post(
   "/",
-
   requireAuth,
   requireVerifiedEmail,
-
   createCharacter
 );
 
 
-// =============================================
-// Available Archetypes
-// =============================================
-
 router.get(
   "/:characterId/archetypes",
-
   requireAuth,
   requireVerifiedEmail,
-
   getCharacterArchetypes
 );
 
 
-// =============================================
-// Update Concept
-// =============================================
-
 router.patch(
   "/:characterId/concept",
-
   requireAuth,
   requireVerifiedEmail,
-
   updateCharacterConcept
 );
 
 
-// =============================================
-// Update Nature
-// =============================================
+router.patch(
+  "/:characterId/title",
+  requireAuth,
+  requireVerifiedEmail,
+  updateCharacterTitle
+);
+
+
+router.patch(
+  "/:characterId/clan",
+  requireAuth,
+  requireVerifiedEmail,
+  updateCharacterClan
+);
+
 
 router.patch(
   "/:characterId/nature",
-
   requireAuth,
   requireVerifiedEmail,
-
   updateCharacterNature
 );
 
 
-// =============================================
-// Update Demeanor
-// =============================================
-
 router.patch(
   "/:characterId/demeanor",
-
   requireAuth,
   requireVerifiedEmail,
-
   updateCharacterDemeanor
 );
 
 
-// =============================================
-// Save all active Virtues
-// =============================================
-
 router.patch(
   "/:characterId/virtues",
-
   requireAuth,
   requireVerifiedEmail,
-
   updateCharacterVirtues
 );
 
 
-// =============================================
-// Legacy: Update one Virtue
-// =============================================
-
 router.patch(
   "/:characterId/virtues/:virtueKey",
-
   requireAuth,
   requireVerifiedEmail,
-
   updateCharacterVirtue
 );
 
 
-// =============================================
-// Request / change Chronicle
-// =============================================
-
 router.post(
   "/:characterId/mother-house-request",
-
   requireAuth,
   requireVerifiedEmail,
-
   requestMotherHouse
 );
 
 
-// =============================================
-// Cancel pending Chronicle request
-// =============================================
-
 router.delete(
   "/:characterId/mother-house-request",
-
   requireAuth,
   requireVerifiedEmail,
-
   cancelMotherHouseRequest
 );
 
 
-// =============================================
-// Delete PC
-// =============================================
-
 router.delete(
   "/:characterId",
-
   requireAuth,
   requireVerifiedEmail,
-
   characterDeleteLimiter,
-
   deleteCharacter
 );
 

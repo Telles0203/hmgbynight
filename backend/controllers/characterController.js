@@ -1,14 +1,3 @@
-// =============================================
-// Character Controller
-//
-// Agregador dos controllers de personagem.
-// =============================================
-
-
-// =============================================
-// Read
-// =============================================
-
 const {
   getCharacterOptions,
   listCharacters,
@@ -17,24 +6,16 @@ const {
   "./character/characterReadController"
 );
 
-
-// =============================================
-// Create
-// =============================================
-
 const {
   createCharacter,
 } = require(
   "./character/characterCreateController"
 );
 
-
-// =============================================
-// Edit
-// =============================================
-
 const {
   updateCharacterConcept,
+  updateCharacterTitle,
+  updateCharacterClan,
   updateCharacterNature,
   updateCharacterDemeanor,
   updateCharacterVirtues,
@@ -43,22 +24,12 @@ const {
   "./character/characterEditController"
 );
 
-
-// =============================================
-// Chronicle
-// =============================================
-
 const {
   requestMotherHouse,
   cancelMotherHouseRequest,
 } = require(
   "./character/characterChronicleController"
 );
-
-
-// =============================================
-// Delete
-// =============================================
 
 const {
   deleteCharacter,
@@ -67,16 +38,14 @@ const {
 );
 
 
-// =============================================
-// Exports
-// =============================================
-
 module.exports = {
   getCharacterOptions,
   createCharacter,
   listCharacters,
   getCharacterArchetypes,
   updateCharacterConcept,
+  updateCharacterTitle,
+  updateCharacterClan,
   updateCharacterNature,
   updateCharacterDemeanor,
   updateCharacterVirtues,

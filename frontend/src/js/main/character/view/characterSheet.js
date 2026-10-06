@@ -1,9 +1,6 @@
-// =============================================
-// Character Sheet
-// =============================================
-
 export function createCharacterSheet({
   characterId,
+  title,
   concept,
   natureLabel,
   demeanorLabel,
@@ -11,11 +8,59 @@ export function createCharacterSheet({
   moralityRating,
   activeVirtues,
   virtuePoints,
+  canEditDirectly,
   canEditVirtues,
   clan,
+  clanValue,
   sect,
   house,
 }) {
+  const character =
+    getLoadedCharacter(
+      characterId
+    );
+
+
+  const resolvedTitle =
+    typeof title ===
+      "string"
+      ? title
+      : String(
+          character?.title ||
+          ""
+        );
+
+
+  const resolvedClanValue =
+    typeof clanValue ===
+      "string" &&
+    clanValue
+      ? clanValue
+      : String(
+          character?.clan ||
+          ""
+        );
+
+
+  const resolvedCanEditDirectly =
+    typeof canEditDirectly ===
+      "boolean"
+      ? canEditDirectly
+      : (
+          character
+            ?.editState
+            ?.directEdit ??
+          !character?.motherHouse
+        );
+
+
+  const resolvedCanEditVirtues =
+    typeof canEditVirtues ===
+      "boolean"
+      ? canEditVirtues
+      : resolvedCanEditDirectly;
+
+
   const safeCharacterId =
     escapeSheetHtml(
       characterId
@@ -35,11 +80,6 @@ export function createCharacterSheet({
       <div class="character-card-details-inner">
 
         <div class="character-sheet">
-
-
-          <!-- ============================== -->
-          <!-- IDENTIDADE -->
-          <!-- ============================== -->
 
           <div class="character-sheet-grid">
 
@@ -67,20 +107,31 @@ export function createCharacterSheet({
 
                 editLabel:
                   "Editar conceito",
+
+                editable:
+                  resolvedCanEditDirectly,
               })}
 
 
-              <div class="character-sheet-row">
+              ${createIdentityFieldRow({
+                characterId:
+                  safeCharacterId,
 
-                <span class="character-sheet-label">
-                  Clã
-                </span>
+                field:
+                  "clan",
 
-                <span class="character-sheet-value">
-                  ${clan || "—"}
-                </span>
+                label:
+                  "Clã",
 
-              </div>
+                value:
+                  resolvedClanValue,
+
+                displayValue:
+                  clan,
+
+                editable:
+                  resolvedCanEditDirectly,
+              })}
 
 
               <div class="character-sheet-row">
@@ -143,10 +194,6 @@ export function createCharacterSheet({
             </section>
 
 
-            <!-- ============================== -->
-            <!-- PERSONALIDADE -->
-            <!-- ============================== -->
-
             <section
               class="character-section-card character-sheet-section"
             >
@@ -171,6 +218,9 @@ export function createCharacterSheet({
 
                 editLabel:
                   "Editar Natureza",
+
+                editable:
+                  resolvedCanEditDirectly,
               })}
 
 
@@ -189,27 +239,34 @@ export function createCharacterSheet({
 
                 editLabel:
                   "Editar Comportamento",
+
+                editable:
+                  resolvedCanEditDirectly,
               })}
 
 
-              <div class="character-sheet-row">
+              ${createIdentityFieldRow({
+                characterId:
+                  safeCharacterId,
 
-                <span class="character-sheet-label">
-                  Título
-                </span>
+                field:
+                  "title",
 
-                <span class="character-sheet-value">
-                  —
-                </span>
+                label:
+                  "Título",
 
-              </div>
+                value:
+                  resolvedTitle,
+
+                displayValue:
+                  resolvedTitle,
+
+                editable:
+                  resolvedCanEditDirectly,
+              })}
 
             </section>
 
-
-            <!-- ============================== -->
-            <!-- VIRTUDES -->
-            <!-- ============================== -->
 
             <section
               class="
@@ -219,7 +276,7 @@ export function createCharacterSheet({
               "
               data-character-id="${safeCharacterId}"
               data-virtues-editable="${
-                canEditVirtues
+                resolvedCanEditVirtues
                   ? "true"
                   : "false"
               }"
@@ -228,18 +285,20 @@ export function createCharacterSheet({
 
               ${createVirtueTitle({
                 virtuePoints,
-                canEditVirtues,
+                canEditVirtues:
+                  resolvedCanEditVirtues,
               })}
 
 
               ${createVirtueRows({
                 activeVirtues,
-                canEditVirtues,
+                canEditVirtues:
+                  resolvedCanEditVirtues,
               })}
 
 
               ${
-                canEditVirtues
+                resolvedCanEditVirtues
                   ? `
                     <div
                       class="
@@ -274,24 +333,15 @@ export function createCharacterSheet({
 
                         <button
                           type="button"
-                          class="
-                            btn
-                            btn-outline-secondary
-                            btn-sm
-                          "
+                          class="btn btn-outline-secondary btn-sm"
                           data-character-virtue-action="cancel"
                         >
                           Cancelar
                         </button>
 
-
                         <button
                           type="button"
-                          class="
-                            btn
-                            btn-blood
-                            btn-sm
-                          "
+                          class="btn btn-blood btn-sm"
                           data-character-virtue-action="save"
                           disabled
                         >
@@ -323,46 +373,24 @@ export function createCharacterSheet({
           </div>
 
 
-          <!-- ============================== -->
-          <!-- RECURSOS -->
-          <!-- ============================== -->
-
           <div
             class="character-sheet-grid character-sheet-resource-grid"
           >
 
-            <section
-              class="character-section-card character-sheet-section character-sheet-resource"
-            >
+            ${createResourceSection(
+              "Sangue Máximo"
+            )}
 
-              <h4 class="character-sheet-title">
-                Sangue Máximo
-              </h4>
-
-              <div class="character-sheet-pips">
-                ${createEmptyPips(10)}
-              </div>
-
-            </section>
-
+            ${createResourceSection(
+              "Força de Vontade"
+            )}
 
             <section
-              class="character-section-card character-sheet-section character-sheet-resource"
-            >
-
-              <h4 class="character-sheet-title">
-                Força de Vontade
-              </h4>
-
-              <div class="character-sheet-pips">
-                ${createEmptyPips(10)}
-              </div>
-
-            </section>
-
-
-            <section
-              class="character-section-card character-sheet-section character-sheet-resource"
+              class="
+                character-section-card
+                character-sheet-section
+                character-sheet-resource
+              "
               data-morality-rating="${
                 Number.isFinite(
                   moralityRating
@@ -377,103 +405,57 @@ export function createCharacterSheet({
               </h4>
 
               <div class="character-sheet-pips">
-                ${createEmptyPips(10)}
+                ${createEmptyPips(
+                  10
+                )}
               </div>
 
             </section>
 
           </div>
 
-
-          <!-- ============================== -->
-          <!-- ATRIBUTOS -->
-          <!-- ============================== -->
 
           <div class="character-sheet-grid">
 
-            <section
-              class="character-section-card character-sheet-section"
-            >
+            ${createEmptySection(
+              "Físicos / Negativos",
+              "Nenhum traço cadastrado."
+            )}
 
-              <h4 class="character-sheet-title">
-                Físicos / Negativos
-              </h4>
+            ${createEmptySection(
+              "Sociais / Negativos",
+              "Nenhum traço cadastrado."
+            )}
 
-              <div class="character-sheet-empty">
-                Nenhum traço cadastrado.
-              </div>
-
-            </section>
-
-
-            <section
-              class="character-section-card character-sheet-section"
-            >
-
-              <h4 class="character-sheet-title">
-                Sociais / Negativos
-              </h4>
-
-              <div class="character-sheet-empty">
-                Nenhum traço cadastrado.
-              </div>
-
-            </section>
-
-
-            <section
-              class="character-section-card character-sheet-section"
-            >
-
-              <h4 class="character-sheet-title">
-                Mentais / Negativos
-              </h4>
-
-              <div class="character-sheet-empty">
-                Nenhum traço cadastrado.
-              </div>
-
-            </section>
+            ${createEmptySection(
+              "Mentais / Negativos",
+              "Nenhum traço cadastrado."
+            )}
 
           </div>
 
 
-          <!-- ============================== -->
-          <!-- CORPO PRINCIPAL -->
-          <!-- ============================== -->
-
           <div
-            class="character-sheet-grid character-sheet-main-grid"
+            class="
+              character-sheet-grid
+              character-sheet-main-grid
+            "
           >
 
             <section
               class="character-section-card character-sheet-section"
             >
 
-              <div class="character-sheet-group">
+              ${createGroup(
+                "Habilidades",
+                "Nenhuma habilidade cadastrada."
+              )}
 
-                <h4 class="character-sheet-title">
-                  Habilidades
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhuma habilidade cadastrada.
-                </div>
-
-              </div>
-
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Notas
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhuma nota cadastrada.
-                </div>
-
-              </div>
+              ${createGroup(
+                "Notas",
+                "Nenhuma nota cadastrada.",
+                true
+              )}
 
             </section>
 
@@ -482,43 +464,22 @@ export function createCharacterSheet({
               class="character-section-card character-sheet-section"
             >
 
-              <div class="character-sheet-group">
+              ${createGroup(
+                "Disciplinas",
+                "Nenhuma disciplina cadastrada."
+              )}
 
-                <h4 class="character-sheet-title">
-                  Disciplinas
-                </h4>
+              ${createGroup(
+                "Rituais",
+                "Nenhum ritual cadastrado.",
+                true
+              )}
 
-                <div class="character-sheet-empty">
-                  Nenhuma disciplina cadastrada.
-                </div>
-
-              </div>
-
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Rituais
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhum ritual cadastrado.
-                </div>
-
-              </div>
-
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Itens / Equipamentos
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhum equipamento cadastrado.
-                </div>
-
-              </div>
+              ${createGroup(
+                "Itens / Equipamentos",
+                "Nenhum equipamento cadastrado.",
+                true
+              )}
 
             </section>
 
@@ -527,69 +488,34 @@ export function createCharacterSheet({
               class="character-section-card character-sheet-section"
             >
 
-              <div class="character-sheet-group">
+              ${createGroup(
+                "Antecedentes",
+                "Nenhum antecedente cadastrado."
+              )}
 
-                <h4 class="character-sheet-title">
-                  Antecedentes
-                </h4>
+              ${createGroup(
+                "Qualidades / Defeitos",
+                "Nenhuma característica cadastrada.",
+                true
+              )}
 
-                <div class="character-sheet-empty">
-                  Nenhum antecedente cadastrado.
-                </div>
+              ${createGroup(
+                "Influências",
+                "Nenhuma influência cadastrada.",
+                true
+              )}
 
-              </div>
+              ${createGroup(
+                "Laços de Sangue / Vinculum",
+                "Nenhum vínculo cadastrado.",
+                true
+              )}
 
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Qualidades / Defeitos
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhuma característica cadastrada.
-                </div>
-
-              </div>
-
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Influências
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhuma influência cadastrada.
-                </div>
-
-              </div>
-
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Laços de Sangue / Vinculum
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhum vínculo cadastrado.
-                </div>
-
-              </div>
-
-
-              <div class="character-sheet-group">
-
-                <h4 class="character-sheet-subtitle">
-                  Vitalidade
-                </h4>
-
-                <div class="character-sheet-empty">
-                  Nenhum nível cadastrado.
-                </div>
-
-              </div>
+              ${createGroup(
+                "Vitalidade",
+                "Nenhum nível cadastrado.",
+                true
+              )}
 
             </section>
 
@@ -604,9 +530,186 @@ export function createCharacterSheet({
 }
 
 
-// =============================================
-// Virtue title
-// =============================================
+function createIdentityFieldRow({
+  characterId,
+  field,
+  label,
+  value,
+  displayValue,
+  editable,
+}) {
+  const safeField =
+    escapeSheetHtml(
+      field
+    );
+
+
+  const safeLabel =
+    escapeSheetHtml(
+      label
+    );
+
+
+  const safeDisplayValue =
+    escapeSheetHtml(
+      displayValue ||
+      value ||
+      ""
+    );
+
+
+  return `
+    <div
+      class="
+        character-sheet-row
+        character-identity-row
+      "
+      data-character-id="${characterId}"
+      data-character-field="${safeField}"
+    >
+
+      <span class="character-sheet-label">
+        ${safeLabel}
+      </span>
+
+      <span
+        class="
+          character-sheet-value
+          character-identity-value
+        "
+      >
+
+        <span class="character-inline-display">
+
+          <span class="character-field-display">
+            ${safeDisplayValue || "—"}
+          </span>
+
+          ${
+            editable
+              ? `
+                <button
+                  type="button"
+                  class="
+                    btn
+                    btn-link
+                    btn-sm
+                    text-secondary
+                    text-decoration-none
+                    p-0
+                    character-inline-edit-button
+                  "
+                  data-character-identity-action="edit"
+                  aria-label="Editar ${safeLabel}"
+                  title="Editar ${safeLabel}"
+                >
+                  ✎
+                </button>
+              `
+              : ""
+          }
+
+        </span>
+
+      </span>
+
+    </div>
+  `;
+}
+
+
+function createEditableFieldRow({
+  characterId,
+  field,
+  label,
+  value,
+  editLabel,
+  editable,
+}) {
+  const safeField =
+    escapeSheetHtml(
+      field
+    );
+
+
+  const safeLabel =
+    escapeSheetHtml(
+      label
+    );
+
+
+  const safeValue =
+    escapeSheetHtml(
+      value ||
+      ""
+    );
+
+
+  const safeEditLabel =
+    escapeSheetHtml(
+      editLabel
+    );
+
+
+  return `
+    <div
+      class="
+        character-sheet-row
+        character-editable-row
+      "
+      data-character-id="${characterId}"
+      data-character-field="${safeField}"
+    >
+
+      <span class="character-sheet-label">
+        ${safeLabel}
+      </span>
+
+      <span
+        class="
+          character-sheet-value
+          character-editable-value
+        "
+      >
+
+        <span class="character-inline-display">
+
+          <span class="character-field-display">
+            ${safeValue || "—"}
+          </span>
+
+          ${
+            editable
+              ? `
+                <button
+                  type="button"
+                  class="
+                    btn
+                    btn-link
+                    btn-sm
+                    text-secondary
+                    text-decoration-none
+                    p-0
+                    character-inline-edit-button
+                  "
+                  data-character-inline-action="edit"
+                  aria-label="${safeEditLabel}"
+                  title="${safeEditLabel}"
+                >
+                  ✎
+                </button>
+              `
+              : ""
+          }
+
+        </span>
+
+      </span>
+
+    </div>
+  `;
+}
+
 
 function createVirtueTitle({
   virtuePoints,
@@ -643,7 +746,6 @@ function createVirtueTitle({
         Virtudes
       </span>
 
-
       <span
         class="
           d-inline-flex
@@ -665,11 +767,9 @@ function createVirtueTitle({
                   bg-transparent
                 "
                 data-virtue-points
-                title="Pontos de Virtude distribuídos na criação"
               >
                 ${spent}/${total}
               </span>
-
 
               <button
                 type="button"
@@ -699,10 +799,6 @@ function createVirtueTitle({
 }
 
 
-// =============================================
-// Virtue rows
-// =============================================
-
 function createVirtueRows({
   activeVirtues,
   canEditVirtues,
@@ -724,7 +820,9 @@ function createVirtueRows({
 
   return activeVirtues
     .map(
-      (virtue) => {
+      (
+        virtue
+      ) => {
         const safeKey =
           escapeSheetHtml(
             virtue?.key ||
@@ -747,14 +845,6 @@ function createVirtueRows({
             : 0;
 
 
-        const maximum =
-          Number.isFinite(
-            virtue?.maximum
-          )
-            ? virtue.maximum
-            : 5;
-
-
         const value =
           Number.isFinite(
             virtue?.value
@@ -765,7 +855,10 @@ function createVirtueRows({
 
         return `
           <div
-            class="character-sheet-row character-virtue-row"
+            class="
+              character-sheet-row
+              character-virtue-row
+            "
             data-virtue-key="${safeKey}"
             data-saved-value="${value}"
           >
@@ -773,7 +866,6 @@ function createVirtueRows({
             <span class="character-sheet-label">
               ${safeLabel}
             </span>
-
 
             <span
               class="
@@ -787,7 +879,6 @@ function createVirtueRows({
                 ${value}
               </span>
             </span>
-
 
             ${
               canEditVirtues
@@ -818,7 +909,6 @@ function createVirtueRows({
                       −
                     </button>
 
-
                     <span
                       class="
                         character-virtue-edit-value
@@ -827,7 +917,6 @@ function createVirtueRows({
                     >
                       ${value}
                     </span>
-
 
                     <button
                       type="button"
@@ -856,86 +945,94 @@ function createVirtueRows({
 }
 
 
-// =============================================
-// Editable field row
-// =============================================
-
-function createEditableFieldRow({
-  characterId,
-  field,
-  label,
-  value,
-  editLabel,
-}) {
-  const safeField =
-    escapeSheetHtml(
-      field
-    );
-
-
-  const safeLabel =
-    escapeSheetHtml(
-      label
-    );
-
-
-  const safeValue =
-    escapeSheetHtml(
-      value || ""
-    );
-
-
-  const safeEditLabel =
-    escapeSheetHtml(
-      editLabel
-    );
-
-
+function createResourceSection(
+  title
+) {
   return `
-    <div
-      class="character-sheet-row character-editable-row"
-      data-character-id="${characterId}"
-      data-character-field="${safeField}"
+    <section
+      class="
+        character-section-card
+        character-sheet-section
+        character-sheet-resource
+      "
     >
 
-      <span class="character-sheet-label">
-        ${safeLabel}
-      </span>
+      <h4 class="character-sheet-title">
+        ${escapeSheetHtml(
+          title
+        )}
+      </h4>
+
+      <div class="character-sheet-pips">
+        ${createEmptyPips(
+          10
+        )}
+      </div>
+
+    </section>
+  `;
+}
 
 
-      <span
-        class="character-sheet-value character-editable-value"
+function createEmptySection(
+  title,
+  message
+) {
+  return `
+    <section
+      class="
+        character-section-card
+        character-sheet-section
+      "
+    >
+
+      <h4 class="character-sheet-title">
+        ${escapeSheetHtml(
+          title
+        )}
+      </h4>
+
+      <div class="character-sheet-empty">
+        ${escapeSheetHtml(
+          message
+        )}
+      </div>
+
+    </section>
+  `;
+}
+
+
+function createGroup(
+  title,
+  message,
+  subtitle = false
+) {
+  return `
+    <div class="character-sheet-group">
+
+      <h4
+        class="${
+          subtitle
+            ? "character-sheet-subtitle"
+            : "character-sheet-title"
+        }"
       >
+        ${escapeSheetHtml(
+          title
+        )}
+      </h4>
 
-        <span class="character-inline-display">
-
-          <span class="character-field-display">
-            ${safeValue || "—"}
-          </span>
-
-
-          <button
-            type="button"
-            class="btn btn-link btn-sm text-secondary text-decoration-none p-0 character-inline-edit-button"
-            data-character-inline-action="edit"
-            aria-label="${safeEditLabel}"
-            title="${safeEditLabel}"
-          >
-            ✎
-          </button>
-
-        </span>
-
-      </span>
+      <div class="character-sheet-empty">
+        ${escapeSheetHtml(
+          message
+        )}
+      </div>
 
     </div>
   `;
 }
 
-
-// =============================================
-// Pips
-// =============================================
 
 function createEmptyPips(
   amount
@@ -952,9 +1049,40 @@ function createEmptyPips(
 }
 
 
-// =============================================
-// Escape
-// =============================================
+function getLoadedCharacter(
+  characterId
+) {
+  const characters =
+    window.ByNightMain
+      ?.character
+      ?.characters;
+
+
+  if (
+    !Array.isArray(
+      characters
+    )
+  ) {
+    return null;
+  }
+
+
+  return (
+    characters.find(
+      (
+        character
+      ) =>
+        String(
+          character.id
+        ) ===
+        String(
+          characterId
+        )
+    ) ||
+    null
+  );
+}
+
 
 function escapeSheetHtml(
   value

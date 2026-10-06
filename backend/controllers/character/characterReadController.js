@@ -6,13 +6,11 @@ const Character = require(
   "../../models/Character"
 );
 
-
 const {
   SECT_OPTIONS,
 } = require(
   "../../data/vampire/sects"
 );
-
 
 const {
   CLAN_OPTIONS,
@@ -20,6 +18,11 @@ const {
   "../../data/vampire/clans"
 );
 
+const {
+  CHARACTER_TITLE_MAX_LENGTH,
+} = require(
+  "../../data/characterLimits"
+);
 
 const {
   getClanDisplayName,
@@ -27,13 +30,11 @@ const {
   "../../data/vampire/clanDisplay"
 );
 
-
 const {
   getCoreArchetypes,
 } = require(
   "../../data/vampire/archetypes"
 );
-
 
 const {
   serializeHouse,
@@ -44,10 +45,12 @@ const {
   "./characterHelpers"
 );
 
+const {
+  serializeCharacterState,
+} = require(
+  "./characterState"
+);
 
-// =============================================
-// Character options
-// =============================================
 
 async function getCharacterOptions(
   req,
@@ -79,6 +82,11 @@ async function getCharacterOptions(
               clan.label,
           })
         ),
+
+      limits: {
+        titleMaxLength:
+          CHARACTER_TITLE_MAX_LENGTH,
+      },
     });
 
   } catch (error) {
@@ -101,10 +109,6 @@ async function getCharacterOptions(
 }
 
 
-// =============================================
-// List user's PCs
-// =============================================
-
 async function listCharacters(
   req,
   res
@@ -120,7 +124,7 @@ async function listCharacters(
       })
 
         .select(
-          "name concept nature demeanor moralityPath moralityRating virtues type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name title concept nature demeanor moralityPath moralityRating virtues type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -172,18 +176,16 @@ async function listCharacters(
               );
 
 
-            const moralityRating =
-              Number.isFinite(
-                character.moralityRating
-              )
-                ? character.moralityRating
-                : null;
-
-
             const virtues =
               serializeVirtues(
                 moralityPath.ref,
                 character.virtues
+              );
+
+
+            const state =
+              serializeCharacterState(
+                character
               );
 
 
@@ -193,6 +195,10 @@ async function listCharacters(
 
               name:
                 character.name,
+
+              title:
+                character.title ||
+                "",
 
               concept:
                 character.concept ||
@@ -216,7 +222,12 @@ async function listCharacters(
               moralityPathLabel:
                 moralityPath.label,
 
-              moralityRating,
+              moralityRating:
+                Number.isFinite(
+                  character.moralityRating
+                )
+                  ? character.moralityRating
+                  : null,
 
               virtues:
                 virtues.values,
@@ -249,8 +260,15 @@ async function listCharacters(
 
               pendingMotherHouse:
                 serializeHouse(
-                  character.pendingMotherHouse
+                  character
+                    .pendingMotherHouse
                 ),
+
+              status:
+                state.status,
+
+              editState:
+                state.editState,
 
               createdAt:
                 character.createdAt,
@@ -282,10 +300,6 @@ async function listCharacters(
 }
 
 
-// =============================================
-// Get available Archetypes
-// =============================================
-
 async function getCharacterArchetypes(
   req,
   res
@@ -298,24 +312,12 @@ async function getCharacterArchetypes(
     const characterId =
       String(
         req.params?.characterId ||
-          ""
+        ""
       ).trim();
 
 
-    if (!userId) {
-      return res
-        .status(401)
-        .json({
-          ok:
-            false,
-
-          error:
-            "Não autenticado.",
-        });
-    }
-
-
     if (
+      !userId ||
       !characterId ||
       !mongoose.isValidObjectId(
         characterId
@@ -405,10 +407,6 @@ async function getCharacterArchetypes(
   }
 }
 
-
-// =============================================
-// Exports
-// =============================================
 
 module.exports = {
   getCharacterOptions,

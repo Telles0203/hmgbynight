@@ -10,13 +10,11 @@ const House = require(
   "../../models/House"
 );
 
-
 const {
   isValidSect,
 } = require(
   "../../data/vampire/sects"
 );
-
 
 const {
   isValidClan,
@@ -24,13 +22,11 @@ const {
   "../../data/vampire/clans"
 );
 
-
 const {
   getClanDisplayName,
 } = require(
   "../../data/vampire/clanDisplay"
 );
-
 
 const {
   DEFAULT_MORALITY_PATH,
@@ -38,13 +34,11 @@ const {
   "../../data/vampire/moralityPaths"
 );
 
-
 const {
   getStartingVirtueValues,
 } = require(
   "../../data/vampire/virtues"
 );
-
 
 const {
   CHARACTER_NAME_MIN_LENGTH,
@@ -56,10 +50,12 @@ const {
   "./characterHelpers"
 );
 
+const {
+  serializeCharacterState,
+} = require(
+  "./characterState"
+);
 
-// =============================================
-// Create PC
-// =============================================
 
 async function createCharacter(
   req,
@@ -100,13 +96,9 @@ async function createCharacter(
     const cleanRequestedHouseId =
       String(
         requestedMotherHouseId ||
-          ""
+        ""
       ).trim();
 
-
-    // =============================================
-    // Name
-    // =============================================
 
     if (!cleanName) {
       return res
@@ -139,24 +131,8 @@ async function createCharacter(
     }
 
 
-    // =============================================
-    // Sect
-    // =============================================
-
-    if (!cleanSect) {
-      return res
-        .status(400)
-        .json({
-          ok:
-            false,
-
-          error:
-            "Selecione a seita do personagem.",
-        });
-    }
-
-
     if (
+      !cleanSect ||
       !isValidSect(
         cleanSect
       )
@@ -173,24 +149,8 @@ async function createCharacter(
     }
 
 
-    // =============================================
-    // Clan
-    // =============================================
-
-    if (!cleanClan) {
-      return res
-        .status(400)
-        .json({
-          ok:
-            false,
-
-          error:
-            "Selecione o clã do personagem.",
-        });
-    }
-
-
     if (
+      !cleanClan ||
       !isValidClan(
         cleanClan
       )
@@ -206,10 +166,6 @@ async function createCharacter(
         });
     }
 
-
-    // =============================================
-    // Optional mother Chronicle
-    // =============================================
 
     let requestedHouse =
       null;
@@ -261,24 +217,13 @@ async function createCharacter(
     }
 
 
-    // =============================================
-    // Starting Virtues
-    // =============================================
-
-    const startingVirtues =
-      getStartingVirtueValues(
-        DEFAULT_MORALITY_PATH
-      );
-
-
-    // =============================================
-    // Create character
-    // =============================================
-
     const character =
       await Character.create({
         name:
           cleanName,
+
+        title:
+          "",
 
         type:
           "PC",
@@ -299,7 +244,9 @@ async function createCharacter(
           null,
 
         virtues:
-          startingVirtues,
+          getStartingVirtueValues(
+            DEFAULT_MORALITY_PATH
+          ),
 
         sect:
           cleanSect,
@@ -332,6 +279,12 @@ async function createCharacter(
       );
 
 
+    const state =
+      serializeCharacterState(
+        character
+      );
+
+
     return res
       .status(201)
       .json({
@@ -344,6 +297,9 @@ async function createCharacter(
 
           name:
             character.name,
+
+          title:
+            character.title,
 
           concept:
             character.concept,
@@ -401,6 +357,12 @@ async function createCharacter(
               requestedHouse
             ),
 
+          status:
+            state.status,
+
+          editState:
+            state.editState,
+
           createdAt:
             character.createdAt,
         },
@@ -425,10 +387,6 @@ async function createCharacter(
   }
 }
 
-
-// =============================================
-// Exports
-// =============================================
 
 module.exports = {
   createCharacter,

@@ -5,7 +5,6 @@ const {
   "../../data/vampire/archetypes"
 );
 
-
 const {
   DEFAULT_MORALITY_PATH,
   getCoreMoralityPathLabel,
@@ -13,7 +12,6 @@ const {
 } = require(
   "../../data/vampire/moralityPaths"
 );
-
 
 const {
   VIRTUE_MAX,
@@ -24,24 +22,15 @@ const {
   "../../data/vampire/virtues"
 );
 
+const {
+  CHARACTER_NAME_MIN_LENGTH,
+  CHARACTER_NAME_MAX_LENGTH,
+  CHARACTER_TITLE_MAX_LENGTH,
+  CHARACTER_CONCEPT_MAX_LENGTH,
+} = require(
+  "../../data/characterLimits"
+);
 
-// =============================================
-// Character constants
-// =============================================
-
-const CHARACTER_NAME_MIN_LENGTH =
-  2;
-
-const CHARACTER_NAME_MAX_LENGTH =
-  60;
-
-const CHARACTER_CONCEPT_MAX_LENGTH =
-  120;
-
-
-// =============================================
-// House / Chronicle serializer
-// =============================================
 
 function serializeHouse(
   house
@@ -75,10 +64,6 @@ function serializeHouse(
   };
 }
 
-
-// =============================================
-// Archetype serializer
-// =============================================
 
 function serializeArchetype(
   value
@@ -125,10 +110,6 @@ function serializeArchetype(
 }
 
 
-// =============================================
-// Morality Path serializer
-// =============================================
-
 function serializeMoralityPath(
   value
 ) {
@@ -163,10 +144,6 @@ function serializeMoralityPath(
   };
 }
 
-
-// =============================================
-// Virtues serializer
-// =============================================
 
 function serializeVirtues(
   moralityPathRef,
@@ -238,24 +215,19 @@ function serializeVirtues(
     );
 
 
-  const points =
-    getVirtueCreationProgress(
-      moralityPathRef,
-      values
-    );
-
-
   return {
     values,
+
     active,
-    points,
+
+    points:
+      getVirtueCreationProgress(
+        moralityPathRef,
+        values
+      ),
   };
 }
 
-
-// =============================================
-// Normalize Virtue value
-// =============================================
 
 function normalizeVirtueValue(
   value
@@ -268,13 +240,10 @@ function normalizeVirtueValue(
 }
 
 
-// =============================================
-// Exports
-// =============================================
-
 module.exports = {
   CHARACTER_NAME_MIN_LENGTH,
   CHARACTER_NAME_MAX_LENGTH,
+  CHARACTER_TITLE_MAX_LENGTH,
   CHARACTER_CONCEPT_MAX_LENGTH,
   serializeHouse,
   serializeArchetype,

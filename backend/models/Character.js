@@ -29,6 +29,15 @@ const {
   "../data/vampire/virtues"
 );
 
+const {
+  CHARACTER_NAME_MIN_LENGTH,
+  CHARACTER_NAME_MAX_LENGTH,
+  CHARACTER_TITLE_MAX_LENGTH,
+  CHARACTER_CONCEPT_MAX_LENGTH,
+} = require(
+  "../data/characterLimits"
+);
+
 
 const validSects =
   SECT_OPTIONS.map(
@@ -58,12 +67,25 @@ const CharacterSchema =
           true,
 
         minlength:
-          2,
+          CHARACTER_NAME_MIN_LENGTH,
 
         maxlength:
-          60,
+          CHARACTER_NAME_MAX_LENGTH,
       },
 
+      title: {
+        type:
+          String,
+
+        trim:
+          true,
+
+        maxlength:
+          CHARACTER_TITLE_MAX_LENGTH,
+
+        default:
+          "",
+      },
 
       type: {
         type:
@@ -78,11 +100,6 @@ const CharacterSchema =
         ],
       },
 
-
-      // ==============================
-      // Inspiration
-      // ==============================
-
       concept: {
         type:
           String,
@@ -91,18 +108,11 @@ const CharacterSchema =
           true,
 
         maxlength:
-          120,
+          CHARACTER_CONCEPT_MAX_LENGTH,
 
         default:
           "",
       },
-
-
-      /*
-       * Natureza.
-       *
-       * Guarda referência ao catálogo.
-       */
 
       nature: {
         type:
@@ -118,14 +128,6 @@ const CharacterSchema =
           "",
       },
 
-
-      /*
-       * Comportamento.
-       *
-       * Guarda referência ao mesmo
-       * catálogo de Arquétipos.
-       */
-
       demeanor: {
         type:
           String,
@@ -139,22 +141,6 @@ const CharacterSchema =
         default:
           "",
       },
-
-
-      // ==============================
-      // Morality
-      // ==============================
-
-      /*
-       * Trilha de Moralidade.
-       *
-       * Por padrão:
-       *
-       * core:humanidade
-       *
-       * Futuramente poderão existir
-       * referências próprias da Crônica.
-       */
 
       moralityPath: {
         type:
@@ -170,27 +156,6 @@ const CharacterSchema =
           DEFAULT_MORALITY_PATH,
       },
 
-
-      /*
-       * Pontuação atual de Moralidade.
-       *
-       * Escala OWBN:
-       *
-       * 0 a 10.
-       *
-       * Durante a criação fica null até
-       * que as Virtudes necessárias
-       * tenham sido definidas.
-       *
-       * Nesse momento o valor inicial
-       * será calculado pela soma das
-       * Virtudes correspondentes.
-       *
-       * Após a criação, Moralidade possui
-       * progressão própria e deixa de ser
-       * um simples valor derivado.
-       */
-
       moralityRating: {
         type:
           Number,
@@ -204,29 +169,6 @@ const CharacterSchema =
         default:
           null,
       },
-
-
-      // ==============================
-      // Virtues
-      // ==============================
-
-      /*
-       * Mantemos as cinco possibilidades.
-       *
-       * A Trilha determina quais delas
-       * estão ativas.
-       *
-       * Exemplo:
-       *
-       * Humanidade:
-       * - conscience
-       * - selfControl
-       * - courage
-       *
-       * Os valores ficam null enquanto
-       * ainda não foram definidos durante
-       * a criação do personagem.
-       */
 
       virtues: {
         conscience: {
@@ -243,7 +185,6 @@ const CharacterSchema =
             null,
         },
 
-
         conviction: {
           type:
             Number,
@@ -257,7 +198,6 @@ const CharacterSchema =
           default:
             null,
         },
-
 
         selfControl: {
           type:
@@ -273,7 +213,6 @@ const CharacterSchema =
             null,
         },
 
-
         instinct: {
           type:
             Number,
@@ -287,7 +226,6 @@ const CharacterSchema =
           default:
             null,
         },
-
 
         courage: {
           type:
@@ -304,11 +242,6 @@ const CharacterSchema =
         },
       },
 
-
-      // ==============================
-      // Vampire
-      // ==============================
-
       sect: {
         type:
           String,
@@ -322,7 +255,6 @@ const CharacterSchema =
         index:
           true,
       },
-
 
       clan: {
         type:
@@ -338,11 +270,6 @@ const CharacterSchema =
           true,
       },
 
-
-      // ==============================
-      // Owner
-      // ==============================
-
       ownerUser: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -357,11 +284,6 @@ const CharacterSchema =
           true,
       },
 
-
-      // ==============================
-      // Approved mother Chronicle
-      // ==============================
-
       motherHouse: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -375,11 +297,6 @@ const CharacterSchema =
         index:
           true,
       },
-
-
-      // ==============================
-      // Pending mother Chronicle
-      // ==============================
 
       pendingMotherHouse: {
         type:
@@ -403,16 +320,12 @@ const CharacterSchema =
   );
 
 
-// ==============================
-// Character rules
-// ==============================
-
 CharacterSchema.pre(
   "validate",
   function () {
-
     if (
-      this.type === "PC" &&
+      this.type ===
+        "PC" &&
       !this.ownerUser
     ) {
       throw new Error(
@@ -422,7 +335,8 @@ CharacterSchema.pre(
 
 
     if (
-      this.type === "NPC" &&
+      this.type ===
+        "NPC" &&
       !this.motherHouse
     ) {
       throw new Error(
@@ -432,7 +346,8 @@ CharacterSchema.pre(
 
 
     if (
-      this.type === "NPC" &&
+      this.type ===
+        "NPC" &&
       this.ownerUser
     ) {
       throw new Error(
@@ -442,7 +357,8 @@ CharacterSchema.pre(
 
 
     if (
-      this.type === "NPC" &&
+      this.type ===
+        "NPC" &&
       this.pendingMotherHouse
     ) {
       throw new Error(
@@ -461,21 +377,21 @@ CharacterSchema.pre(
     }
 
 
-    // ==============================
-    // Virtue exclusivity
-    // ==============================
-
     const conscience =
-      this.virtues?.conscience;
+      this.virtues
+        ?.conscience;
 
     const conviction =
-      this.virtues?.conviction;
+      this.virtues
+        ?.conviction;
 
     const selfControl =
-      this.virtues?.selfControl;
+      this.virtues
+        ?.selfControl;
 
     const instinct =
-      this.virtues?.instinct;
+      this.virtues
+        ?.instinct;
 
 
     if (

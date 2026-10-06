@@ -23,7 +23,6 @@ function loadMainStyles() {
         resolve,
         reject
       ) => {
-
         const existingLink =
           document.getElementById(
             "mainStylesheet"
@@ -46,10 +45,8 @@ function loadMainStyles() {
         link.id =
           "mainStylesheet";
 
-
         link.rel =
           "stylesheet";
-
 
         link.href =
           "/src/css/main.css";
@@ -113,7 +110,6 @@ async function loadCharacterModules() {
   ) {
     characterModulesPromise =
       Promise.all([
-
         import(
           "/src/js/main/character/characterOptions.js"
         ),
@@ -126,6 +122,9 @@ async function loadCharacterModules() {
           "/src/js/main/character/characterForm.js"
         ),
 
+        import(
+          "/src/js/main/character/characterIdentityEdit.js"
+        ),
       ]);
   }
 
@@ -140,7 +139,6 @@ async function loadHouseModules() {
   ) {
     houseModulesPromise =
       Promise.all([
-
         import(
           "/src/js/main/house/houses.js"
         ),
@@ -148,7 +146,6 @@ async function loadHouseModules() {
         import(
           "/src/js/main/house/houseForm.js"
         ),
-
       ]);
   }
 
@@ -160,7 +157,6 @@ async function loadHouseModules() {
 async function loadMainUser(
   forceRefresh = false
 ) {
-
   const greeting =
     document.getElementById(
       "mainGreeting"
@@ -205,7 +201,6 @@ async function loadMainUser(
 
 
   try {
-
     await loadMainStyles();
 
 
@@ -244,7 +239,6 @@ async function loadMainUser(
       user.isEmailValid !==
       true
     ) {
-
       await loadEmailValidationModule();
 
 
@@ -272,12 +266,9 @@ async function loadMainUser(
     }
 
 
-    if (
-      typeof window.clearEmailResendCountdown ===
-      "function"
-    ) {
-      window.clearEmailResendCountdown();
-    }
+    window
+      .clearEmailResendCountdown
+      ?.();
 
 
     if (
@@ -289,11 +280,8 @@ async function loadMainUser(
 
 
     await Promise.all([
-
       loadCharacterModules(),
-
       loadHouseModules(),
-
     ]);
 
 
@@ -308,9 +296,7 @@ async function loadMainUser(
       main
     );
 
-
   } catch (error) {
-
     console.error(
       "[MAIN] Erro ao carregar:",
       error
@@ -331,13 +317,9 @@ async function loadMainUser(
 
 
 async function initializeMainModules() {
-
-  if (
-    typeof window.setupCharacterFormHandlers ===
-    "function"
-  ) {
-    window.setupCharacterFormHandlers();
-  }
+  window
+    .setupCharacterFormHandlers
+    ?.();
 
 
   if (
@@ -356,12 +338,14 @@ async function initializeMainModules() {
   }
 
 
-  if (
-    typeof window.setupHouseFormHandlers ===
-    "function"
-  ) {
-    window.setupHouseFormHandlers();
-  }
+  window
+    .setupCharacterIdentityEdit
+    ?.();
+
+
+  window
+    .setupHouseFormHandlers
+    ?.();
 
 
   if (
@@ -377,7 +361,6 @@ async function showEmailValidation(
   user,
   container
 ) {
-
   if (!container) {
     return;
   }
@@ -411,19 +394,15 @@ async function showEmailValidation(
     );
 
 
-  if (
-    typeof window.setupEmailValidationHandlers ===
-    "function"
-  ) {
-    window.setupEmailValidationHandlers(
+  window
+    .setupEmailValidationHandlers
+    ?.(
       retryAfter
     );
-  }
 }
 
 
 function resetMainView() {
-
   const dashboard =
     document.getElementById(
       "mainDashboard"
@@ -444,12 +423,12 @@ function resetMainView() {
 
   dashboard?.classList.remove(
     "character-focus",
+    "chronicle-focus",
     "house-focus"
   );
 
 
   if (overview) {
-
     overview.classList.remove(
       "d-none",
       "is-leaving",
@@ -459,7 +438,6 @@ function resetMainView() {
 
 
   if (detail) {
-
     detail.classList.add(
       "d-none"
     );
@@ -476,7 +454,6 @@ function showMainPage(
   loading,
   main
 ) {
-
   if (loading) {
     loading.hidden =
       true;
@@ -493,7 +470,6 @@ function showMainPage(
 function showMainError(
   container
 ) {
-
   if (!container) {
     return;
   }
@@ -511,12 +487,10 @@ function showMainError(
 
 
 async function redirectToLogin() {
-
   if (
     typeof window.loadPage ===
     "function"
   ) {
-
     await window.loadPage(
       "login",
       {
