@@ -45,17 +45,27 @@ const {
   "../data/characterSheetLifecycle"
 );
 
+const {
+  createEmptyCharacterCreationState,
+} = require(
+  "../rules/vampire/lotnr/ruleset"
+);
+
 
 const validSects =
   SECT_OPTIONS.map(
-    (option) =>
+    (
+      option
+    ) =>
       option.value
   );
 
 
 const validClans =
   CLAN_OPTIONS.map(
-    (option) =>
+    (
+      option
+    ) =>
       option.value
   );
 
@@ -261,6 +271,14 @@ const CharacterSchema =
           default:
             null,
         },
+      },
+
+      creation: {
+        type:
+          mongoose.Schema.Types.Mixed,
+
+        default:
+          createEmptyCharacterCreationState,
       },
 
       sect: {

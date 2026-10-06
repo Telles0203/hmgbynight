@@ -153,7 +153,7 @@ const CHARACTER_CREATION_RULES =
           1,
 
         maximum:
-          5,
+          10,
       }),
 
     generation:

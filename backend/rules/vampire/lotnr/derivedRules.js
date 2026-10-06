@@ -111,12 +111,9 @@ function calculateBaseMorality(
   }
 
 
-  return Math.ceil(
-    (
-      firstValue +
-      secondValue
-    ) /
-    2
+  return (
+    firstValue +
+    secondValue
   );
 }
 

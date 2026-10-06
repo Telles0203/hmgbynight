@@ -9,15 +9,20 @@ import {
 window.ByNightMain =
   window.ByNightMain || {};
 
+
 window.ByNightMain.character =
   window.ByNightMain.character || {
-    options: null,
-    characters: [],
+    options:
+      null,
+
+    characters:
+      [],
   };
 
 
 const MOTION_DURATION_SECONDS =
   1;
+
 
 const MOTION_DURATION =
   MOTION_DURATION_SECONDS *
@@ -73,7 +78,9 @@ export async function openCharacterView(
     );
 
 
-  if (!elements) {
+  if (
+    !elements
+  ) {
     return;
   }
 
@@ -120,7 +127,9 @@ export async function openCharacterView(
 
     const elementsToCollapse = [
       ...allCards.filter(
-        (card) =>
+        (
+          card
+        ) =>
           card !==
           selectedCard
       ),
@@ -147,8 +156,10 @@ export async function openCharacterView(
       panelsContainer,
       characterPanel,
       housePanel,
+
       opening:
         true,
+
       duration:
         MOTION_DURATION,
     });
@@ -187,7 +198,9 @@ export async function closeCharacterView() {
       .selectedCharacterId;
 
 
-  if (!characterId) {
+  if (
+    !characterId
+  ) {
     return;
   }
 
@@ -198,7 +211,9 @@ export async function closeCharacterView() {
     );
 
 
-  if (!elements) {
+  if (
+    !elements
+  ) {
     return;
   }
 
@@ -232,8 +247,10 @@ export async function closeCharacterView() {
       panelsContainer,
       characterPanel,
       housePanel,
+
       opening:
         false,
+
       duration:
         MOTION_DURATION,
     });
@@ -248,7 +265,9 @@ export async function closeCharacterView() {
       panelHeader,
 
       ...allCards.filter(
-        (card) =>
+        (
+          card
+        ) =>
           card !==
           selectedCard
       ),

@@ -22,6 +22,13 @@ const rulesDirectory =
   );
 
 
+const allocationDirectory =
+  path.resolve(
+    rulesDirectory,
+    "allocation"
+  );
+
+
 const facadePath =
   path.resolve(
     __dirname,
@@ -34,6 +41,39 @@ const virtuesPath =
     __dirname,
     "../../backend/data/vampire/virtues.js"
   );
+
+
+function assertFileBelowEightHundredLines(
+  file
+) {
+  assert.equal(
+    fs.existsSync(
+      file
+    ),
+    true,
+    `Arquivo não encontrado: ${file}`
+  );
+
+
+  const lineCount =
+    fs
+      .readFileSync(
+        file,
+        "utf8"
+      )
+      .split(
+        /\r?\n/
+      )
+      .length;
+
+
+  assert.equal(
+    lineCount <
+      800,
+    true,
+    `${file} possui ${lineCount} linhas.`
+  );
+}
 
 
 test(
@@ -54,37 +94,30 @@ test(
       (
         file
       ) => {
-        const fullPath =
+        assertFileBelowEightHundredLines(
           path.join(
             rulesDirectory,
             file
-          );
-
-
-        assert.equal(
-          fs.existsSync(
-            fullPath
-          ),
-          true
+          )
         );
+      }
+    );
 
 
-        const lineCount =
-          fs
-            .readFileSync(
-              fullPath,
-              "utf8"
-            )
-            .split(
-              "\n"
-            )
-            .length;
-
-
-        assert.equal(
-          lineCount <
-            800,
-          true
+    [
+      "allocationHelpers.js",
+      "attributeAbilityRules.js",
+      "disciplineBackgroundRules.js",
+      "virtueAllocationRules.js",
+    ].forEach(
+      (
+        file
+      ) => {
+        assertFileBelowEightHundredLines(
+          path.join(
+            allocationDirectory,
+            file
+          )
         );
       }
     );
@@ -102,11 +135,9 @@ test(
       );
 
 
-    assert.equal(
-      source.includes(
-        'require(\n    "./lotnr"'
-      ),
-      true
+    assert.match(
+      source,
+      /require\s*\(\s*["']\.\/lotnr["']\s*\)/
     );
   }
 );

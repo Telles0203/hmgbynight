@@ -20,6 +20,7 @@ const CHARACTER_SHEET_DRAFT_FIELDS = [
   "nature",
   "demeanor",
   "virtues",
+  "creation",
 ];
 
 

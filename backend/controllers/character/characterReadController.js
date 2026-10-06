@@ -25,45 +25,56 @@ const {
 );
 
 const {
-  getClanDisplayName,
-} = require(
-  "../../data/vampire/clanDisplay"
-);
-
-const {
   getCoreArchetypes,
 } = require(
   "../../data/vampire/archetypes"
 );
 
 const {
-  serializeHouse,
-  serializeArchetype,
-  serializeMoralityPath,
-  serializeVirtues,
+  CORE_DISCIPLINES,
+  CORE_BACKGROUNDS,
 } = require(
-  "./characterHelpers"
+  "../../rules/vampire/lotnr/catalogs"
 );
 
 const {
-  serializeCharacterState,
+  RULESET_REFERENCE,
 } = require(
-  "./characterState"
+  "../../rules/vampire/lotnr/ruleset"
 );
 
 const {
-  isDraftApplicable,
-  serializeCharacterSheetDraft,
   getCharacterSheetDraftMap,
 } = require(
   "../../services/characterSheetDraftService"
 );
 
 const {
-  getCharacterCreationProgress,
+  serializeCharacterRecord,
 } = require(
-  "../../rules/characterCreation/characterCreationProgress"
+  "./characterSerializer"
 );
+
+
+function humanizeRuleKey(
+  value
+) {
+  return String(
+    value ||
+    ""
+  )
+    .replace(
+      /_/g,
+      " "
+    )
+    .replace(
+      /\b\w/g,
+      (
+        letter
+      ) =>
+        letter.toUpperCase()
+    );
+}
 
 
 async function getCharacterOptions(
@@ -101,6 +112,40 @@ async function getCharacterOptions(
           })
         ),
 
+      disciplines:
+        CORE_DISCIPLINES.map(
+          (
+            discipline
+          ) => ({
+            value:
+              discipline,
+
+            label:
+              humanizeRuleKey(
+                discipline
+              ),
+          })
+        ),
+
+      backgrounds:
+        CORE_BACKGROUNDS.map(
+          (
+            background
+          ) => ({
+            value:
+              background,
+
+            label:
+              humanizeRuleKey(
+                background
+              ),
+          })
+        ),
+
+      ruleset: {
+        ...RULESET_REFERENCE,
+      },
+
       limits: {
         titleMaxLength:
           CHARACTER_TITLE_MAX_LENGTH,
@@ -129,135 +174,6 @@ async function getCharacterOptions(
 }
 
 
-function serializeDraftForCharacter(
-  character,
-  draft
-) {
-  const applicableDraft =
-    isDraftApplicable(
-      character,
-      draft
-    )
-      ? draft
-      : null;
-
-
-  const serialized =
-    serializeCharacterSheetDraft(
-      applicableDraft
-    );
-
-
-  const changes =
-    serialized.changes;
-
-
-  const displayChanges =
-    {};
-
-
-  if (
-    Object.prototype
-      .hasOwnProperty
-      .call(
-        changes,
-        "title"
-      )
-  ) {
-    displayChanges.title =
-      String(
-        changes.title ||
-        ""
-      );
-  }
-
-
-  if (
-    Object.prototype
-      .hasOwnProperty
-      .call(
-        changes,
-        "concept"
-      )
-  ) {
-    displayChanges.concept =
-      String(
-        changes.concept ||
-        ""
-      );
-  }
-
-
-  if (
-    Object.prototype
-      .hasOwnProperty
-      .call(
-        changes,
-        "clan"
-      )
-  ) {
-    displayChanges.clan =
-      getClanDisplayName(
-        character.sect,
-        changes.clan
-      ) ||
-      String(
-        changes.clan ||
-        ""
-      );
-  }
-
-
-  if (
-    Object.prototype
-      .hasOwnProperty
-      .call(
-        changes,
-        "nature"
-      )
-  ) {
-    const nature =
-      serializeArchetype(
-        changes.nature
-      );
-
-
-    displayChanges.nature =
-      nature.label ||
-      nature.ref ||
-      "";
-  }
-
-
-  if (
-    Object.prototype
-      .hasOwnProperty
-      .call(
-        changes,
-        "demeanor"
-      )
-  ) {
-    const demeanor =
-      serializeArchetype(
-        changes.demeanor
-      );
-
-
-    displayChanges.demeanor =
-      demeanor.label ||
-      demeanor.ref ||
-      "";
-  }
-
-
-  return {
-    ...serialized,
-
-    displayChanges,
-  };
-}
-
-
 async function listCharacters(
   req,
   res
@@ -273,7 +189,7 @@ async function listCharacters(
       })
 
         .select(
-          "name title sheetLifecycle concept nature demeanor moralityPath moralityRating virtues type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
+          "name title sheetLifecycle concept nature demeanor moralityPath moralityRating virtues creation type sect clan motherHouse pendingMotherHouse createdAt updatedAt"
         )
 
         .populate({
@@ -314,158 +230,16 @@ async function listCharacters(
         characters.map(
           (
             character
-          ) => {
-            const nature =
-              serializeArchetype(
-                character.nature
-              );
-
-
-            const demeanor =
-              serializeArchetype(
-                character.demeanor
-              );
-
-
-            const moralityPath =
-              serializeMoralityPath(
-                character.moralityPath
-              );
-
-
-            const virtues =
-              serializeVirtues(
-                moralityPath.ref,
-                character.virtues
-              );
-
-
-            const state =
-              serializeCharacterState(
-                character
-              );
-
-
-            const creation =
-              getCharacterCreationProgress(
-                character
-              );
-
-
-            const draft =
+          ) =>
+            serializeCharacterRecord(
+              character,
               draftMap.get(
                 String(
                   character._id
                 )
               ) ||
-              null;
-
-
-            return {
-              id:
-                character._id,
-
-              name:
-                character.name,
-
-              title:
-                character.title ||
-                "",
-
-              concept:
-                character.concept ||
-                "",
-
-              nature:
-                nature.ref,
-
-              natureLabel:
-                nature.label,
-
-              demeanor:
-                demeanor.ref,
-
-              demeanorLabel:
-                demeanor.label,
-
-              moralityPath:
-                moralityPath.ref,
-
-              moralityPathLabel:
-                moralityPath.label,
-
-              moralityRating:
-                Number.isFinite(
-                  character.moralityRating
-                )
-                  ? character.moralityRating
-                  : null,
-
-              virtues:
-                virtues.values,
-
-              activeVirtues:
-                virtues.active,
-
-              virtuePoints:
-                virtues.points,
-
-              creation,
-
-              type:
-                character.type,
-
-              sect:
-                character.sect,
-
-              clan:
-                character.clan,
-
-              clanDisplayName:
-                getClanDisplayName(
-                  character.sect,
-                  character.clan
-                ),
-
-              motherHouse:
-                serializeHouse(
-                  character.motherHouse
-                ),
-
-              pendingMotherHouse:
-                serializeHouse(
-                  character
-                    .pendingMotherHouse
-                ),
-
-              sheetLifecycle:
-                state.sheetLifecycle,
-
-              sheetStatus:
-                state.sheetStatus,
-
-              chronicleStatus:
-                state.chronicleStatus,
-
-              status:
-                state.status,
-
-              editState:
-                state.editState,
-
-              sheetDraft:
-                serializeDraftForCharacter(
-                  character,
-                  draft
-                ),
-
-              createdAt:
-                character.createdAt,
-
-              updatedAt:
-                character.updatedAt,
-            };
-          }
+              null
+            )
         ),
     });
 

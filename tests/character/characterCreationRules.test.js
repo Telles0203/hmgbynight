@@ -235,6 +235,14 @@ test(
 
     assert.equal(
       CHARACTER_CREATION_RULES
+        .morality
+        .maximum,
+      10
+    );
+
+
+    assert.equal(
+      CHARACTER_CREATION_RULES
         .freeTraits
         .base,
       5
@@ -591,7 +599,7 @@ test(
 
 
 test(
-  "Humanity is average of Conscience and Self Control rounded up",
+  "Humanity is the sum of Conscience and Self Control",
   () => {
     assert.equal(
       calculateStartingMorality(
@@ -604,7 +612,7 @@ test(
             3,
         }
       ),
-      3
+      5
     );
 
 
@@ -619,7 +627,22 @@ test(
             2,
         }
       ),
-      3
+      6
+    );
+
+
+    assert.equal(
+      calculateStartingMorality(
+        DEFAULT_MORALITY_PATH,
+        {
+          conscience:
+            5,
+
+          selfControl:
+            5,
+        }
+      ),
+      10
     );
   }
 );

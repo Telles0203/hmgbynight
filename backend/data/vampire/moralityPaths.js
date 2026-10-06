@@ -7,7 +7,7 @@ const MORALITY_MIN =
 
 
 const MORALITY_MAX =
-  5;
+  10;
 
 
 const MORALITY_PATH_OPTIONS = [
@@ -270,14 +270,9 @@ function calculateStartingMorality(
   }
 
 
-  const average =
-    Math.ceil(
-      (
-        firstValue +
-        secondValue
-      ) /
-      2
-    );
+  const value =
+    firstValue +
+    secondValue;
 
 
   return Math.min(
@@ -285,7 +280,7 @@ function calculateStartingMorality(
 
     Math.max(
       MORALITY_MIN,
-      average
+      value
     )
   );
 }

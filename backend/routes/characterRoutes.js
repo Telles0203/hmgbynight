@@ -20,6 +20,7 @@ const {
   updateCharacterDemeanor,
   updateCharacterVirtues,
   updateCharacterVirtue,
+  updateCharacterCreation,
   requestMotherHouse,
   cancelMotherHouseRequest,
   deleteCharacter,
@@ -151,6 +152,14 @@ router.patch(
   requireAuth,
   requireVerifiedEmail,
   updateCharacterVirtue
+);
+
+
+router.patch(
+  "/:characterId/creation",
+  requireAuth,
+  requireVerifiedEmail,
+  updateCharacterCreation
 );
 
 

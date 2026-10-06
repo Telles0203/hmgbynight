@@ -20,6 +20,12 @@ const {
   "./edit/characterVirtueEditController"
 );
 
+const {
+  updateCharacterCreation,
+} = require(
+  "./edit/characterCreationEditController"
+);
+
 
 module.exports = {
   updateCharacterConcept,
@@ -29,4 +35,5 @@ module.exports = {
   updateCharacterDemeanor,
   updateCharacterVirtues,
   updateCharacterVirtue,
+  updateCharacterCreation,
 };

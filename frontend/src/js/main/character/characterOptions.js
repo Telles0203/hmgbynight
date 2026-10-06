@@ -65,6 +65,27 @@ async function loadCharacterOptions() {
             ? data.clans
             : [],
 
+        disciplines:
+          Array.isArray(
+            data.disciplines
+          )
+            ? data.disciplines
+            : [],
+
+        backgrounds:
+          Array.isArray(
+            data.backgrounds
+          )
+            ? data.backgrounds
+            : [],
+
+        ruleset:
+          data.ruleset &&
+          typeof data.ruleset ===
+            "object"
+            ? data.ruleset
+            : null,
+
         limits:
           data.limits &&
           typeof data.limits ===
@@ -137,16 +158,22 @@ function populateCharacterOptions() {
 
 
   mainSectValues.forEach(
-    (sectValue) => {
+    (
+      sectValue
+    ) => {
       const sect =
         options.sects.find(
-          (option) =>
+          (
+            option
+          ) =>
             option.value ===
             sectValue
         );
 
 
-      if (!sect) {
+      if (
+        !sect
+      ) {
         return;
       }
 
@@ -195,13 +222,17 @@ function populateCharacterOptions() {
 
   options.sects
     .filter(
-      (sect) =>
+      (
+        sect
+      ) =>
         !mainSectValues.includes(
           sect.value
         )
     )
     .forEach(
-      (sect) => {
+      (
+        sect
+      ) => {
         const option =
           document.createElement(
             "option"
@@ -228,7 +259,9 @@ function populateCharacterOptions() {
 
 
   options.clans.forEach(
-    (clan) => {
+    (
+      clan
+    ) => {
       const option =
         document.createElement(
           "option"
@@ -301,7 +334,9 @@ function updateOtherSectVisibility() {
     !showOther;
 
 
-  if (!showOther) {
+  if (
+    !showOther
+  ) {
     otherSectSelect.value =
       "";
   }
@@ -321,7 +356,9 @@ function getSelectedSect() {
     );
 
 
-  if (!sectSelect) {
+  if (
+    !sectSelect
+  ) {
     return "";
   }
 
@@ -352,7 +389,9 @@ function getSectLabel(
 
   const sect =
     options?.sects?.find(
-      (option) =>
+      (
+        option
+      ) =>
         option.value ===
         sectValue
     );
@@ -377,7 +416,9 @@ function getClanLabel(
 
   const clan =
     options?.clans?.find(
-      (option) =>
+      (
+        option
+      ) =>
         option.value ===
         clanValue
     );
