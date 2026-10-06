@@ -88,6 +88,20 @@ const bootstrapDistPath =
   );
 
 
+const interFontPath =
+  path.join(
+    __dirname,
+    "../node_modules/@fontsource/inter"
+  );
+
+
+const cinzelFontPath =
+  path.join(
+    __dirname,
+    "../node_modules/@fontsource/cinzel"
+  );
+
+
 const indexPath =
   path.join(
     publicPath,
@@ -301,7 +315,6 @@ app.use(
 
         styleSrc: [
           "'self'",
-          "https://fonts.googleapis.com",
         ],
 
         styleSrcAttr: [
@@ -310,7 +323,6 @@ app.use(
 
         fontSrc: [
           "'self'",
-          "https://fonts.gstatic.com",
           "data:",
         ],
 
@@ -322,8 +334,6 @@ app.use(
 
         connectSrc: [
           "'self'",
-          "https://fonts.googleapis.com",
-          "https://fonts.gstatic.com",
         ],
 
         objectSrc: [
@@ -394,6 +404,76 @@ app.use(
   "/vendor/bootstrap",
   express.static(
     bootstrapDistPath
+  )
+);
+
+
+app.get(
+  "/vendor/fonts/inter/400.css",
+  (
+    req,
+    res
+  ) => {
+    return res.sendFile(
+      path.join(
+        interFontPath,
+        "400.css"
+      )
+    );
+  }
+);
+
+
+app.get(
+  "/vendor/fonts/inter/500.css",
+  (
+    req,
+    res
+  ) => {
+    return res.sendFile(
+      path.join(
+        interFontPath,
+        "500.css"
+      )
+    );
+  }
+);
+
+
+app.use(
+  "/vendor/fonts/inter/files",
+  express.static(
+    path.join(
+      interFontPath,
+      "files"
+    )
+  )
+);
+
+
+app.get(
+  "/vendor/fonts/cinzel/600.css",
+  (
+    req,
+    res
+  ) => {
+    return res.sendFile(
+      path.join(
+        cinzelFontPath,
+        "600.css"
+      )
+    );
+  }
+);
+
+
+app.use(
+  "/vendor/fonts/cinzel/files",
+  express.static(
+    path.join(
+      cinzelFontPath,
+      "files"
+    )
   )
 );
 
