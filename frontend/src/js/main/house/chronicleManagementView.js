@@ -54,6 +54,25 @@ function getCharacterOwnerLabel(
 }
 
 
+function getBackButtonIcon() {
+  return `
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M15 18L9 12L15 6"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  `;
+}
+
+
 function createStatCard(
   label,
   value
@@ -62,10 +81,9 @@ function createStatCard(
     <div class="col-6 col-lg-3">
       <div
         class="
+          chronicle-stat-card
           border
-          border-secondary
           rounded
-          bg-black
           p-3
           h-100
         "
@@ -76,7 +94,7 @@ function createStatCard(
           )}
         </div>
 
-        <div class="h4 text-light mb-0">
+        <div class="h4 mb-0">
           ${escapeHtml(
             value
           )}
@@ -122,8 +140,8 @@ function createPendingCharacterCard(
   return `
     <article
       class="
+        chronicle-section-card
         border
-        border-secondary
         rounded
         p-3
         mb-2
@@ -140,18 +158,18 @@ function createPendingCharacterCard(
         "
       >
         <div>
-          <div class="text-light fw-semibold">
+          <div class="chronicle-card-title">
             ${name}
           </div>
 
-          <div class="text-secondary small">
+          <div class="chronicle-card-subtext">
             Jogador: ${owner}
           </div>
 
           ${
             clan
               ? `
-                <div class="text-secondary small">
+                <div class="chronicle-card-subtext">
                   ${clan}
                 </div>
               `
@@ -174,7 +192,6 @@ function createPendingCharacterCard(
                   type="button"
                   class="
                     btn
-                    btn-success
                     btn-sm
                     chronicle-approve-character
                   "
@@ -187,7 +204,6 @@ function createPendingCharacterCard(
                   type="button"
                   class="
                     btn
-                    btn-outline-danger
                     btn-sm
                     chronicle-reject-character
                   "
@@ -240,18 +256,18 @@ function createCharacterCard(
   return `
     <article
       class="
+        chronicle-section-card
         border
-        border-secondary
         rounded
         p-3
         mb-2
       "
     >
-      <div class="text-light fw-semibold">
+      <div class="chronicle-card-title">
         ${name}
       </div>
 
-      <div class="text-secondary small">
+      <div class="chronicle-card-subtext">
         ${type}
         ${
           clan
@@ -260,7 +276,7 @@ function createCharacterCard(
         }
       </div>
 
-      <div class="text-secondary small mt-1">
+      <div class="chronicle-card-subtext mt-1">
         Responsável: ${owner}
       </div>
     </article>
@@ -314,8 +330,8 @@ function createMemberCard(
   return `
     <article
       class="
+        chronicle-section-card
         border
-        border-secondary
         rounded
         p-3
         mb-2
@@ -332,14 +348,14 @@ function createMemberCard(
         "
       >
         <div>
-          <div class="text-light fw-semibold">
+          <div class="chronicle-card-title">
             ${name}
           </div>
 
           ${
             email
               ? `
-                <div class="text-secondary small">
+                <div class="chronicle-card-subtext">
                   ${email}
                 </div>
               `
@@ -425,7 +441,6 @@ function createMemberCard(
                   type="button"
                   class="
                     btn
-                    btn-outline-light
                     btn-sm
                     chronicle-save-member-role
                   "
@@ -493,11 +508,14 @@ export function renderChronicleError(
           type="button"
           class="
             btn
-            btn-outline-light
+            btn-link
+            text-decoration-none
+            p-0
             chronicle-back-button
           "
         >
-          ← Voltar
+          ${getBackButtonIcon()}
+          <span>Minhas Crônicas</span>
         </button>
 
       </div>
@@ -614,14 +632,14 @@ export function renderChronicleManagement(
               class="
                 btn
                 btn-link
-                text-secondary
                 text-decoration-none
                 p-0
-                mb-2
+                mb-3
                 chronicle-back-button
               "
             >
-              ← Voltar para o painel
+              ${getBackButtonIcon()}
+              <span>Minhas Crônicas</span>
             </button>
 
             <h2
@@ -651,7 +669,6 @@ export function renderChronicleManagement(
               type="button"
               class="
                 btn
-                btn-outline-secondary
                 btn-sm
                 chronicle-refresh-button
               "
@@ -697,9 +714,7 @@ export function renderChronicleManagement(
 
         <div
           class="
-            d-flex
-            flex-wrap
-            gap-2
+            chronicle-tab-list
             mb-4
           "
           role="tablist"
@@ -708,10 +723,8 @@ export function renderChronicleManagement(
           <button
             type="button"
             class="
-              btn
-              btn-blood
-              btn-sm
               chronicle-tab-button
+              chronicle-tab-button-active
             "
             data-chronicle-tab="overview"
           >
@@ -721,9 +734,6 @@ export function renderChronicleManagement(
           <button
             type="button"
             class="
-              btn
-              btn-outline-secondary
-              btn-sm
               chronicle-tab-button
             "
             data-chronicle-tab="requests"
@@ -739,9 +749,6 @@ export function renderChronicleManagement(
           <button
             type="button"
             class="
-              btn
-              btn-outline-secondary
-              btn-sm
               chronicle-tab-button
             "
             data-chronicle-tab="characters"
@@ -752,9 +759,6 @@ export function renderChronicleManagement(
           <button
             type="button"
             class="
-              btn
-              btn-outline-secondary
-              btn-sm
               chronicle-tab-button
             "
             data-chronicle-tab="people"
@@ -765,9 +769,6 @@ export function renderChronicleManagement(
           <button
             type="button"
             class="
-              btn
-              btn-outline-secondary
-              btn-sm
               chronicle-tab-button
             "
             data-chronicle-tab="settings"
@@ -782,7 +783,7 @@ export function renderChronicleManagement(
           data-chronicle-pane="overview"
         >
 
-          <h3 class="h5 text-light">
+          <h3 class="h4 text-light">
             Visão geral
           </h3>
 
@@ -1012,14 +1013,8 @@ export function setActiveChronicleTab(
 
 
         button.classList.toggle(
-          "btn-blood",
+          "chronicle-tab-button-active",
           active
-        );
-
-
-        button.classList.toggle(
-          "btn-outline-secondary",
-          !active
         );
       }
     );

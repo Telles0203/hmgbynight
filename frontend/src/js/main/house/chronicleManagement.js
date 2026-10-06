@@ -6,6 +6,12 @@ import {
   showChronicleManagementAlert,
 } from "./chronicleManagementView.js";
 
+import {
+  animateCloseChronicleManagement,
+  animateOpenChronicleManagement,
+  prepareChronicleManagementPanel,
+} from "./chronicleManagementAnimations.js";
+
 
 let currentChronicleId =
   null;
@@ -56,7 +62,6 @@ function ensureChronicleManagementPanel() {
   panel.id =
     "chronicleManagementPanel";
 
-
   panel.className =
     "d-none";
 
@@ -65,7 +70,6 @@ function ensureChronicleManagementPanel() {
     "click",
     handleChronicleManagementClick
   );
-
 
   panel.addEventListener(
     "submit",
@@ -107,7 +111,7 @@ async function requestJson(
   ) {
     throw new Error(
       data?.error ||
-      "A operação não pôde ser concluída."
+        "A operação não pôde ser concluída."
     );
   }
 
@@ -202,10 +206,8 @@ export async function openChronicleManagement(
   currentChronicleId =
     cleanId;
 
-
   currentChronicleData =
     null;
-
 
   activeTab =
     "overview";
@@ -213,7 +215,6 @@ export async function openChronicleManagement(
 
   const panels =
     getDashboardPanels();
-
 
   const managementPanel =
     ensureChronicleManagementPanel();
@@ -224,13 +225,19 @@ export async function openChronicleManagement(
   }
 
 
-  panels?.classList.add(
-    "d-none"
+  await prepareChronicleManagementPanel(
+    managementPanel
   );
 
 
-  managementPanel.classList.remove(
-    "d-none"
+  renderChronicleLoading(
+    managementPanel
+  );
+
+
+  await animateOpenChronicleManagement(
+    panels,
+    managementPanel
   );
 
 
@@ -238,10 +245,9 @@ export async function openChronicleManagement(
 }
 
 
-function closeChronicleManagement() {
+async function closeChronicleManagement() {
   const panels =
     getDashboardPanels();
-
 
   const managementPanel =
     document.getElementById(
@@ -249,23 +255,17 @@ function closeChronicleManagement() {
     );
 
 
-  managementPanel?.classList.add(
-    "d-none"
-  );
-
-
-  panels?.classList.remove(
-    "d-none"
+  await animateCloseChronicleManagement(
+    panels,
+    managementPanel
   );
 
 
   currentChronicleId =
     null;
 
-
   currentChronicleData =
     null;
-
 
   activeTab =
     "overview";
@@ -295,7 +295,6 @@ async function runButtonAction(
       button.disabled =
         true;
 
-
       button.textContent =
         loadingText;
     }
@@ -310,7 +309,6 @@ async function runButtonAction(
     ) {
       button.disabled =
         false;
-
 
       button.textContent =
         originalText;
@@ -348,7 +346,6 @@ async function approveCharacter(
 
 
       await refreshRelatedPanels();
-
 
       await loadChronicleManagement();
     }
@@ -396,7 +393,6 @@ async function rejectCharacter(
 
 
       await refreshRelatedPanels();
-
 
       await loadChronicleManagement();
     }
@@ -476,7 +472,8 @@ async function handleChronicleManagementClick(
   event
 ) {
   const target =
-    event.target instanceof Element
+    event.target instanceof
+      Element
       ? event.target
       : null;
 
@@ -495,7 +492,7 @@ async function handleChronicleManagementClick(
       ".chronicle-back-button"
     )
   ) {
-    closeChronicleManagement();
+    await closeChronicleManagement();
 
     return;
   }
@@ -662,12 +659,10 @@ async function handleChronicleManagementSubmit(
   const panel =
     event.currentTarget;
 
-
   const input =
     event.target.querySelector(
       "#chronicleSettingsName"
     );
-
 
   const button =
     event.target.querySelector(
@@ -690,7 +685,6 @@ async function handleChronicleManagementSubmit(
       panel,
       "O nome da Crônica deve possuir entre 2 e 80 caracteres."
     );
-
 
     return;
   }
@@ -730,7 +724,6 @@ async function handleChronicleManagementSubmit(
 
 
         await refreshRelatedPanels();
-
 
         await loadChronicleManagement();
       }
