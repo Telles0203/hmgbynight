@@ -13,6 +13,10 @@ import {
 } from "./identity/characterIdentityView.js";
 
 import {
+  applyMoralityPathSaveResult,
+} from "./identity/characterMoralityPathState.js";
+
+import {
   getCharacterDraftFieldDisplayValue,
   getCharacterDraftFieldValue,
   hasCharacterDraftField,
@@ -212,13 +216,17 @@ export async function saveActiveCharacterIdentityEdit() {
 
 
   if (
-    field ===
-      "clan" &&
+    (
+      field ===
+        "clan" ||
+      field ===
+        "moralityPath"
+    ) &&
     !value
   ) {
     showIdentityError(
       row,
-      "Selecione o Clã."
+      `Selecione ${config.label}.`
     );
 
 
@@ -366,6 +374,17 @@ export async function saveActiveCharacterIdentityEdit() {
       );
 
 
+      if (
+        field ===
+        "moralityPath"
+      ) {
+        applyMoralityPathSaveResult(
+          character,
+          data
+        );
+      }
+
+
       finishEditor(
         row,
         field,
@@ -396,6 +415,17 @@ export async function saveActiveCharacterIdentityEdit() {
         config.labelProperty
       ] =
         savedDisplayValue;
+    }
+
+
+    if (
+      field ===
+      "moralityPath"
+    ) {
+      applyMoralityPathSaveResult(
+        character,
+        data
+      );
     }
 
 

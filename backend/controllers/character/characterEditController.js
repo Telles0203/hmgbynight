@@ -14,6 +14,12 @@ const {
 );
 
 const {
+  updateCharacterMoralityPath,
+} = require(
+  "./edit/characterMoralityPathEditController"
+);
+
+const {
   updateCharacterVirtues,
   updateCharacterVirtue,
 } = require(
@@ -33,6 +39,7 @@ module.exports = {
   updateCharacterClan,
   updateCharacterNature,
   updateCharacterDemeanor,
+  updateCharacterMoralityPath,
   updateCharacterVirtues,
   updateCharacterVirtue,
   updateCharacterCreation,

@@ -18,6 +18,7 @@ const {
   updateCharacterClan,
   updateCharacterNature,
   updateCharacterDemeanor,
+  updateCharacterMoralityPath,
   updateCharacterVirtues,
   updateCharacterVirtue,
   updateCharacterCreation,
@@ -136,6 +137,14 @@ router.patch(
   requireAuth,
   requireVerifiedEmail,
   updateCharacterDemeanor
+);
+
+
+router.patch(
+  "/:characterId/morality-path",
+  requireAuth,
+  requireVerifiedEmail,
+  updateCharacterMoralityPath
 );
 
 

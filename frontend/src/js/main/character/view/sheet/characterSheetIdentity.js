@@ -7,6 +7,71 @@ const GENERATION_HELP_TEXT =
   "Laws of the Night Revised, página 95. Um personagem começa normalmente na 13ª Geração. Cada nível do Antecedente Geração reduz a geração em um passo, até a 8ª Geração com cinco níveis. A Geração também determina limites como Sangue, gasto de Sangue por turno e Força de Vontade.";
 
 
+const MORALITY_APPROVAL_MESSAGE =
+  "Esta Trilha requer aprovação da Narração.";
+
+
+function moralityPathRequiresApproval(
+  moralityPath
+) {
+  const options =
+    window.ByNightMain
+      ?.character
+      ?.options
+      ?.moralityPaths ||
+    [];
+
+
+  const option =
+    options.find(
+      (
+        item
+      ) =>
+        String(
+          item.value
+        ) ===
+        String(
+          moralityPath
+        )
+    );
+
+
+  return (
+    option
+      ?.requiresNarratorApproval ===
+    true
+  );
+}
+
+
+function createMoralityApprovalIndicator(
+  moralityPath
+) {
+  if (
+    !moralityPathRequiresApproval(
+      moralityPath
+    )
+  ) {
+    return "";
+  }
+
+
+  return `
+    <span
+      class="character-sheet-warning-inline"
+      title="${escapeSheetHtml(
+        MORALITY_APPROVAL_MESSAGE
+      )}"
+      aria-label="${escapeSheetHtml(
+        MORALITY_APPROVAL_MESSAGE
+      )}"
+    >
+      !
+    </span>
+  `;
+}
+
+
 function createIdentityFieldRow({
   characterId,
   field,
@@ -67,6 +132,15 @@ function createIdentityFieldRow({
           <span class="character-field-display">
             ${safeDisplayValue || "—"}
           </span>
+
+          ${
+            field ===
+              "moralityPath"
+              ? createMoralityApprovalIndicator(
+                  value
+                )
+              : ""
+          }
 
           ${
             editable
@@ -311,6 +385,8 @@ export function createVampireSection({
   clanValue,
   generation,
   sect,
+  moralityPath,
+  moralityPathLabel,
   house,
   editable,
 }) {
@@ -380,6 +456,24 @@ export function createVampireSection({
         </span>
 
       </div>
+
+      ${createIdentityFieldRow({
+        characterId,
+
+        field:
+          "moralityPath",
+
+        label:
+          "Trilha Moral",
+
+        value:
+          moralityPath,
+
+        displayValue:
+          moralityPathLabel,
+
+        editable,
+      })}
 
       <div class="character-sheet-row">
 

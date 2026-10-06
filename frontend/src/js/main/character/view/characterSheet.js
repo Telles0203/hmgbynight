@@ -104,6 +104,14 @@ export function createCharacterSheet({
                 character?.sect ||
                 "",
 
+              moralityPath:
+                character?.moralityPath ||
+                "core:humanidade",
+
+              moralityPathLabel:
+                character?.moralityPathLabel ||
+                "Humanidade",
+
               house,
 
               editable,

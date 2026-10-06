@@ -32,6 +32,23 @@ export const CHARACTER_IDENTITY_FIELD_CONFIG = {
     type:
       "clan",
   },
+
+  moralityPath: {
+    label:
+      "Trilha Moral",
+
+    property:
+      "moralityPath",
+
+    labelProperty:
+      "moralityPathLabel",
+
+    endpoint:
+      "morality-path",
+
+    type:
+      "moralityPath",
+  },
 };
 
 

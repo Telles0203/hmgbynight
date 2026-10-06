@@ -19,6 +19,12 @@ const {
 );
 
 const {
+  getCoreMoralityPaths,
+} = require(
+  "../../data/vampire/moralityPaths"
+);
+
+const {
   CHARACTER_TITLE_MAX_LENGTH,
 } = require(
   "../../data/characterLimits"
@@ -111,6 +117,25 @@ async function getCharacterOptions(
               clan.label,
           })
         ),
+
+      moralityPaths:
+        getCoreMoralityPaths()
+          .map(
+            (
+              moralityPath
+            ) => ({
+              value:
+                moralityPath.ref,
+
+              label:
+                moralityPath.label,
+
+              requiresNarratorApproval:
+                moralityPath
+                  .requiresNarratorApproval ===
+                true,
+            })
+          ),
 
       disciplines:
         CORE_DISCIPLINES.map(

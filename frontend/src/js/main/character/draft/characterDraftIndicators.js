@@ -10,6 +10,7 @@ const SIMPLE_FIELDS = [
   "nature",
   "demeanor",
   "title",
+  "moralityPath",
 ];
 
 
@@ -475,6 +476,40 @@ function getPendingDisplayValue(
 
     return String(
       clan?.label ||
+      value ||
+      ""
+    );
+  }
+
+
+  if (
+    field ===
+    "moralityPath"
+  ) {
+    const moralityPaths =
+      window.ByNightMain
+        ?.character
+        ?.options
+        ?.moralityPaths ||
+      [];
+
+
+    const moralityPath =
+      moralityPaths.find(
+        (
+          option
+        ) =>
+          String(
+            option.value
+          ) ===
+          String(
+            value
+          )
+      );
+
+
+    return String(
+      moralityPath?.label ||
       value ||
       ""
     );

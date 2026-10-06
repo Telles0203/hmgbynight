@@ -3,6 +3,136 @@ import {
 } from "./characterIdentityConfig.js";
 
 
+const MORALITY_APPROVAL_MESSAGE =
+  "Esta Trilha requer aprovação da Narração.";
+
+
+function getMoralityPathOptions() {
+  return (
+    window.ByNightMain
+      ?.character
+      ?.options
+      ?.moralityPaths ||
+    []
+  );
+}
+
+
+function getMoralityPathOption(
+  value
+) {
+  return (
+    getMoralityPathOptions()
+      .find(
+        (
+          option
+        ) =>
+          String(
+            option.value
+          ) ===
+          String(
+            value
+          )
+      ) ||
+    null
+  );
+}
+
+
+function requiresMoralityPathApproval(
+  value
+) {
+  return (
+    getMoralityPathOption(
+      value
+    )
+      ?.requiresNarratorApproval ===
+    true
+  );
+}
+
+
+function createSelectInput({
+  options,
+  value,
+  displayValue,
+}) {
+  const select =
+    document.createElement(
+      "select"
+    );
+
+
+  select.className =
+    "form-select form-select-sm bg-black text-light border-secondary character-inline-input";
+
+
+  options.forEach(
+    (
+      item
+    ) => {
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        item.value;
+
+      option.textContent =
+        item.label;
+
+
+      select.appendChild(
+        option
+      );
+    }
+  );
+
+
+  if (
+    value &&
+    !options.some(
+      (
+        item
+      ) =>
+        String(
+          item.value
+        ) ===
+        String(
+          value
+        )
+    )
+  ) {
+    const option =
+      document.createElement(
+        "option"
+      );
+
+
+    option.value =
+      value;
+
+    option.textContent =
+      displayValue ||
+      value;
+
+
+    select.appendChild(
+      option
+    );
+  }
+
+
+  select.value =
+    value;
+
+
+  return select;
+}
+
+
 export function createIdentityInput(
   config,
   value,
@@ -12,83 +142,33 @@ export function createIdentityInput(
     config.type ===
     "clan"
   ) {
-    const select =
-      document.createElement(
-        "select"
-      );
+    return createSelectInput({
+      options:
+        window.ByNightMain
+          ?.character
+          ?.options
+          ?.clans ||
+        [],
+
+      value,
+
+      displayValue,
+    });
+  }
 
 
-    select.className =
-      "form-select form-select-sm bg-black text-light border-secondary character-inline-input";
+  if (
+    config.type ===
+    "moralityPath"
+  ) {
+    return createSelectInput({
+      options:
+        getMoralityPathOptions(),
 
+      value,
 
-    const clans =
-      window.ByNightMain
-        ?.character
-        ?.options
-        ?.clans ||
-      [];
-
-
-    clans.forEach(
-      (
-        clan
-      ) => {
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          clan.value;
-
-        option.textContent =
-          clan.label;
-
-
-        select.appendChild(
-          option
-        );
-      }
-    );
-
-
-    if (
-      value &&
-      !clans.some(
-        (
-          clan
-        ) =>
-          clan.value ===
-          value
-      )
-    ) {
-      const option =
-        document.createElement(
-          "option"
-        );
-
-
-      option.value =
-        value;
-
-      option.textContent =
-        displayValue ||
-        value;
-
-
-      select.appendChild(
-        option
-      );
-    }
-
-
-    select.value =
-      value;
-
-
-    return select;
+      displayValue,
+    });
   }
 
 
@@ -119,6 +199,85 @@ export function createIdentityInput(
 
 
   return input;
+}
+
+
+function createMoralityApprovalNote() {
+  const note =
+    document.createElement(
+      "div"
+    );
+
+
+  note.className =
+    "small text-warning d-none character-morality-path-approval-note";
+
+  note.textContent =
+    MORALITY_APPROVAL_MESSAGE;
+
+
+  return note;
+}
+
+
+function refreshMoralityApprovalNote(
+  input,
+  note
+) {
+  if (
+    !note
+  ) {
+    return;
+  }
+
+
+  const show =
+    requiresMoralityPathApproval(
+      input?.value
+    );
+
+
+  note.classList.toggle(
+    "d-none",
+    !show
+  );
+}
+
+
+function createMoralityApprovalIndicator(
+  value
+) {
+  if (
+    !requiresMoralityPathApproval(
+      value
+    )
+  ) {
+    return null;
+  }
+
+
+  const indicator =
+    document.createElement(
+      "span"
+    );
+
+
+  indicator.className =
+    "character-sheet-warning-inline";
+
+  indicator.textContent =
+    "!";
+
+  indicator.title =
+    MORALITY_APPROVAL_MESSAGE;
+
+  indicator.setAttribute(
+    "aria-label",
+    MORALITY_APPROVAL_MESSAGE
+  );
+
+
+  return indicator;
 }
 
 
@@ -168,6 +327,46 @@ export function mountIdentityEditor({
       value,
       displayValue
     );
+
+
+  editor.appendChild(
+    input
+  );
+
+
+  let approvalNote =
+    null;
+
+
+  if (
+    config.type ===
+    "moralityPath"
+  ) {
+    approvalNote =
+      createMoralityApprovalNote();
+
+
+    editor.appendChild(
+      approvalNote
+    );
+
+
+    refreshMoralityApprovalNote(
+      input,
+      approvalNote
+    );
+
+
+    input.addEventListener(
+      "change",
+      () => {
+        refreshMoralityApprovalNote(
+          input,
+          approvalNote
+        );
+      }
+    );
+  }
 
 
   const actions =
@@ -237,7 +436,6 @@ export function mountIdentityEditor({
 
 
   editor.append(
-    input,
     actions,
     error
   );
@@ -350,6 +548,31 @@ export function renderIdentityDisplay(
     "—";
 
 
+  wrapper.appendChild(
+    display
+  );
+
+
+  if (
+    config.type ===
+    "moralityPath"
+  ) {
+    const indicator =
+      createMoralityApprovalIndicator(
+        value
+      );
+
+
+    if (
+      indicator
+    ) {
+      wrapper.appendChild(
+        indicator
+      );
+    }
+  }
+
+
   const button =
     document.createElement(
       "button"
@@ -380,8 +603,7 @@ export function renderIdentityDisplay(
     "✎";
 
 
-  wrapper.append(
-    display,
+  wrapper.appendChild(
     button
   );
 

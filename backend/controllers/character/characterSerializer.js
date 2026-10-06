@@ -162,6 +162,27 @@ function serializeDraftForCharacter(
   }
 
 
+  if (
+    Object.prototype
+      .hasOwnProperty
+      .call(
+        changes,
+        "moralityPath"
+      )
+  ) {
+    const moralityPath =
+      serializeMoralityPath(
+        changes.moralityPath
+      );
+
+
+    displayChanges.moralityPath =
+      moralityPath.label ||
+      moralityPath.ref ||
+      "";
+  }
+
+
   return {
     ...serialized,
 
@@ -182,6 +203,7 @@ function hasCreationRelevantDraft(
   return [
     "creation",
     "virtues",
+    "moralityPath",
     "clan",
   ].some(
     (

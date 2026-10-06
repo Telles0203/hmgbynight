@@ -19,6 +19,7 @@ const CHARACTER_SHEET_DRAFT_FIELDS = [
   "concept",
   "nature",
   "demeanor",
+  "moralityPath",
   "virtues",
   "creation",
 ];

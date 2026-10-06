@@ -30,7 +30,7 @@ const editControllerPath =
 
 
 test(
-  "character editing routes include title and clan",
+  "character editing routes include identity fields",
   () => {
     const source =
       fs.readFileSync(
@@ -39,19 +39,21 @@ test(
       );
 
 
-    assert.equal(
-      source.includes(
-        "/:characterId/title"
-      ),
-      true
-    );
-
-
-    assert.equal(
-      source.includes(
-        "/:characterId/clan"
-      ),
-      true
+    [
+      "/:characterId/title",
+      "/:characterId/clan",
+      "/:characterId/morality-path",
+    ].forEach(
+      (
+        route
+      ) => {
+        assert.equal(
+          source.includes(
+            route
+          ),
+          true
+        );
+      }
     );
   }
 );
@@ -74,32 +76,28 @@ test(
 
 
     assert.equal(
-      lines < 200,
+      lines <
+        200,
       true
     );
 
 
-    assert.equal(
-      source.includes(
-        "./edit/characterBasicEditController"
-      ),
-      true
-    );
-
-
-    assert.equal(
-      source.includes(
-        "./edit/characterArchetypeEditController"
-      ),
-      true
-    );
-
-
-    assert.equal(
-      source.includes(
-        "./edit/characterVirtueEditController"
-      ),
-      true
+    [
+      "./edit/characterBasicEditController",
+      "./edit/characterArchetypeEditController",
+      "./edit/characterMoralityPathEditController",
+      "./edit/characterVirtueEditController",
+    ].forEach(
+      (
+        modulePath
+      ) => {
+        assert.equal(
+          source.includes(
+            modulePath
+          ),
+          true
+        );
+      }
     );
   }
 );
