@@ -88,10 +88,6 @@ const indexPath =
   );
 
 
-// ==============================
-// Environment validation
-// ==============================
-
 function validateConfiguredUrl(
   variableName,
   options = {}
@@ -123,6 +119,7 @@ function validateConfiguredUrl(
 
 
   let configuredUrl;
+
 
   try {
     configuredUrl =
@@ -217,7 +214,8 @@ function validateApplicationUrls() {
     validateConfiguredUrl(
       "APP_URL",
       {
-        requireHttps: true,
+        requireHttps:
+          true,
       }
     );
 
@@ -266,19 +264,11 @@ function validateApplicationUrls() {
 }
 
 
-// ==============================
-// Proxy
-// ==============================
-
 app.set(
   "trust proxy",
   trustProxyHops
 );
 
-
-// ==============================
-// Security
-// ==============================
 
 app.disable(
   "x-powered-by"
@@ -304,9 +294,12 @@ app.use(
 
         styleSrc: [
           "'self'",
-          "'unsafe-inline'",
           "https://cdn.jsdelivr.net",
           "https://fonts.googleapis.com",
+        ],
+
+        styleSrcAttr: [
+          "'none'",
         ],
 
         fontSrc: [
@@ -355,18 +348,10 @@ app.use(
 );
 
 
-// ==============================
-// Origin protection
-// ==============================
-
 app.use(
   originProtection
 );
 
-
-// ==============================
-// Parsers
-// ==============================
 
 app.use(
   express.json({
@@ -375,14 +360,11 @@ app.use(
   })
 );
 
+
 app.use(
   cookieParser()
 );
 
-
-// ==============================
-// API
-// ==============================
 
 app.use(
   "/api/auth",
@@ -402,10 +384,6 @@ app.use(
 );
 
 
-// ==============================
-// Frontend source files
-// ==============================
-
 app.use(
   "/src",
   express.static(
@@ -413,10 +391,6 @@ app.use(
   )
 );
 
-
-// ==============================
-// Root redirect
-// ==============================
 
 app.get(
   "/",
@@ -432,20 +406,12 @@ app.get(
 );
 
 
-// ==============================
-// Public files
-// ==============================
-
 app.use(
   express.static(
     publicPath
   )
 );
 
-
-// ==============================
-// Unknown API route
-// ==============================
 
 app.use(
   "/api",
@@ -465,10 +431,6 @@ app.use(
 );
 
 
-// ==============================
-// SPA fallback
-// ==============================
-
 app.use(
   (
     req,
@@ -482,16 +444,13 @@ app.use(
       return next();
     }
 
+
     return res.sendFile(
       indexPath
     );
   }
 );
 
-
-// ==============================
-// Remaining 404
-// ==============================
 
 app.use(
   (
@@ -513,10 +472,6 @@ app.use(
 let server =
   null;
 
-
-// ==============================
-// Start
-// ==============================
 
 async function startServer() {
   try {
@@ -563,14 +518,13 @@ async function startServer() {
       error
     );
 
-    process.exit(1);
+
+    process.exit(
+      1
+    );
   }
 }
 
-
-// ==============================
-// Shutdown
-// ==============================
 
 async function shutdown(
   signal
@@ -600,7 +554,9 @@ async function shutdown(
     );
 
 
-    process.exit(0);
+    process.exit(
+      0
+    );
 
   } catch (error) {
     console.error(
@@ -608,7 +564,10 @@ async function shutdown(
       error
     );
 
-    process.exit(1);
+
+    process.exit(
+      1
+    );
   }
 }
 
