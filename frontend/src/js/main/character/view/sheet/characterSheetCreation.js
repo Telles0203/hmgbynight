@@ -110,16 +110,20 @@ function createFreeTraitCostNotice(
 function createBloodContent(
   maximum
 ) {
+  const normalizedMaximum =
+    Number.isInteger(
+      maximum
+    )
+      ? maximum
+      : 10;
+
+
   return `
     <div class="character-sheet-pips">
 
       ${createSheetPips(
-        0,
-        Number.isInteger(
-          maximum
-        )
-          ? maximum
-          : 10
+        normalizedMaximum,
+        normalizedMaximum
       )}
 
     </div>
