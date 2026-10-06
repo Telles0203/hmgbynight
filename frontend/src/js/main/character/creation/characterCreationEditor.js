@@ -8,6 +8,8 @@ import {
   appendCharacterCreationMapRow,
   createCharacterCreationSectionEditor,
   readCharacterCreationSection,
+  addAttributeTraitSelection,
+  removeAttributeTraitSelection,
 } from "./characterCreationForm.js";
 
 import {
@@ -85,6 +87,48 @@ function handleDocumentClick(
 
 
     cancelEditor();
+
+
+    return;
+  }
+
+
+  const addAttributeTraitButton =
+    target.closest(
+      "[data-character-creation-add-attribute-trait]"
+    );
+
+
+  if (
+    addAttributeTraitButton
+  ) {
+    event.preventDefault();
+
+
+    addAttributeTraitSelection(
+      addAttributeTraitButton
+    );
+
+
+    return;
+  }
+
+
+  const removeAttributeTraitButton =
+    target.closest(
+      "[data-character-creation-remove-attribute-trait]"
+    );
+
+
+  if (
+    removeAttributeTraitButton
+  ) {
+    event.preventDefault();
+
+
+    removeAttributeTraitSelection(
+      removeAttributeTraitButton
+    );
 
 
     return;

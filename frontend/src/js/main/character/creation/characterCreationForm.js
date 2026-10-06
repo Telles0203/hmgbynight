@@ -6,6 +6,8 @@ import {
 import {
   createAttributeCreationEditor,
   readAttributeCreationSection,
+  addAttributeTraitSelection,
+  removeAttributeTraitSelection,
 } from "./form/characterCreationAttributeForm.js";
 
 import {
@@ -277,4 +279,6 @@ export function readCharacterCreationSection(
 
 export {
   appendCharacterCreationMapRow,
+  addAttributeTraitSelection,
+  removeAttributeTraitSelection,
 };
