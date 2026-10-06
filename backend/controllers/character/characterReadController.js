@@ -51,6 +51,14 @@ const {
   "./characterState"
 );
 
+const {
+  isDraftApplicable,
+  serializeCharacterSheetDraft,
+  getCharacterSheetDraftMap,
+} = require(
+  "../../services/characterSheetDraftService"
+);
+
 
 async function getCharacterOptions(
   req,
@@ -63,7 +71,9 @@ async function getCharacterOptions(
 
       sects:
         SECT_OPTIONS.map(
-          (sect) => ({
+          (
+            sect
+          ) => ({
             value:
               sect.value,
 
@@ -74,7 +84,9 @@ async function getCharacterOptions(
 
       clans:
         CLAN_OPTIONS.map(
-          (clan) => ({
+          (
+            clan
+          ) => ({
             value:
               clan.value,
 
@@ -106,6 +118,134 @@ async function getCharacterOptions(
           "Erro interno ao carregar opções do personagem.",
       });
   }
+}
+
+
+function serializeDraftForCharacter(
+  character,
+  draft
+) {
+  const applicableDraft =
+    isDraftApplicable(
+      character,
+      draft
+    )
+      ? draft
+      : null;
+
+
+  const serialized =
+    serializeCharacterSheetDraft(
+      applicableDraft
+    );
+
+
+  const changes =
+    serialized.changes;
+
+
+  const displayChanges = {};
+
+
+  if (
+    Object.prototype
+      .hasOwnProperty
+      .call(
+        changes,
+        "title"
+      )
+  ) {
+    displayChanges.title =
+      String(
+        changes.title ||
+        ""
+      );
+  }
+
+
+  if (
+    Object.prototype
+      .hasOwnProperty
+      .call(
+        changes,
+        "concept"
+      )
+  ) {
+    displayChanges.concept =
+      String(
+        changes.concept ||
+        ""
+      );
+  }
+
+
+  if (
+    Object.prototype
+      .hasOwnProperty
+      .call(
+        changes,
+        "clan"
+      )
+  ) {
+    displayChanges.clan =
+      getClanDisplayName(
+        character.sect,
+        changes.clan
+      ) ||
+      String(
+        changes.clan ||
+        ""
+      );
+  }
+
+
+  if (
+    Object.prototype
+      .hasOwnProperty
+      .call(
+        changes,
+        "nature"
+      )
+  ) {
+    const nature =
+      serializeArchetype(
+        changes.nature
+      );
+
+
+    displayChanges.nature =
+      nature.label ||
+      nature.ref ||
+      "";
+  }
+
+
+  if (
+    Object.prototype
+      .hasOwnProperty
+      .call(
+        changes,
+        "demeanor"
+      )
+  ) {
+    const demeanor =
+      serializeArchetype(
+        changes.demeanor
+      );
+
+
+    displayChanges.demeanor =
+      demeanor.label ||
+      demeanor.ref ||
+      "";
+  }
+
+
+  return {
+    ...serialized,
+
+    displayChanges,
+  };
 }
 
 
@@ -151,6 +291,12 @@ async function listCharacters(
         .lean();
 
 
+    const draftMap =
+      await getCharacterSheetDraftMap(
+        characters
+      );
+
+
     return res.json({
       ok:
         true,
@@ -189,6 +335,15 @@ async function listCharacters(
               serializeCharacterState(
                 character
               );
+
+
+            const draft =
+              draftMap.get(
+                String(
+                  character._id
+                )
+              ) ||
+              null;
 
 
             return {
@@ -281,6 +436,12 @@ async function listCharacters(
               editState:
                 state.editState,
 
+              sheetDraft:
+                serializeDraftForCharacter(
+                  character,
+                  draft
+                ),
+
               createdAt:
                 character.createdAt,
 
@@ -361,7 +522,9 @@ async function getCharacterArchetypes(
       );
 
 
-    if (!character) {
+    if (
+      !character
+    ) {
       return res
         .status(404)
         .json({

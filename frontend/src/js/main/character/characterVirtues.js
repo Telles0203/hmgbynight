@@ -9,7 +9,7 @@ import {
   calculateVirtueProgress,
   getActiveVirtue,
   getCharacterById,
-  getSavedActiveVirtueValues,
+  getEditableActiveVirtueValues,
   hasVirtueDraftChanges,
   isValidVirtueDraft,
   updateCharacterVirtueLocalState,
@@ -23,6 +23,14 @@ import {
   showVirtueError,
 } from "./virtues/characterVirtueView.js";
 
+import {
+  updateCharacterSheetDraftLocal,
+} from "./draft/characterDraftState.js";
+
+import {
+  refreshCharacterDraftIndicators,
+} from "./draft/characterDraftIndicators.js";
+
 
 export async function handleCharacterVirtueClick(
   event,
@@ -35,7 +43,9 @@ export async function handleCharacterVirtueClick(
       : null;
 
 
-  if (!target) {
+  if (
+    !target
+  ) {
     return false;
   }
 
@@ -65,7 +75,9 @@ export async function handleCharacterVirtueClick(
     );
 
 
-  if (!section) {
+  if (
+    !section
+  ) {
     return true;
   }
 
@@ -78,7 +90,9 @@ export async function handleCharacterVirtueClick(
     );
 
 
-  if (!characterId) {
+  if (
+    !characterId
+  ) {
     return true;
   }
 
@@ -89,7 +103,9 @@ export async function handleCharacterVirtueClick(
     );
 
 
-  if (!character) {
+  if (
+    !character
+  ) {
     return true;
   }
 
@@ -192,7 +208,9 @@ export function restoreCharacterVirtueDrafts(
         );
 
 
-      if (!characterId) {
+      if (
+        !characterId
+      ) {
         return;
       }
 
@@ -203,7 +221,9 @@ export function restoreCharacterVirtueDrafts(
         "true";
 
 
-      if (!editable) {
+      if (
+        !editable
+      ) {
         return;
       }
 
@@ -214,7 +234,9 @@ export function restoreCharacterVirtueDrafts(
         );
 
 
-      if (!character) {
+      if (
+        !character
+      ) {
         return;
       }
 
@@ -225,7 +247,9 @@ export function restoreCharacterVirtueDrafts(
         );
 
 
-      if (!draft) {
+      if (
+        !draft
+      ) {
         renderSavedVirtueState(
           section,
           character
@@ -298,7 +322,7 @@ function startVirtueEdit(
         VIRTUE_DRAFT_VERSION,
 
       values:
-        getSavedActiveVirtueValues(
+        getEditableActiveVirtueValues(
           character
         ),
 
@@ -334,7 +358,9 @@ function changeVirtueDraft({
     );
 
 
-  if (!row) {
+  if (
+    !row
+  ) {
     return;
   }
 
@@ -347,7 +373,9 @@ function changeVirtueDraft({
     );
 
 
-  if (!virtueKey) {
+  if (
+    !virtueKey
+  ) {
     return;
   }
 
@@ -358,7 +386,9 @@ function changeVirtueDraft({
     );
 
 
-  if (!draft) {
+  if (
+    !draft
+  ) {
     return;
   }
 
@@ -370,7 +400,9 @@ function changeVirtueDraft({
     );
 
 
-  if (!virtue) {
+  if (
+    !virtue
+  ) {
     return;
   }
 
@@ -479,7 +511,9 @@ async function saveVirtueDraft(
     );
 
 
-  if (!draft) {
+  if (
+    !draft
+  ) {
     renderSavedVirtueState(
       section,
       character
@@ -583,10 +617,24 @@ async function saveVirtueDraft(
     }
 
 
-    updateCharacterVirtueLocalState(
-      character,
-      data.character
-    );
+    if (
+      data.savedAsDraft
+    ) {
+      updateCharacterSheetDraftLocal(
+        character,
+        data.sheetDraft,
+        {
+          field:
+            "virtues",
+        }
+      );
+
+    } else {
+      updateCharacterVirtueLocalState(
+        character,
+        data.character
+      );
+    }
 
 
     removeVirtueDraft(
@@ -597,6 +645,11 @@ async function saveVirtueDraft(
     renderSavedVirtueState(
       section,
       character
+    );
+
+
+    refreshCharacterDraftIndicators(
+      character.id
     );
 
   } catch (error) {
@@ -647,5 +700,10 @@ function cancelVirtueEdit(
   renderSavedVirtueState(
     section,
     character
+  );
+
+
+  refreshCharacterDraftIndicators(
+    character.id
   );
 }

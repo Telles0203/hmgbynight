@@ -2,10 +2,6 @@ const mongoose = require(
   "mongoose"
 );
 
-const Character = require(
-  "../../../models/Character"
-);
-
 const {
   DEFAULT_MORALITY_PATH,
 } = require(
@@ -29,9 +25,17 @@ const {
 );
 
 const {
-  canDirectlyEditCharacter,
+  getEffectiveCharacterForEditing,
 } = require(
-  "../characterState"
+  "../../../services/characterSheetDraftService"
+);
+
+const {
+  findOwnedCharacterForEdit,
+  persistCharacterChanges,
+  respondCharacterEditFailure,
+} = require(
+  "./characterEditPersistence"
 );
 
 
@@ -87,37 +91,197 @@ function getCurrentVirtueValues(
 }
 
 
-function rejectApproved(
-  res
-) {
-  return res
-    .status(409)
-    .json({
-      ok:
-        false,
-
-      error:
-        "Este personagem já foi aprovado por uma Crônica. As Virtudes não podem mais ser alteradas diretamente.",
-    });
-}
-
-
 async function getEditableCharacter(
   characterId,
   userId
 ) {
-  return Character.findOne({
-    _id:
-      characterId,
-
-    ownerUser:
-      userId,
-
-    type:
-      "PC",
-  }).select(
-    "_id moralityPath moralityRating virtues motherHouse pendingMotherHouse"
+  return findOwnedCharacterForEdit(
+    characterId,
+    userId,
+    [
+      "moralityPath",
+      "moralityRating",
+      "virtues",
+    ]
   );
+}
+
+
+function validateSubmittedVirtues(
+  moralityPath,
+  submittedVirtues,
+  currentVirtues
+) {
+  const activeKeys =
+    getActiveVirtueKeys(
+      moralityPath
+    );
+
+
+  if (
+    activeKeys.length ===
+    0
+  ) {
+    return {
+      ok:
+        false,
+
+      error:
+        "Não foi possível identificar as Virtudes ativas do personagem.",
+    };
+  }
+
+
+  const submittedKeys =
+    Object.keys(
+      submittedVirtues
+    );
+
+
+  if (
+    submittedKeys.some(
+      (
+        key
+      ) =>
+        !activeKeys.includes(
+          key
+        )
+    )
+  ) {
+    return {
+      ok:
+        false,
+
+      error:
+        "Foi enviada uma Virtude que não está ativa para a Trilha do personagem.",
+    };
+  }
+
+
+  if (
+    activeKeys.some(
+      (
+        key
+      ) =>
+        !Object.prototype
+          .hasOwnProperty
+          .call(
+            submittedVirtues,
+            key
+          )
+    )
+  ) {
+    return {
+      ok:
+        false,
+
+      error:
+        "Envie todas as Virtudes ativas antes de salvar.",
+    };
+  }
+
+
+  const proposedVirtues = {
+    ...currentVirtues,
+  };
+
+
+  for (
+    const virtueKey
+    of activeKeys
+  ) {
+    const value =
+      Number(
+        submittedVirtues[
+          virtueKey
+        ]
+      );
+
+
+    if (
+      !Number.isInteger(
+        value
+      )
+    ) {
+      return {
+        ok:
+          false,
+
+        error:
+          "Os valores das Virtudes devem ser números inteiros.",
+      };
+    }
+
+
+    const minimum =
+      getVirtueMinimumValue(
+        moralityPath,
+        virtueKey
+      );
+
+
+    if (
+      value <
+      minimum
+    ) {
+      return {
+        ok:
+          false,
+
+        error:
+          `A Virtude não pode ficar abaixo de ${minimum}.`,
+      };
+    }
+
+
+    if (
+      value >
+      VIRTUE_MAX
+    ) {
+      return {
+        ok:
+          false,
+
+        error:
+          `Uma Virtude não pode ultrapassar ${VIRTUE_MAX}.`,
+      };
+    }
+
+
+    proposedVirtues[
+      virtueKey
+    ] =
+      value;
+  }
+
+
+  const virtuePoints =
+    getVirtueCreationProgress(
+      moralityPath,
+      proposedVirtues
+    );
+
+
+  if (
+    virtuePoints.spent >
+    virtuePoints.total
+  ) {
+    return {
+      ok:
+        false,
+
+      error:
+        `Você possui apenas ${virtuePoints.total} pontos para distribuir entre as Virtudes.`,
+    };
+  }
+
+
+  return {
+    ok:
+      true,
+
+    proposedVirtues,
+  };
 }
 
 
@@ -141,7 +305,9 @@ async function updateCharacterVirtues(
       req.body?.virtues;
 
 
-    if (!userId) {
+    if (
+      !userId
+    ) {
       return res
         .status(401)
         .json({
@@ -199,7 +365,9 @@ async function updateCharacterVirtues(
       );
 
 
-    if (!character) {
+    if (
+      !character
+    ) {
       return res
         .status(404)
         .json({
@@ -212,191 +380,32 @@ async function updateCharacterVirtues(
     }
 
 
-    if (
-      !canDirectlyEditCharacter(
+    const effective =
+      await getEffectiveCharacterForEditing(
         character
-      )
-    ) {
-      return rejectApproved(
-        res
       );
-    }
 
 
     const moralityPath =
       String(
-        character.moralityPath ||
+        effective.character
+          .moralityPath ||
         DEFAULT_MORALITY_PATH
       );
 
 
-    const activeKeys =
-      getActiveVirtueKeys(
-        moralityPath
-      );
-
-
-    if (
-      activeKeys.length ===
-      0
-    ) {
-      return res
-        .status(400)
-        .json({
-          ok:
-            false,
-
-          error:
-            "Não foi possível identificar as Virtudes ativas do personagem.",
-        });
-    }
-
-
-    const submittedKeys =
-      Object.keys(
-        submittedVirtues
-      );
-
-
-    if (
-      submittedKeys.some(
-        (key) =>
-          !activeKeys.includes(
-            key
-          )
-      )
-    ) {
-      return res
-        .status(400)
-        .json({
-          ok:
-            false,
-
-          error:
-            "Foi enviada uma Virtude que não está ativa para a Trilha do personagem.",
-        });
-    }
-
-
-    if (
-      activeKeys.some(
-        (key) =>
-          !Object.prototype
-            .hasOwnProperty
-            .call(
-              submittedVirtues,
-              key
-            )
-      )
-    ) {
-      return res
-        .status(400)
-        .json({
-          ok:
-            false,
-
-          error:
-            "Envie todas as Virtudes ativas antes de salvar.",
-        });
-    }
-
-
-    const currentVirtues =
-      getCurrentVirtueValues(
-        character
-      );
-
-
-    const proposedVirtues = {
-      ...currentVirtues,
-    };
-
-
-    for (
-      const virtueKey
-      of activeKeys
-    ) {
-      const value =
-        Number(
-          submittedVirtues[
-            virtueKey
-          ]
-        );
-
-
-      if (
-        !Number.isInteger(
-          value
-        )
-      ) {
-        return res
-          .status(400)
-          .json({
-            ok:
-              false,
-
-            error:
-              "Os valores das Virtudes devem ser números inteiros.",
-          });
-      }
-
-
-      const minimum =
-        getVirtueMinimumValue(
-          moralityPath,
-          virtueKey
-        );
-
-
-      if (
-        value <
-        minimum
-      ) {
-        return res
-          .status(400)
-          .json({
-            ok:
-              false,
-
-            error:
-              `A Virtude não pode ficar abaixo de ${minimum}.`,
-          });
-      }
-
-
-      if (
-        value >
-        VIRTUE_MAX
-      ) {
-        return res
-          .status(400)
-          .json({
-            ok:
-              false,
-
-            error:
-              `Uma Virtude não pode ultrapassar ${VIRTUE_MAX}.`,
-          });
-      }
-
-
-      proposedVirtues[
-        virtueKey
-      ] =
-        value;
-    }
-
-
-    const virtuePoints =
-      getVirtueCreationProgress(
+    const validation =
+      validateSubmittedVirtues(
         moralityPath,
-        proposedVirtues
+        submittedVirtues,
+        getCurrentVirtueValues(
+          effective.character
+        )
       );
 
 
     if (
-      virtuePoints.spent >
-      virtuePoints.total
+      !validation.ok
     ) {
       return res
         .status(400)
@@ -405,83 +414,53 @@ async function updateCharacterVirtues(
             false,
 
           error:
-            `Você possui apenas ${virtuePoints.total} pontos para distribuir entre as Virtudes.`,
+            validation.error,
         });
     }
 
 
-    const hasChanges =
-      activeKeys.some(
-        (key) =>
-          currentVirtues[
-            key
-          ] !==
-          proposedVirtues[
-            key
-          ]
+    const persisted =
+      await persistCharacterChanges({
+        character,
+
+        userId,
+
+        changes: {
+          virtues:
+            validation
+              .proposedVirtues,
+        },
+      });
+
+
+    if (
+      !persisted.ok
+    ) {
+      return respondCharacterEditFailure(
+        res,
+        persisted
       );
-
-
-    if (hasChanges) {
-      const setValues = {};
-
-
-      activeKeys.forEach(
-        (key) => {
-          setValues[
-            `virtues.${key}`
-          ] =
-            proposedVirtues[
-              key
-            ];
-        }
-      );
-
-
-      const result =
-        await Character.updateOne(
-          {
-            _id:
-              characterId,
-
-            ownerUser:
-              userId,
-
-            type:
-              "PC",
-
-            motherHouse:
-              null,
-          },
-
-          {
-            $set:
-              setValues,
-          }
-        );
-
-
-      if (
-        result.matchedCount !==
-        1
-      ) {
-        return rejectApproved(
-          res
-        );
-      }
     }
 
 
     const serialized =
       serializeVirtues(
         moralityPath,
-        proposedVirtues
+        validation
+          .proposedVirtues
       );
 
 
     return res.json({
       ok:
         true,
+
+      savedAsDraft:
+        persisted.mode ===
+        "approval_draft",
+
+      sheetDraft:
+        persisted.sheetDraft,
 
       character: {
         id:
@@ -547,7 +526,9 @@ async function updateCharacterVirtue(
       );
 
 
-    if (!userId) {
+    if (
+      !userId
+    ) {
       return res
         .status(401)
         .json({
@@ -588,7 +569,9 @@ async function updateCharacterVirtue(
       );
 
 
-    if (!character) {
+    if (
+      !character
+    ) {
       return res
         .status(404)
         .json({
@@ -601,20 +584,16 @@ async function updateCharacterVirtue(
     }
 
 
-    if (
-      !canDirectlyEditCharacter(
+    const effective =
+      await getEffectiveCharacterForEditing(
         character
-      )
-    ) {
-      return rejectApproved(
-        res
       );
-    }
 
 
     const moralityPath =
       String(
-        character.moralityPath ||
+        effective.character
+          .moralityPath ||
         DEFAULT_MORALITY_PATH
       );
 
@@ -664,7 +643,7 @@ async function updateCharacterVirtue(
 
     const proposedVirtues = {
       ...getCurrentVirtueValues(
-        character
+        effective.character
       ),
 
       [
@@ -697,39 +676,25 @@ async function updateCharacterVirtue(
     }
 
 
-    const result =
-      await Character.updateOne(
-        {
-          _id:
-            characterId,
+    const persisted =
+      await persistCharacterChanges({
+        character,
 
-          ownerUser:
-            userId,
+        userId,
 
-          type:
-            "PC",
-
-          motherHouse:
-            null,
+        changes: {
+          virtues:
+            proposedVirtues,
         },
-
-        {
-          $set: {
-            [
-              `virtues.${virtueKey}`
-            ]:
-              value,
-          },
-        }
-      );
+      });
 
 
     if (
-      result.matchedCount !==
-      1
+      !persisted.ok
     ) {
-      return rejectApproved(
-        res
+      return respondCharacterEditFailure(
+        res,
+        persisted
       );
     }
 
@@ -744,6 +709,13 @@ async function updateCharacterVirtue(
     return res.json({
       ok:
         true,
+
+      savedAsDraft:
+        persisted.mode ===
+        "approval_draft",
+
+      sheetDraft:
+        persisted.sheetDraft,
 
       character: {
         id:

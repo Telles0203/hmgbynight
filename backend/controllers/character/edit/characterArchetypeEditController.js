@@ -2,10 +2,6 @@ const mongoose = require(
   "mongoose"
 );
 
-const Character = require(
-  "../../../models/Character"
-);
-
 const {
   getCoreArchetypeLabel,
   isCoreArchetypeRef,
@@ -14,9 +10,11 @@ const {
 );
 
 const {
-  canDirectlyEditCharacter,
+  findOwnedCharacterForEdit,
+  persistCharacterChanges,
+  respondCharacterEditFailure,
 } = require(
-  "../characterState"
+  "./characterEditPersistence"
 );
 
 
@@ -43,7 +41,9 @@ async function updateCharacterArchetype(
       ];
 
 
-    if (!userId) {
+    if (
+      !userId
+    ) {
       return res
         .status(401)
         .json({
@@ -113,21 +113,18 @@ async function updateCharacterArchetype(
 
 
     const character =
-      await Character.findOne({
-        _id:
-          characterId,
-
-        ownerUser:
-          userId,
-
-        type:
-          "PC",
-      }).select(
-        `_id ${field} motherHouse pendingMotherHouse`
+      await findOwnedCharacterForEdit(
+        characterId,
+        userId,
+        [
+          field,
+        ]
       );
 
 
-    if (!character) {
+    if (
+      !character
+    ) {
       return res
         .status(404)
         .json({
@@ -140,106 +137,41 @@ async function updateCharacterArchetype(
     }
 
 
-    if (
-      !canDirectlyEditCharacter(
-        character
-      )
-    ) {
-      return res
-        .status(409)
-        .json({
-          ok:
-            false,
+    const persisted =
+      await persistCharacterChanges({
+        character,
 
-          error:
-            "Este personagem já foi aprovado por uma Crônica. Esta alteração não pode ser realizada diretamente.",
-        });
-    }
+        userId,
 
-
-    const currentValue =
-      String(
-        character[
-          field
-        ] ||
-        ""
-      );
-
-
-    if (
-      currentValue ===
-      value
-    ) {
-      return res.json({
-        ok:
-          true,
-
-        character: {
-          id:
-            character._id,
-
+        changes: {
           [
             field
           ]:
             value,
-
-          [
-            `${field}Label`
-          ]:
-            getCoreArchetypeLabel(
-              value
-            ),
         },
       });
-    }
-
-
-    const result =
-      await Character.updateOne(
-        {
-          _id:
-            characterId,
-
-          ownerUser:
-            userId,
-
-          type:
-            "PC",
-
-          motherHouse:
-            null,
-        },
-
-        {
-          $set: {
-            [
-              field
-            ]:
-              value,
-          },
-        }
-      );
 
 
     if (
-      result.matchedCount !==
-      1
+      !persisted.ok
     ) {
-      return res
-        .status(409)
-        .json({
-          ok:
-            false,
-
-          error:
-            "O personagem foi aprovado antes da alteração ser concluída.",
-        });
+      return respondCharacterEditFailure(
+        res,
+        persisted
+      );
     }
 
 
     return res.json({
       ok:
         true,
+
+      savedAsDraft:
+        persisted.mode ===
+        "approval_draft",
+
+      sheetDraft:
+        persisted.sheetDraft,
 
       character: {
         id:

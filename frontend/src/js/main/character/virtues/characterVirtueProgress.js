@@ -150,6 +150,12 @@ export function hasVirtueDraftChanges(
   character,
   values
 ) {
+  const baseline =
+    getEditableActiveVirtueValues(
+      character
+    );
+
+
   return getActiveVirtues(
     character
   ).some(
@@ -166,9 +172,13 @@ export function hasVirtueDraftChanges(
 
       const saved =
         Number.isFinite(
-          virtue.value
+          baseline[
+            virtue.key
+          ]
         )
-          ? virtue.value
+          ? baseline[
+              virtue.key
+            ]
           : minimum;
 
 
@@ -221,6 +231,70 @@ export function getSavedActiveVirtueValues(
         )
           ? virtue.value
           : minimum;
+    }
+  );
+
+
+  return values;
+}
+
+
+export function getEditableActiveVirtueValues(
+  character
+) {
+  const values =
+    getSavedActiveVirtueValues(
+      character
+    );
+
+
+  const draftVirtues =
+    character
+      ?.sheetDraft
+      ?.changes
+      ?.virtues;
+
+
+  if (
+    !draftVirtues ||
+    typeof draftVirtues !==
+      "object" ||
+    Array.isArray(
+      draftVirtues
+    )
+  ) {
+    return values;
+  }
+
+
+  getActiveVirtues(
+    character
+  ).forEach(
+    (
+      virtue
+    ) => {
+      const key =
+        String(
+          virtue.key
+        );
+
+
+      const proposed =
+        draftVirtues[
+          key
+        ];
+
+
+      if (
+        Number.isInteger(
+          proposed
+        )
+      ) {
+        values[
+          key
+        ] =
+          proposed;
+      }
     }
   );
 

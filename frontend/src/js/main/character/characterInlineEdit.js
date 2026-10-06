@@ -1,95 +1,51 @@
-// =============================================
-// Character Inline Edit
-// =============================================
+import {
+  CHARACTER_INLINE_FIELD_CONFIG,
+} from "./inline/characterInlineConfig.js";
+
+import {
+  getCharacterById,
+  loadCharacterArchetypes,
+} from "./inline/characterInlineData.js";
+
+import {
+  getCharacterDisplayValue,
+  getInputDisplayValue,
+  hideInlineError,
+  mountInlineEditor,
+  renderFieldDisplay,
+  showInlineError,
+} from "./inline/characterInlineView.js";
+
+import {
+  getCharacterDraftFieldDisplayValue,
+  getCharacterDraftFieldValue,
+  hasCharacterDraftField,
+  updateCharacterSheetDraftLocal,
+} from "./draft/characterDraftState.js";
+
+import {
+  refreshCharacterDraftIndicators,
+} from "./draft/characterDraftIndicators.js";
+
 
 let activeEditor =
   null;
 
-
-// =============================================
-// Field configuration
-// =============================================
-
-const FIELD_CONFIG = {
-  concept: {
-    label:
-      "Conceito",
-
-    editorType:
-      "text",
-
-    property:
-      "concept",
-
-    endpoint:
-      "concept",
-
-    placeholder:
-      "Digite o conceito...",
-
-    maxLength:
-      120,
-  },
-
-
-  nature: {
-    label:
-      "Natureza",
-
-    editorType:
-      "archetype",
-
-    property:
-      "nature",
-
-    labelProperty:
-      "natureLabel",
-
-    endpoint:
-      "nature",
-
-    placeholder:
-      "Selecione a Natureza",
-  },
-
-
-  demeanor: {
-    label:
-      "Comportamento",
-
-    editorType:
-      "archetype",
-
-    property:
-      "demeanor",
-
-    labelProperty:
-      "demeanorLabel",
-
-    endpoint:
-      "demeanor",
-
-    placeholder:
-      "Selecione o Comportamento",
-  },
-};
-
-
-// =============================================
-// Click handler
-// =============================================
 
 export async function handleCharacterInlineEditClick(
   event,
   container
 ) {
   const target =
-    event.target instanceof Element
+    event.target instanceof
+      Element
       ? event.target
       : null;
 
 
-  if (!target) {
+  if (
+    !target
+  ) {
     return false;
   }
 
@@ -114,13 +70,9 @@ export async function handleCharacterInlineEditClick(
     String(
       actionElement.dataset
         .characterInlineAction ||
-        ""
+      ""
     );
 
-
-  // =============================================
-  // Edit
-  // =============================================
 
   if (
     action ===
@@ -132,35 +84,35 @@ export async function handleCharacterInlineEditClick(
       );
 
 
-    if (!row) {
+    if (
+      !row
+    ) {
       return true;
     }
 
 
     const characterId =
       String(
-        row.dataset.characterId ||
-          ""
+        row.dataset
+          .characterId ||
+        ""
       );
 
 
     const field =
       String(
-        row.dataset.characterField ||
-          ""
+        row.dataset
+          .characterField ||
+        ""
       );
 
-
-    // =============================================
-    // Autosave current field before
-    // opening another one
-    // =============================================
 
     if (
       activeEditor &&
       (
         String(
-          activeEditor.characterId
+          activeEditor
+            .characterId
         ) !==
           characterId ||
         activeEditor.field !==
@@ -171,7 +123,9 @@ export async function handleCharacterInlineEditClick(
         await saveActiveCharacterInlineEdit();
 
 
-      if (!saved) {
+      if (
+        !saved
+      ) {
         return true;
       }
     }
@@ -188,29 +142,23 @@ export async function handleCharacterInlineEditClick(
   }
 
 
-  // =============================================
-  // Save
-  // =============================================
-
   if (
     action ===
     "save"
   ) {
     await saveActiveCharacterInlineEdit();
 
+
     return true;
   }
 
-
-  // =============================================
-  // Cancel
-  // =============================================
 
   if (
     action ===
     "cancel"
   ) {
     cancelActiveCharacterInlineEdit();
+
 
     return true;
   }
@@ -220,12 +168,10 @@ export async function handleCharacterInlineEditClick(
 }
 
 
-// =============================================
-// Save active editor
-// =============================================
-
 export async function saveActiveCharacterInlineEdit() {
-  if (!activeEditor) {
+  if (
+    !activeEditor
+  ) {
     return true;
   }
 
@@ -234,19 +180,23 @@ export async function saveActiveCharacterInlineEdit() {
     characterId,
     field,
     row,
-    originalValue,
-    originalDisplayValue,
+    officialValue,
+    officialDisplayValue,
+    editValue,
+    saveLabel,
   } =
     activeEditor;
 
 
   const config =
-    FIELD_CONFIG[
+    CHARACTER_INLINE_FIELD_CONFIG[
       field
     ];
 
 
-  if (!config) {
+  if (
+    !config
+  ) {
     return false;
   }
 
@@ -257,13 +207,17 @@ export async function saveActiveCharacterInlineEdit() {
     );
 
 
-  if (!input) {
+  if (
+    !input
+  ) {
     activeEditor =
       null;
+
 
     row.classList.remove(
       "is-editing"
     );
+
 
     return true;
   }
@@ -272,7 +226,7 @@ export async function saveActiveCharacterInlineEdit() {
   const value =
     String(
       input.value ||
-        ""
+      ""
     ).trim();
 
 
@@ -280,10 +234,6 @@ export async function saveActiveCharacterInlineEdit() {
     row
   );
 
-
-  // =============================================
-  // Text validation
-  // =============================================
 
   if (
     config.editorType ===
@@ -306,19 +256,15 @@ export async function saveActiveCharacterInlineEdit() {
   }
 
 
-  // =============================================
-  // Nothing changed
-  // =============================================
-
   if (
     value ===
-    originalValue
+    editValue
   ) {
     finishInlineEditor(
       row,
       field,
-      originalValue,
-      originalDisplayValue
+      officialValue,
+      officialDisplayValue
     );
 
 
@@ -346,7 +292,9 @@ export async function saveActiveCharacterInlineEdit() {
     );
 
 
-  if (saveButton) {
+  if (
+    saveButton
+  ) {
     saveButton.disabled =
       true;
 
@@ -355,7 +303,9 @@ export async function saveActiveCharacterInlineEdit() {
   }
 
 
-  if (cancelButton) {
+  if (
+    cancelButton
+  ) {
     cancelButton.disabled =
       true;
   }
@@ -395,7 +345,9 @@ export async function saveActiveCharacterInlineEdit() {
     const data =
       await response
         .json()
-        .catch(() => ({}));
+        .catch(
+          () => ({})
+        );
 
 
     if (
@@ -443,17 +395,47 @@ export async function saveActiveCharacterInlineEdit() {
     }
 
 
-    // =============================================
-    // Update local state
-    // =============================================
-
     const character =
-      getCharacter(
+      getCharacterById(
         characterId
       );
 
 
-    if (character) {
+    if (
+      data.savedAsDraft
+    ) {
+      updateCharacterSheetDraftLocal(
+        character,
+        data.sheetDraft,
+        {
+          field,
+
+          displayValue:
+            savedDisplayValue,
+        }
+      );
+
+
+      finishInlineEditor(
+        row,
+        field,
+        officialValue,
+        officialDisplayValue
+      );
+
+
+      refreshCharacterDraftIndicators(
+        characterId
+      );
+
+
+      return true;
+    }
+
+
+    if (
+      character
+    ) {
       character[
         config.property
       ] =
@@ -476,6 +458,11 @@ export async function saveActiveCharacterInlineEdit() {
       field,
       savedValue,
       savedDisplayValue
+    );
+
+
+    refreshCharacterDraftIndicators(
+      characterId
     );
 
 
@@ -509,16 +496,20 @@ export async function saveActiveCharacterInlineEdit() {
       );
 
 
-    if (currentSaveButton) {
+    if (
+      currentSaveButton
+    ) {
       currentSaveButton.disabled =
         false;
 
       currentSaveButton.textContent =
-        "Salvar";
+        saveLabel;
     }
 
 
-    if (currentCancelButton) {
+    if (
+      currentCancelButton
+    ) {
       currentCancelButton.disabled =
         false;
     }
@@ -526,12 +517,10 @@ export async function saveActiveCharacterInlineEdit() {
 }
 
 
-// =============================================
-// Cancel
-// =============================================
-
 export function cancelActiveCharacterInlineEdit() {
-  if (!activeEditor) {
+  if (
+    !activeEditor
+  ) {
     return;
   }
 
@@ -539,8 +528,8 @@ export function cancelActiveCharacterInlineEdit() {
   const {
     row,
     field,
-    originalValue,
-    originalDisplayValue,
+    officialValue,
+    officialDisplayValue,
   } =
     activeEditor;
 
@@ -548,15 +537,11 @@ export function cancelActiveCharacterInlineEdit() {
   finishInlineEditor(
     row,
     field,
-    originalValue,
-    originalDisplayValue
+    officialValue,
+    officialDisplayValue
   );
 }
 
-
-// =============================================
-// Open editor
-// =============================================
 
 async function openInlineEditor(
   row,
@@ -564,30 +549,30 @@ async function openInlineEditor(
   field
 ) {
   const config =
-    FIELD_CONFIG[
+    CHARACTER_INLINE_FIELD_CONFIG[
       field
     ];
 
 
-  if (!config) {
+  if (
+    !config
+  ) {
     return;
   }
 
 
   const character =
-    getCharacter(
+    getCharacterById(
       characterId
     );
 
 
-  if (!character) {
+  if (
+    !character
+  ) {
     return;
   }
 
-
-  // =============================================
-  // Already editing this field
-  // =============================================
 
   if (
     activeEditor &&
@@ -600,31 +585,25 @@ async function openInlineEditor(
   }
 
 
-  // =============================================
-  // Chronicle protection
-  //
-  // Sem Crônica:
-  // edição direta.
-  //
-  // Aguardando Crônica:
-  // ainda pode editar diretamente.
-  //
-  // Crônica aprovada:
-  // não pode alterar diretamente.
-  // =============================================
+  const canEdit =
+    character.editState
+      ?.canEdit ??
+    !character.motherHouse;
+
 
   if (
-    character.motherHouse
+    !canEdit
   ) {
     window.alert(
-      "Este personagem já pertence a uma Crônica. Alterações deverão ser aprovadas pela Crônica."
+      "Esta ficha não está disponível para edição neste estado."
     );
+
 
     return;
   }
 
 
-  const value =
+  const officialValue =
     String(
       character[
         config.property
@@ -633,16 +612,45 @@ async function openInlineEditor(
     );
 
 
-  const displayValue =
+  const officialDisplayValue =
     getCharacterDisplayValue(
       character,
       config
     );
 
 
-  // =============================================
-  // Load Archetypes before opening select
-  // =============================================
+  const hasDraft =
+    hasCharacterDraftField(
+      character,
+      field
+    );
+
+
+  const editValue =
+    hasDraft
+      ? String(
+          getCharacterDraftFieldValue(
+            character,
+            field,
+            officialValue
+          ) ||
+          ""
+        )
+      : officialValue;
+
+
+  const editDisplayValue =
+    hasDraft
+      ? String(
+          getCharacterDraftFieldDisplayValue(
+            character,
+            field,
+            officialDisplayValue
+          ) ||
+          ""
+        )
+      : officialDisplayValue;
+
 
   let archetypes =
     [];
@@ -675,476 +683,48 @@ async function openInlineEditor(
   }
 
 
-  const container =
-    row.querySelector(
-      ".character-editable-value"
-    );
-
-
-  if (!container) {
-    return;
-  }
+  const saveLabel =
+    character.editState
+      ?.mode ===
+      "approval_draft"
+      ? "Salvar rascunho"
+      : "Salvar";
 
 
   activeEditor = {
     characterId,
     field,
     row,
-
-    originalValue:
-      value,
-
-    originalDisplayValue:
-      displayValue,
+    officialValue,
+    officialDisplayValue,
+    editValue,
+    editDisplayValue,
+    saveLabel,
   };
 
 
-  row.classList.add(
-    "is-editing"
-  );
+  mountInlineEditor({
+    row,
+    config,
 
+    value:
+      editValue,
 
-  container.innerHTML =
-    "";
+    displayValue:
+      editDisplayValue,
 
+    archetypes,
 
-  const editor =
-    document.createElement(
-      "div"
-    );
+    saveLabel,
 
+    onSave:
+      saveActiveCharacterInlineEdit,
 
-  editor.className =
-    "character-inline-editor";
-
-
-  const input =
-    createEditorInput({
-      config,
-      value,
-      displayValue,
-      archetypes,
-    });
-
-
-  const actions =
-    document.createElement(
-      "div"
-    );
-
-
-  actions.className =
-    "character-inline-actions";
-
-
-  const saveButton =
-    document.createElement(
-      "button"
-    );
-
-
-  saveButton.type =
-    "button";
-
-  saveButton.className =
-    "btn btn-blood btn-sm";
-
-  saveButton.dataset
-    .characterInlineAction =
-      "save";
-
-  saveButton.textContent =
-    "Salvar";
-
-
-  const cancelButton =
-    document.createElement(
-      "button"
-    );
-
-
-  cancelButton.type =
-    "button";
-
-  cancelButton.className =
-    "btn btn-outline-secondary btn-sm";
-
-  cancelButton.dataset
-    .characterInlineAction =
-      "cancel";
-
-  cancelButton.textContent =
-    "Cancelar";
-
-
-  const error =
-    document.createElement(
-      "div"
-    );
-
-
-  error.className =
-    "text-danger small d-none character-inline-error";
-
-
-  actions.append(
-    saveButton,
-    cancelButton
-  );
-
-
-  editor.append(
-    input,
-    actions,
-    error
-  );
-
-
-  container.appendChild(
-    editor
-  );
-
-
-  input.focus();
-
-
-  if (
-    input instanceof
-      HTMLInputElement
-  ) {
-    input.setSelectionRange(
-      input.value.length,
-      input.value.length
-    );
-  }
-
-
-  // =============================================
-  // Keyboard
-  //
-  // Enter = salvar
-  // Escape = cancelar
-  // =============================================
-
-  input.addEventListener(
-    "keydown",
-    async (event) => {
-      if (
-        event.key ===
-        "Enter"
-      ) {
-        event.preventDefault();
-
-        await saveActiveCharacterInlineEdit();
-
-        return;
-      }
-
-
-      if (
-        event.key ===
-        "Escape"
-      ) {
-        event.preventDefault();
-
-        cancelActiveCharacterInlineEdit();
-      }
-    }
-  );
+    onCancel:
+      cancelActiveCharacterInlineEdit,
+  });
 }
 
-
-// =============================================
-// Create editor input
-// =============================================
-
-function createEditorInput({
-  config,
-  value,
-  displayValue,
-  archetypes,
-}) {
-  // =============================================
-  // Archetype select
-  // =============================================
-
-  if (
-    config.editorType ===
-    "archetype"
-  ) {
-    const select =
-      document.createElement(
-        "select"
-      );
-
-
-    select.className =
-      "form-select form-select-sm bg-black text-light border-secondary character-inline-input";
-
-
-    const emptyOption =
-      document.createElement(
-        "option"
-      );
-
-
-    emptyOption.value =
-      "";
-
-    emptyOption.textContent =
-      config.placeholder ||
-      "Selecione uma opção";
-
-
-    select.appendChild(
-      emptyOption
-    );
-
-
-    archetypes.forEach(
-      (archetype) => {
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          archetype.ref;
-
-        option.textContent =
-          archetype.label;
-
-
-        select.appendChild(
-          option
-        );
-      }
-    );
-
-
-    // =============================================
-    // If current value is no longer present,
-    // keep it visible instead of silently
-    // replacing/removing it.
-    // =============================================
-
-    if (
-      value &&
-      !archetypes.some(
-        (archetype) =>
-          archetype.ref ===
-          value
-      )
-    ) {
-      const currentOption =
-        document.createElement(
-          "option"
-        );
-
-
-      currentOption.value =
-        value;
-
-      currentOption.textContent =
-        displayValue ||
-        value;
-
-
-      select.appendChild(
-        currentOption
-      );
-    }
-
-
-    select.value =
-      value;
-
-
-    return select;
-  }
-
-
-  // =============================================
-  // Text input
-  // =============================================
-
-  const input =
-    document.createElement(
-      "input"
-    );
-
-
-  input.type =
-    "text";
-
-  input.className =
-    "form-control form-control-sm bg-black text-light border-secondary character-inline-input";
-
-  input.value =
-    value;
-
-  input.placeholder =
-    config.placeholder ||
-    "";
-
-  input.autocomplete =
-    "off";
-
-
-  if (
-    typeof config.maxLength ===
-    "number"
-  ) {
-    input.maxLength =
-      config.maxLength;
-  }
-
-
-  return input;
-}
-
-
-// =============================================
-// Load available Archetypes
-// =============================================
-
-async function loadCharacterArchetypes(
-  characterId
-) {
-  const response =
-    await fetch(
-      `/api/characters/${encodeURIComponent(
-        characterId
-      )}/archetypes`,
-      {
-        method:
-          "GET",
-
-        credentials:
-          "include",
-
-        cache:
-          "no-store",
-      }
-    );
-
-
-  const data =
-    await response
-      .json()
-      .catch(() => ({}));
-
-
-  if (
-    !response.ok ||
-    !data?.ok
-  ) {
-    throw new Error(
-      data?.error ||
-      "Não foi possível carregar os arquétipos."
-    );
-  }
-
-
-  if (
-    !Array.isArray(
-      data.archetypes
-    )
-  ) {
-    return [];
-  }
-
-
-  return data.archetypes
-    .map(
-      (archetype) => ({
-        ref:
-          String(
-            archetype?.ref ||
-            ""
-          ),
-
-        label:
-          String(
-            archetype?.label ||
-            ""
-          ),
-      })
-    )
-    .filter(
-      (archetype) =>
-        archetype.ref &&
-        archetype.label
-    );
-}
-
-
-// =============================================
-// Input display value
-// =============================================
-
-function getInputDisplayValue(
-  input,
-  config,
-  value
-) {
-  if (
-    config.editorType ===
-      "archetype" &&
-    input instanceof
-      HTMLSelectElement
-  ) {
-    if (!value) {
-      return "";
-    }
-
-
-    return (
-      input.options[
-        input.selectedIndex
-      ]?.textContent ||
-      ""
-    );
-  }
-
-
-  return value;
-}
-
-
-// =============================================
-// Character display value
-// =============================================
-
-function getCharacterDisplayValue(
-  character,
-  config
-) {
-  if (
-    config.labelProperty
-  ) {
-    return String(
-      character[
-        config.labelProperty
-      ] ||
-      ""
-    );
-  }
-
-
-  return String(
-    character[
-      config.property
-    ] ||
-    ""
-  );
-}
-
-
-// =============================================
-// Finish editor
-// =============================================
 
 function finishInlineEditor(
   row,
@@ -1152,214 +732,32 @@ function finishInlineEditor(
   value,
   displayValue
 ) {
-  activeEditor =
-    null;
-
-
-  row.classList.remove(
-    "is-editing"
-  );
-
-
-  renderFieldDisplay(
-    row,
-    field,
-    value,
-    displayValue
-  );
-}
-
-
-// =============================================
-// Display mode
-// =============================================
-
-function renderFieldDisplay(
-  row,
-  field,
-  value,
-  displayValue
-) {
   const config =
-    FIELD_CONFIG[
+    CHARACTER_INLINE_FIELD_CONFIG[
       field
     ];
 
 
-  const container =
-    row.querySelector(
-      ".character-editable-value"
-    );
+  activeEditor =
+    null;
 
 
   if (
-    !config ||
-    !container
+    !config
   ) {
+    row.classList.remove(
+      "is-editing"
+    );
+
+
     return;
   }
 
 
-  container.innerHTML =
-    "";
-
-
-  const wrapper =
-    document.createElement(
-      "span"
-    );
-
-
-  wrapper.className =
-    "character-inline-display";
-
-
-  const display =
-    document.createElement(
-      "span"
-    );
-
-
-  display.className =
-    "character-field-display";
-
-
-  display.textContent =
-    displayValue ||
-    value ||
-    "—";
-
-
-  const editButton =
-    document.createElement(
-      "button"
-    );
-
-
-  editButton.type =
-    "button";
-
-  editButton.className =
-    "btn btn-link btn-sm text-secondary text-decoration-none p-0 character-inline-edit-button";
-
-  editButton.dataset
-    .characterInlineAction =
-      "edit";
-
-
-  editButton.setAttribute(
-    "aria-label",
-    `Editar ${config.label}`
-  );
-
-
-  editButton.setAttribute(
-    "title",
-    `Editar ${config.label}`
-  );
-
-
-  editButton.textContent =
-    "✎";
-
-
-  wrapper.append(
-    display,
-    editButton
-  );
-
-
-  container.appendChild(
-    wrapper
-  );
-}
-
-
-// =============================================
-// Error
-// =============================================
-
-function showInlineError(
-  row,
-  message
-) {
-  const error =
-    row.querySelector(
-      ".character-inline-error"
-    );
-
-
-  if (!error) {
-    return;
-  }
-
-
-  error.textContent =
-    message;
-
-
-  error.classList.remove(
-    "d-none"
-  );
-}
-
-
-function hideInlineError(
-  row
-) {
-  const error =
-    row.querySelector(
-      ".character-inline-error"
-    );
-
-
-  if (!error) {
-    return;
-  }
-
-
-  error.textContent =
-    "";
-
-
-  error.classList.add(
-    "d-none"
-  );
-}
-
-
-// =============================================
-// Character state
-// =============================================
-
-function getCharacter(
-  characterId
-) {
-  const characters =
-    window.ByNightMain
-      ?.character
-      ?.characters;
-
-
-  if (
-    !Array.isArray(
-      characters
-    )
-  ) {
-    return null;
-  }
-
-
-  return (
-    characters.find(
-      (character) =>
-        String(
-          character.id
-        ) ===
-        String(
-          characterId
-        )
-    ) ||
-    null
+  renderFieldDisplay(
+    row,
+    config,
+    value,
+    displayValue
   );
 }

@@ -2,10 +2,6 @@ const mongoose = require(
   "mongoose"
 );
 
-const Character = require(
-  "../../../models/Character"
-);
-
 const {
   isValidClan,
 } = require(
@@ -26,9 +22,11 @@ const {
 );
 
 const {
-  canDirectlyEditCharacter,
+  findOwnedCharacterForEdit,
+  persistCharacterChanges,
+  respondCharacterEditFailure,
 } = require(
-  "../characterState"
+  "./characterEditPersistence"
 );
 
 
@@ -41,21 +39,6 @@ function validateCharacterId(
       characterId
     )
   );
-}
-
-
-function rejectApprovedCharacter(
-  res
-) {
-  return res
-    .status(409)
-    .json({
-      ok:
-        false,
-
-      error:
-        "Este personagem já foi aprovado por uma Crônica. Esta alteração não pode ser realizada diretamente.",
-    });
 }
 
 
@@ -86,7 +69,9 @@ async function updateTextField(
       ];
 
 
-    if (!userId) {
+    if (
+      !userId
+    ) {
       return res
         .status(401)
         .json({
@@ -153,21 +138,18 @@ async function updateTextField(
 
 
     const character =
-      await Character.findOne({
-        _id:
-          characterId,
-
-        ownerUser:
-          userId,
-
-        type:
-          "PC",
-      }).select(
-        `_id ${field} motherHouse pendingMotherHouse`
+      await findOwnedCharacterForEdit(
+        characterId,
+        userId,
+        [
+          field,
+        ]
       );
 
 
-    if (!character) {
+    if (
+      !character
+    ) {
       return res
         .status(404)
         .json({
@@ -180,76 +162,27 @@ async function updateTextField(
     }
 
 
-    if (
-      !canDirectlyEditCharacter(
-        character
-      )
-    ) {
-      return rejectApprovedCharacter(
-        res
-      );
-    }
+    const persisted =
+      await persistCharacterChanges({
+        character,
 
+        userId,
 
-    if (
-      String(
-        character[
-          field
-        ] ||
-        ""
-      ) ===
-      value
-    ) {
-      return res.json({
-        ok:
-          true,
-
-        character: {
-          id:
-            character._id,
-
+        changes: {
           [
             field
           ]:
             value,
         },
       });
-    }
-
-
-    const result =
-      await Character.updateOne(
-        {
-          _id:
-            characterId,
-
-          ownerUser:
-            userId,
-
-          type:
-            "PC",
-
-          motherHouse:
-            null,
-        },
-
-        {
-          $set: {
-            [
-              field
-            ]:
-              value,
-          },
-        }
-      );
 
 
     if (
-      result.matchedCount !==
-      1
+      !persisted.ok
     ) {
-      return rejectApprovedCharacter(
-        res
+      return respondCharacterEditFailure(
+        res,
+        persisted
       );
     }
 
@@ -257,6 +190,13 @@ async function updateTextField(
     return res.json({
       ok:
         true,
+
+      savedAsDraft:
+        persisted.mode ===
+        "approval_draft",
+
+      sheetDraft:
+        persisted.sheetDraft,
 
       character: {
         id:
@@ -356,7 +296,9 @@ async function updateCharacterClan(
         .toLowerCase();
 
 
-    if (!userId) {
+    if (
+      !userId
+    ) {
       return res
         .status(401)
         .json({
@@ -405,21 +347,19 @@ async function updateCharacterClan(
 
 
     const character =
-      await Character.findOne({
-        _id:
-          characterId,
-
-        ownerUser:
-          userId,
-
-        type:
-          "PC",
-      }).select(
-        "_id sect clan motherHouse pendingMotherHouse"
+      await findOwnedCharacterForEdit(
+        characterId,
+        userId,
+        [
+          "sect",
+          "clan",
+        ]
       );
 
 
-    if (!character) {
+    if (
+      !character
+    ) {
       return res
         .status(404)
         .json({
@@ -432,71 +372,24 @@ async function updateCharacterClan(
     }
 
 
-    if (
-      !canDirectlyEditCharacter(
-        character
-      )
-    ) {
-      return rejectApprovedCharacter(
-        res
-      );
-    }
+    const persisted =
+      await persistCharacterChanges({
+        character,
 
+        userId,
 
-    if (
-      character.clan ===
-      clan
-    ) {
-      return res.json({
-        ok:
-          true,
-
-        character: {
-          id:
-            character._id,
-
+        changes: {
           clan,
-
-          clanDisplayName:
-            getClanDisplayName(
-              character.sect,
-              clan
-            ),
         },
       });
-    }
-
-
-    const result =
-      await Character.updateOne(
-        {
-          _id:
-            characterId,
-
-          ownerUser:
-            userId,
-
-          type:
-            "PC",
-
-          motherHouse:
-            null,
-        },
-
-        {
-          $set: {
-            clan,
-          },
-        }
-      );
 
 
     if (
-      result.matchedCount !==
-      1
+      !persisted.ok
     ) {
-      return rejectApprovedCharacter(
-        res
+      return respondCharacterEditFailure(
+        res,
+        persisted
       );
     }
 
@@ -504,6 +397,13 @@ async function updateCharacterClan(
     return res.json({
       ok:
         true,
+
+      savedAsDraft:
+        persisted.mode ===
+        "approval_draft",
+
+      sheetDraft:
+        persisted.sheetDraft,
 
       character: {
         id:

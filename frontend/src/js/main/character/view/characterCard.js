@@ -57,9 +57,9 @@ export function createCharacterCard(
     );
 
 
-  const directEdit =
+  const canEditSheet =
     character.editState
-      ?.directEdit ??
+      ?.canEdit ??
     !hasHouse;
 
 
@@ -224,10 +224,10 @@ export function createCharacterCard(
           },
 
         canEditDirectly:
-          directEdit,
+          canEditSheet,
 
         canEditVirtues:
-          directEdit,
+          canEditSheet,
 
         clan,
 
@@ -400,11 +400,14 @@ function getCharacterSheetStatus(
     );
 
 
+  let status;
+
+
   if (
     lifecycle ===
     "initial_review_pending"
   ) {
-    return {
+    status = {
       key:
         "initial_review_pending",
 
@@ -420,14 +423,12 @@ function getCharacterSheetStatus(
           ?.description ||
         "A distribuição inicial foi enviada para a Crônica e aguarda análise da Narração.",
     };
-  }
 
-
-  if (
+  } else if (
     lifecycle ===
     "active"
   ) {
-    return {
+    status = {
       key:
         "active",
 
@@ -443,22 +444,54 @@ function getCharacterSheetStatus(
           ?.description ||
         "A criação inicial deste personagem foi concluída.",
     };
+
+  } else {
+    status = {
+      key:
+        "initial_distribution_pending",
+
+      label:
+        "PONTOS DE ATENÇÃO",
+
+      description:
+        character
+          ?.sheetStatus
+          ?.description ||
+        "Ficha aguardando distribuição inicial de pontos. A criação inicial deste personagem ainda não foi concluída. Os pontos e campos obrigatórios da ficha ainda precisam ser finalizados.",
+    };
   }
 
 
-  return {
-    key:
-      "initial_distribution_pending",
+  if (
+    character.editState
+      ?.mode ===
+    "approval_draft"
+  ) {
+    status.description +=
+      " Como o personagem já pertence a uma Crônica, as alterações realizadas pelo jogador são salvas em um rascunho separado e não modificam a ficha oficial até a aprovação da Narração.";
+  }
 
-    label:
-      "PONTOS DE ATENÇÃO",
 
-    description:
-      character
-        ?.sheetStatus
-        ?.description ||
-      "Ficha aguardando distribuição inicial de pontos. A criação inicial deste personagem ainda não foi concluída. Os pontos e campos obrigatórios da ficha ainda precisam ser finalizados.",
-  };
+  const draftFields =
+    Array.isArray(
+      character.sheetDraft
+        ?.fields
+    )
+      ? character.sheetDraft
+          .fields
+      : [];
+
+
+  if (
+    draftFields.length >
+    0
+  ) {
+    status.description +=
+      ` Existem ${draftFields.length} campo${draftFields.length === 1 ? "" : "s"} com alterações salvas no rascunho.`;
+  }
+
+
+  return status;
 }
 
 

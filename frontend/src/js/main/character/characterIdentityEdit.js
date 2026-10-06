@@ -1,42 +1,31 @@
+import {
+  CHARACTER_IDENTITY_FIELD_CONFIG,
+  getIdentityInputDisplayValue,
+  getTitleMaxLength,
+} from "./identity/characterIdentityConfig.js";
+
+import {
+  hideIdentityError,
+  mountIdentityEditor,
+  renderIdentityDisplay,
+  showIdentityError,
+  updateIdentityCardSummary,
+} from "./identity/characterIdentityView.js";
+
+import {
+  getCharacterDraftFieldDisplayValue,
+  getCharacterDraftFieldValue,
+  hasCharacterDraftField,
+  updateCharacterSheetDraftLocal,
+} from "./draft/characterDraftState.js";
+
+import {
+  refreshCharacterDraftIndicators,
+} from "./draft/characterDraftIndicators.js";
+
+
 let activeEditor =
   null;
-
-
-const FIELD_CONFIG = {
-  title: {
-    label:
-      "Título",
-
-    property:
-      "title",
-
-    endpoint:
-      "title",
-
-    type:
-      "text",
-
-    placeholder:
-      "Digite o título...",
-  },
-
-  clan: {
-    label:
-      "Clã",
-
-    property:
-      "clan",
-
-    labelProperty:
-      "clanDisplayName",
-
-    endpoint:
-      "clan",
-
-    type:
-      "clan",
-  },
-};
 
 
 export async function handleCharacterIdentityEditClick(
@@ -50,7 +39,9 @@ export async function handleCharacterIdentityEditClick(
       : null;
 
 
-  if (!target) {
+  if (
+    !target
+  ) {
     return false;
   }
 
@@ -86,7 +77,9 @@ export async function handleCharacterIdentityEditClick(
       );
 
 
-    if (!row) {
+    if (
+      !row
+    ) {
       return true;
     }
 
@@ -100,7 +93,9 @@ export async function handleCharacterIdentityEditClick(
         await saveActiveCharacterIdentityEdit();
 
 
-      if (!saved) {
+      if (
+        !saved
+      ) {
         return true;
       }
     }
@@ -121,6 +116,7 @@ export async function handleCharacterIdentityEditClick(
   ) {
     await saveActiveCharacterIdentityEdit();
 
+
     return true;
   }
 
@@ -131,6 +127,7 @@ export async function handleCharacterIdentityEditClick(
   ) {
     cancelActiveCharacterIdentityEdit();
 
+
     return true;
   }
 
@@ -140,7 +137,9 @@ export async function handleCharacterIdentityEditClick(
 
 
 export async function saveActiveCharacterIdentityEdit() {
-  if (!activeEditor) {
+  if (
+    !activeEditor
+  ) {
     return true;
   }
 
@@ -151,8 +150,10 @@ export async function saveActiveCharacterIdentityEdit() {
     field,
     config,
     row,
-    originalValue,
-    originalDisplayValue,
+    officialValue,
+    officialDisplayValue,
+    editValue,
+    saveLabel,
   } =
     activeEditor;
 
@@ -163,9 +164,12 @@ export async function saveActiveCharacterIdentityEdit() {
     );
 
 
-  if (!input) {
+  if (
+    !input
+  ) {
     activeEditor =
       null;
+
 
     row.classList.remove(
       "is-editing"
@@ -183,7 +187,7 @@ export async function saveActiveCharacterIdentityEdit() {
     ).trim();
 
 
-  hideError(
+  hideIdentityError(
     row
   );
 
@@ -194,7 +198,7 @@ export async function saveActiveCharacterIdentityEdit() {
     value.length >
       getTitleMaxLength()
   ) {
-    showError(
+    showIdentityError(
       row,
       `Máximo de ${getTitleMaxLength()} caracteres.`
     );
@@ -212,7 +216,7 @@ export async function saveActiveCharacterIdentityEdit() {
       "clan" &&
     !value
   ) {
-    showError(
+    showIdentityError(
       row,
       "Selecione o Clã."
     );
@@ -227,13 +231,13 @@ export async function saveActiveCharacterIdentityEdit() {
 
   if (
     value ===
-    originalValue
+    editValue
   ) {
     finishEditor(
       row,
       field,
-      originalValue,
-      originalDisplayValue
+      officialValue,
+      officialDisplayValue
     );
 
 
@@ -253,7 +257,9 @@ export async function saveActiveCharacterIdentityEdit() {
     );
 
 
-  if (saveButton) {
+  if (
+    saveButton
+  ) {
     saveButton.disabled =
       true;
 
@@ -262,7 +268,9 @@ export async function saveActiveCharacterIdentityEdit() {
   }
 
 
-  if (cancelButton) {
+  if (
+    cancelButton
+  ) {
     cancelButton.disabled =
       true;
   }
@@ -309,7 +317,7 @@ export async function saveActiveCharacterIdentityEdit() {
       !response.ok ||
       !data?.ok
     ) {
-      showError(
+      showIdentityError(
         row,
         data?.error ||
         "Não foi possível salvar."
@@ -335,12 +343,44 @@ export async function saveActiveCharacterIdentityEdit() {
             data.character?.[
               config.labelProperty
             ] ||
-            getInputDisplayValue(
+            getIdentityInputDisplayValue(
               input
             ) ||
             savedValue
           )
         : savedValue;
+
+
+    if (
+      data.savedAsDraft
+    ) {
+      updateCharacterSheetDraftLocal(
+        character,
+        data.sheetDraft,
+        {
+          field,
+
+          displayValue:
+            savedDisplayValue,
+        }
+      );
+
+
+      finishEditor(
+        row,
+        field,
+        officialValue,
+        officialDisplayValue
+      );
+
+
+      refreshCharacterDraftIndicators(
+        characterId
+      );
+
+
+      return true;
+    }
 
 
     character[
@@ -359,7 +399,7 @@ export async function saveActiveCharacterIdentityEdit() {
     }
 
 
-    updateCardSummary(
+    updateIdentityCardSummary(
       characterId,
       field,
       savedDisplayValue
@@ -374,6 +414,11 @@ export async function saveActiveCharacterIdentityEdit() {
     );
 
 
+    refreshCharacterDraftIndicators(
+      characterId
+    );
+
+
     return true;
 
   } catch (error) {
@@ -383,7 +428,7 @@ export async function saveActiveCharacterIdentityEdit() {
     );
 
 
-    showError(
+    showIdentityError(
       row,
       "Erro de conexão com o servidor."
     );
@@ -404,16 +449,20 @@ export async function saveActiveCharacterIdentityEdit() {
       );
 
 
-    if (currentSaveButton) {
+    if (
+      currentSaveButton
+    ) {
       currentSaveButton.disabled =
         false;
 
       currentSaveButton.textContent =
-        "Salvar";
+        saveLabel;
     }
 
 
-    if (currentCancelButton) {
+    if (
+      currentCancelButton
+    ) {
       currentCancelButton.disabled =
         false;
     }
@@ -422,7 +471,9 @@ export async function saveActiveCharacterIdentityEdit() {
 
 
 export function cancelActiveCharacterIdentityEdit() {
-  if (!activeEditor) {
+  if (
+    !activeEditor
+  ) {
     return;
   }
 
@@ -430,8 +481,8 @@ export function cancelActiveCharacterIdentityEdit() {
   const {
     row,
     field,
-    originalValue,
-    originalDisplayValue,
+    officialValue,
+    officialDisplayValue,
   } =
     activeEditor;
 
@@ -439,8 +490,8 @@ export function cancelActiveCharacterIdentityEdit() {
   finishEditor(
     row,
     field,
-    originalValue,
-    originalDisplayValue
+    officialValue,
+    officialDisplayValue
   );
 }
 
@@ -450,20 +501,22 @@ function openEditor(
 ) {
   const characterId =
     String(
-      row.dataset.characterId ||
+      row.dataset
+        .characterId ||
       ""
     );
 
 
   const field =
     String(
-      row.dataset.characterField ||
+      row.dataset
+        .characterField ||
       ""
     );
 
 
   const config =
-    FIELD_CONFIG[
+    CHARACTER_IDENTITY_FIELD_CONFIG[
       field
     ];
 
@@ -482,15 +535,17 @@ function openEditor(
   }
 
 
-  const directEdit =
+  const canEdit =
     character.editState
-      ?.directEdit ??
+      ?.canEdit ??
     !character.motherHouse;
 
 
-  if (!directEdit) {
+  if (
+    !canEdit
+  ) {
     window.alert(
-      "Este personagem já foi aprovado por uma Crônica. Esta alteração não pode ser realizada diretamente."
+      "Esta ficha não está disponível para edição neste estado."
     );
 
 
@@ -498,7 +553,7 @@ function openEditor(
   }
 
 
-  const originalValue =
+  const officialValue =
     String(
       character[
         config.property
@@ -507,7 +562,7 @@ function openEditor(
     );
 
 
-  const originalDisplayValue =
+  const officialDisplayValue =
     config.labelProperty
       ? String(
           character[
@@ -515,18 +570,48 @@ function openEditor(
           ] ||
           ""
         )
-      : originalValue;
+      : officialValue;
 
 
-  const container =
-    row.querySelector(
-      ".character-identity-value"
+  const hasDraft =
+    hasCharacterDraftField(
+      character,
+      field
     );
 
 
-  if (!container) {
-    return;
-  }
+  const editValue =
+    hasDraft
+      ? String(
+          getCharacterDraftFieldValue(
+            character,
+            field,
+            officialValue
+          ) ||
+          ""
+        )
+      : officialValue;
+
+
+  const editDisplayValue =
+    hasDraft
+      ? String(
+          getCharacterDraftFieldDisplayValue(
+            character,
+            field,
+            officialDisplayValue
+          ) ||
+          ""
+        )
+      : officialDisplayValue;
+
+
+  const saveLabel =
+    character.editState
+      ?.mode ===
+      "approval_draft"
+      ? "Salvar rascunho"
+      : "Salvar";
 
 
   activeEditor = {
@@ -535,278 +620,32 @@ function openEditor(
     field,
     config,
     row,
-    originalValue,
-    originalDisplayValue,
+    officialValue,
+    officialDisplayValue,
+    editValue,
+    editDisplayValue,
+    saveLabel,
   };
 
 
-  row.classList.add(
-    "is-editing"
-  );
+  mountIdentityEditor({
+    row,
+    config,
 
+    value:
+      editValue,
 
-  container.replaceChildren();
+    displayValue:
+      editDisplayValue,
 
+    saveLabel,
 
-  const editor =
-    document.createElement(
-      "div"
-    );
+    onSave:
+      saveActiveCharacterIdentityEdit,
 
-
-  editor.className =
-    "character-inline-editor";
-
-
-  const input =
-    createInput(
-      config,
-      originalValue,
-      originalDisplayValue
-    );
-
-
-  const actions =
-    document.createElement(
-      "div"
-    );
-
-
-  actions.className =
-    "character-inline-actions";
-
-
-  const saveButton =
-    document.createElement(
-      "button"
-    );
-
-
-  saveButton.type =
-    "button";
-
-  saveButton.className =
-    "btn btn-blood btn-sm";
-
-  saveButton.dataset
-    .characterIdentityAction =
-      "save";
-
-  saveButton.textContent =
-    "Salvar";
-
-
-  const cancelButton =
-    document.createElement(
-      "button"
-    );
-
-
-  cancelButton.type =
-    "button";
-
-  cancelButton.className =
-    "btn btn-outline-secondary btn-sm";
-
-  cancelButton.dataset
-    .characterIdentityAction =
-      "cancel";
-
-  cancelButton.textContent =
-    "Cancelar";
-
-
-  const error =
-    document.createElement(
-      "div"
-    );
-
-
-  error.className =
-    "text-danger small d-none character-inline-error";
-
-
-  actions.append(
-    saveButton,
-    cancelButton
-  );
-
-
-  editor.append(
-    input,
-    actions,
-    error
-  );
-
-
-  container.appendChild(
-    editor
-  );
-
-
-  input.focus();
-
-
-  if (
-    input instanceof
-      HTMLInputElement
-  ) {
-    input.setSelectionRange(
-      input.value.length,
-      input.value.length
-    );
-  }
-
-
-  input.addEventListener(
-    "keydown",
-    async (
-      event
-    ) => {
-      if (
-        event.key ===
-        "Enter"
-      ) {
-        event.preventDefault();
-
-
-        await saveActiveCharacterIdentityEdit();
-
-
-        return;
-      }
-
-
-      if (
-        event.key ===
-        "Escape"
-      ) {
-        event.preventDefault();
-
-
-        cancelActiveCharacterIdentityEdit();
-      }
-    }
-  );
-}
-
-
-function createInput(
-  config,
-  value,
-  displayValue
-) {
-  if (
-    config.type ===
-    "clan"
-  ) {
-    const select =
-      document.createElement(
-        "select"
-      );
-
-
-    select.className =
-      "form-select form-select-sm bg-black text-light border-secondary character-inline-input";
-
-
-    const clans =
-      window.ByNightMain
-        ?.character
-        ?.options
-        ?.clans ||
-      [];
-
-
-    clans.forEach(
-      (
-        clan
-      ) => {
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          clan.value;
-
-        option.textContent =
-          clan.label;
-
-
-        select.appendChild(
-          option
-        );
-      }
-    );
-
-
-    if (
-      value &&
-      !clans.some(
-        (
-          clan
-        ) =>
-          clan.value ===
-          value
-      )
-    ) {
-      const option =
-        document.createElement(
-          "option"
-        );
-
-
-      option.value =
-        value;
-
-      option.textContent =
-        displayValue ||
-        value;
-
-
-      select.appendChild(
-        option
-      );
-    }
-
-
-    select.value =
-      value;
-
-
-    return select;
-  }
-
-
-  const input =
-    document.createElement(
-      "input"
-    );
-
-
-  input.type =
-    "text";
-
-  input.className =
-    "form-control form-control-sm bg-black text-light border-secondary character-inline-input";
-
-  input.value =
-    value;
-
-  input.placeholder =
-    config.placeholder ||
-    "";
-
-  input.autocomplete =
-    "off";
-
-  input.maxLength =
-    getTitleMaxLength();
-
-
-  return input;
+    onCancel:
+      cancelActiveCharacterIdentityEdit,
+  });
 }
 
 
@@ -816,199 +655,34 @@ function finishEditor(
   value,
   displayValue
 ) {
+  const config =
+    CHARACTER_IDENTITY_FIELD_CONFIG[
+      field
+    ];
+
+
   activeEditor =
     null;
 
 
-  row.classList.remove(
-    "is-editing"
-  );
-
-
-  const container =
-    row.querySelector(
-      ".character-identity-value"
+  if (
+    !config
+  ) {
+    row.classList.remove(
+      "is-editing"
     );
 
 
-  if (!container) {
     return;
   }
 
 
-  container.replaceChildren();
-
-
-  const wrapper =
-    document.createElement(
-      "span"
-    );
-
-
-  wrapper.className =
-    "character-inline-display";
-
-
-  const display =
-    document.createElement(
-      "span"
-    );
-
-
-  display.className =
-    "character-field-display";
-
-  display.textContent =
-    displayValue ||
-    value ||
-    "—";
-
-
-  const button =
-    document.createElement(
-      "button"
-    );
-
-
-  button.type =
-    "button";
-
-  button.className =
-    "btn btn-link btn-sm text-secondary text-decoration-none p-0 character-inline-edit-button";
-
-  button.dataset
-    .characterIdentityAction =
-      "edit";
-
-
-  button.setAttribute(
-    "aria-label",
-    `Editar ${FIELD_CONFIG[field].label}`
+  renderIdentityDisplay(
+    row,
+    config,
+    value,
+    displayValue
   );
-
-
-  button.setAttribute(
-    "title",
-    `Editar ${FIELD_CONFIG[field].label}`
-  );
-
-
-  button.textContent =
-    "✎";
-
-
-  wrapper.append(
-    display,
-    button
-  );
-
-
-  container.appendChild(
-    wrapper
-  );
-}
-
-
-function updateCardSummary(
-  characterId,
-  field,
-  displayValue
-) {
-  const card =
-    document.querySelector(
-      `.character-card[data-character-id="${CSS.escape(
-        String(
-          characterId
-        )
-      )}"]`
-    );
-
-
-  if (!card) {
-    return;
-  }
-
-
-  if (
-    field ===
-    "title"
-  ) {
-    const title =
-      card.querySelector(
-        ".character-title-summary"
-      );
-
-
-    if (title) {
-      title.textContent =
-        displayValue;
-
-
-      title.classList.toggle(
-        "d-none",
-        !displayValue
-      );
-    }
-  }
-
-
-  if (
-    field ===
-    "clan"
-  ) {
-    const clan =
-      card.querySelector(
-        ".character-clan-summary"
-      );
-
-
-    if (clan) {
-      clan.textContent =
-        displayValue;
-    }
-  }
-}
-
-
-function getInputDisplayValue(
-  input
-) {
-  if (
-    input instanceof
-      HTMLSelectElement
-  ) {
-    return (
-      input.options[
-        input.selectedIndex
-      ]?.textContent ||
-      ""
-    );
-  }
-
-
-  return String(
-    input.value ||
-    ""
-  );
-}
-
-
-function getTitleMaxLength() {
-  const configured =
-    Number(
-      window.ByNightMain
-        ?.character
-        ?.options
-        ?.limits
-        ?.titleMaxLength
-    );
-
-
-  return Number.isInteger(
-    configured
-  )
-    ? configured
-    : 80;
 }
 
 
@@ -1031,55 +705,6 @@ function getCharacter(
           )
       ) ||
     null
-  );
-}
-
-
-function showError(
-  row,
-  message
-) {
-  const error =
-    row.querySelector(
-      ".character-inline-error"
-    );
-
-
-  if (!error) {
-    return;
-  }
-
-
-  error.textContent =
-    message;
-
-
-  error.classList.remove(
-    "d-none"
-  );
-}
-
-
-function hideError(
-  row
-) {
-  const error =
-    row.querySelector(
-      ".character-inline-error"
-    );
-
-
-  if (!error) {
-    return;
-  }
-
-
-  error.textContent =
-    "";
-
-
-  error.classList.add(
-    "d-none"
   );
 }
 

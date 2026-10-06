@@ -35,6 +35,10 @@ import {
   restoreCharacterVirtueDrafts,
 } from "./characterVirtues.js";
 
+import {
+  renderCharacterDraftIndicators,
+} from "./draft/characterDraftIndicators.js";
+
 
 window.ByNightMain =
   window.ByNightMain || {};
@@ -132,7 +136,9 @@ function renderCharacters(
     );
 
 
-  if (!container) {
+  if (
+    !container
+  ) {
     return;
   }
 
@@ -247,6 +253,11 @@ function renderCharacters(
   restoreCharacterVirtueDrafts(
     container
   );
+
+
+  renderCharacterDraftIndicators(
+    container
+  );
 }
 
 
@@ -286,7 +297,9 @@ async function handleCharacterHouseRequestCompleted({
     );
 
 
-  if (!character) {
+  if (
+    !character
+  ) {
     await loadCharacters();
 
 
@@ -312,7 +325,9 @@ async function handleCharacterHouseRequestCompleted({
     );
 
 
-  if (!card) {
+  if (
+    !card
+  ) {
     await loadCharacters();
 
 
@@ -326,7 +341,9 @@ async function handleCharacterHouseRequestCompleted({
     );
 
 
-  if (statusSlot) {
+  if (
+    statusSlot
+  ) {
     statusSlot.innerHTML =
       createCharacterStatuses(
         character
@@ -340,7 +357,9 @@ async function handleCharacterHouseRequestCompleted({
     );
 
 
-  if (summary) {
+  if (
+    summary
+  ) {
     const sect =
       escapeCharacterHtml(
         window.getSectLabel?.(
@@ -374,7 +393,9 @@ async function handleCharacterHouseRequestCompleted({
     );
 
 
-  if (houseField) {
+  if (
+    houseField
+  ) {
     houseField.outerHTML =
       createCharacterHouseField(
         character
@@ -428,7 +449,9 @@ async function handleCharacterListClick(
       : null;
 
 
-  if (!target) {
+  if (
+    !target
+  ) {
     return;
   }
 
@@ -474,7 +497,9 @@ async function handleCharacterListClick(
       await saveActiveCharacterInlineEdit();
 
 
-    if (!saved) {
+    if (
+      !saved
+    ) {
       return;
     }
 
@@ -515,7 +540,9 @@ async function handleCharacterListClick(
       await saveActiveCharacterInlineEdit();
 
 
-    if (!saved) {
+    if (
+      !saved
+    ) {
       return;
     }
 
@@ -560,7 +587,9 @@ async function handleCharacterListClick(
       .characterId;
 
 
-  if (!characterId) {
+  if (
+    !characterId
+  ) {
     return;
   }
 
@@ -569,7 +598,9 @@ async function handleCharacterListClick(
     await saveActiveCharacterInlineEdit();
 
 
-  if (!saved) {
+  if (
+    !saved
+  ) {
     return;
   }
 
@@ -587,7 +618,9 @@ function renderCharacterError() {
     );
 
 
-  if (!container) {
+  if (
+    !container
+  ) {
     return;
   }
 
@@ -624,7 +657,8 @@ function escapeCharacterHtml(
 
   element.textContent =
     String(
-      value ?? ""
+      value ??
+      ""
     );
 
 

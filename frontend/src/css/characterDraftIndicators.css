@@ -1,0 +1,210 @@
+.character-pending-change {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        flex-end;
+
+    gap:
+        0.4rem;
+
+    margin:
+        0.05rem
+        0
+        0.35rem;
+
+    padding:
+        0.18rem
+        0.25rem;
+
+    color:
+        #d6a2a7;
+
+    font-size:
+        0.68rem;
+
+    line-height:
+        1.3;
+
+    text-align:
+        right;
+}
+
+
+.character-pending-change-button {
+    width:
+        18px;
+
+    height:
+        18px;
+
+    min-width:
+        18px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        0;
+
+    color:
+        #ffffff;
+
+    background:
+        #7b1019;
+
+    border:
+        1px solid
+        #dc3545;
+
+    border-radius:
+        50%;
+
+    font-size:
+        0.67rem;
+
+    font-weight:
+        700;
+
+    line-height:
+        1;
+
+    cursor:
+        help;
+
+    box-shadow:
+        0 0 5px
+        rgba(
+            220,
+            53,
+            69,
+            0.22
+        );
+
+    transition:
+        background-color
+        0.18s
+        ease,
+
+        border-color
+        0.18s
+        ease,
+
+        transform
+        0.18s
+        ease;
+}
+
+
+.character-pending-change-button:hover,
+.character-pending-change-button:focus {
+    color:
+        #ffffff;
+
+    background:
+        #a21825;
+
+    border-color:
+        #ff5968;
+
+    transform:
+        scale(
+            1.08
+        );
+
+    outline:
+        none;
+}
+
+
+.character-pending-change-text {
+    color:
+        #d6a2a7;
+}
+
+
+.character-pending-change-text::first-letter {
+    text-transform:
+        uppercase;
+}
+
+
+.character-draft-popover {
+    --bs-popover-bg:
+        #241315;
+
+    --bs-popover-border-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.75
+        );
+
+    --bs-popover-header-bg:
+        #321519;
+
+    --bs-popover-header-color:
+        #ffffff;
+
+    --bs-popover-body-color:
+        #e0c8ca;
+
+    max-width:
+        330px;
+}
+
+
+.character-draft-popover
+.popover-header {
+    border-bottom-color:
+        rgba(
+            220,
+            53,
+            69,
+            0.35
+        );
+}
+
+
+.character-virtues-section[data-editing="true"]
+.character-pending-change-virtue {
+    display:
+        none;
+}
+
+
+@media (
+    max-width:
+        575.98px
+) {
+
+    .character-pending-change {
+        justify-content:
+            flex-start;
+
+        text-align:
+            left;
+    }
+}
+
+
+@media (
+    prefers-reduced-motion:
+        reduce
+) {
+
+    .character-pending-change-button {
+        transition:
+            none;
+    }
+}
