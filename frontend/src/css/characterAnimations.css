@@ -30,3 +30,9 @@
 
     pointer-events: none;
 }
+
+.character-card.is-open
+.character-card-details {
+    height: auto;
+    opacity: 1;
+}
