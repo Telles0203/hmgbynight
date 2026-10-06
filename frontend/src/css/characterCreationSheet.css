@@ -551,6 +551,27 @@
   font-size: 0.72rem;
 }
 
+.character-sheet-section[
+  data-character-creation-section^="attributes."
+] .character-sheet-mini-title {
+  text-align: left;
+}
+
+.character-sheet-section[
+  data-character-creation-section^="attributes."
+] .character-creation-list {
+  width: 100%;
+  padding-left: 18px;
+  list-style-position: outside;
+  text-align: left;
+}
+
+.character-sheet-section[
+  data-character-creation-section^="attributes."
+] .character-creation-list li {
+  text-align: left;
+}
+
 .character-creation-specialization {
   color: #d3dce8;
   font-size: 0.66rem;
