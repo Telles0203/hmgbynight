@@ -31,6 +31,10 @@ import {
   refreshCharacterDraftIndicators,
 } from "./draft/characterDraftIndicators.js";
 
+import {
+  applyClanDerivedSaveResult,
+} from "./identity/characterClanDerivedState.js";
+
 
 let activeEditor =
   null;
@@ -389,6 +393,17 @@ export async function saveActiveCharacterIdentityEdit() {
       }
 
 
+      if (
+        field ===
+        "clan"
+      ) {
+        applyClanDerivedSaveResult(
+          character,
+          data
+        );
+      }
+
+
       finishEditor(
         row,
         field,
@@ -427,6 +442,17 @@ export async function saveActiveCharacterIdentityEdit() {
       "moralityPath"
     ) {
       applyMoralityPathSaveResult(
+        character,
+        data
+      );
+    }
+
+
+    if (
+      field ===
+      "clan"
+    ) {
+      applyClanDerivedSaveResult(
         character,
         data
       );

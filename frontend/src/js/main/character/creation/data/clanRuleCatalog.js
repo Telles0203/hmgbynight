@@ -8,6 +8,36 @@ function getCharacterOptions() {
 }
 
 
+export function getEffectiveCharacterClan(
+  character
+) {
+  const draftClan =
+    character
+      ?.sheetDraft
+      ?.changes
+      ?.clan;
+
+
+  if (
+    typeof draftClan ===
+      "string" &&
+    draftClan.trim()
+  ) {
+    return draftClan
+      .trim()
+      .toLowerCase();
+  }
+
+
+  return String(
+    character?.clan ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+}
+
+
 export function getClanRule(
   clan
 ) {
@@ -44,7 +74,9 @@ export function getCharacterClanRule(
   character
 ) {
   return getClanRule(
-    character?.clan
+    getEffectiveCharacterClan(
+      character
+    )
   );
 }
 

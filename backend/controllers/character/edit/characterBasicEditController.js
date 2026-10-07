@@ -22,6 +22,18 @@ const {
 );
 
 const {
+  getEffectiveCharacterForEditing,
+} = require(
+  "../../../services/characterSheetDraftService"
+);
+
+const {
+  buildClanDerivedCreation,
+} = require(
+  "./characterClanDerivedSync"
+);
+
+const {
   findOwnedCharacterForEdit,
   persistCharacterChanges,
   respondCharacterEditFailure,
@@ -353,6 +365,9 @@ async function updateCharacterClan(
         [
           "sect",
           "clan",
+          "creation",
+          "moralityPath",
+          "virtues",
         ]
       );
 
@@ -370,6 +385,19 @@ async function updateCharacterClan(
             "Personagem não encontrado.",
         });
     }
+
+
+    const effective =
+      await getEffectiveCharacterForEditing(
+        character
+      );
+
+
+    const effectiveCreation =
+      buildClanDerivedCreation(
+        effective.character,
+        clan
+      );
 
 
     const persisted =
@@ -404,6 +432,8 @@ async function updateCharacterClan(
 
       sheetDraft:
         persisted.sheetDraft,
+
+      effectiveCreation,
 
       character: {
         id:
