@@ -149,6 +149,7 @@ export function createClanInfluenceChoiceEditor(
         mt-3
         mb-3
       "
+      data-creation-clan-resource-choices
     >
 
       <div
@@ -238,6 +239,9 @@ export function createClanInfluenceChoiceEditor(
                     data-creation-clan-background-influence-choice="${escapeSheetHtml(
                       group.id
                     )}"
+                    data-creation-clan-choice-preview-value="${escapeSheetHtml(
+                      selected
+                    )}"
                   >
 
                     <option value="">
@@ -291,16 +295,15 @@ export function createClanInfluenceChoiceEditor(
 }
 
 
-export function readClanInfluenceChoices(
-  form,
-  state
+export function readClanInfluenceChoiceSelections(
+  form
 ) {
   const selections =
     {};
 
 
   form
-    .querySelectorAll(
+    ?.querySelectorAll(
       "[data-creation-clan-background-influence-choice]"
     )
     .forEach(
@@ -336,6 +339,20 @@ export function readClanInfluenceChoices(
             value;
         }
       }
+    );
+
+
+  return selections;
+}
+
+
+export function readClanInfluenceChoices(
+  form,
+  state
+) {
+  const selections =
+    readClanInfluenceChoiceSelections(
+      form
     );
 
 

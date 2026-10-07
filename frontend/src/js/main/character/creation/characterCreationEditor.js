@@ -37,6 +37,8 @@ import {
   handleCharacterCreationInfluenceActionClick,
 } from "./actions/characterCreationInfluenceActions.js";
 
+import "./form/influence/characterCreationInfluenceClanPreview.js";
+
 import {
   adjustMoralityCreation,
 } from "./form/characterCreationMoralityForm.js";
@@ -338,6 +340,9 @@ function handleDocumentClick(
 function handleDocumentChange(
   event
 ) {
+  reconcileActiveEditorState();
+
+
   const target =
     event.target instanceof
       Element
