@@ -14,6 +14,11 @@ import {
 } from "../../creation/form/background/characterCreationBackgroundAllocation.js";
 
 import {
+  createCreationRuleErrorNotice,
+  createPendingClanChoiceNotice,
+} from "../../creation/form/background/characterCreationBackgroundNotices.js";
+
+import {
   getStateFreeTraitPurchaseOrder,
 } from "../../creation/freeTraits/characterCreationFreeTraitPurchases.js";
 
@@ -382,10 +387,18 @@ export function createCharacterInfluenceContent({
       Pool compartilhado com Antecedentes.
     </small>
 
+    ${createPendingClanChoiceNotice(
+      progress
+    )}
+
     ${createInfluenceList(
       state,
       progress,
       showFreeTraitMarkers
+    )}
+
+    ${createCreationRuleErrorNotice(
+      progress
     )}
 
     ${createInfluenceCostNotice(

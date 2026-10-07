@@ -30,6 +30,10 @@ import {
 } from "./background/characterCreationBackgroundAllocation.js";
 
 import {
+  createGenerationApprovalNotice,
+} from "./background/characterCreationBackgroundNotices.js";
+
+import {
   resolveCharacterClanResourceGrants,
 } from "../data/clanRuleCatalog.js";
 
@@ -228,6 +232,10 @@ export function createBackgroundCreationEditor(
       ${createBackgroundRuleNotice(
         rules,
         character
+      )}
+
+      ${createGenerationApprovalNotice(
+        state
       )}
 
       <div

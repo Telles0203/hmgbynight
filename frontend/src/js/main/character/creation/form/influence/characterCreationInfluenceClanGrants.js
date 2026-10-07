@@ -29,6 +29,88 @@ function getSelections(
 }
 
 
+function getPendingGroups(
+  groups,
+  selections
+) {
+  return groups.filter(
+    (
+      group
+    ) => {
+      const selected =
+        String(
+          selections[
+            group.id
+          ] ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      return !group.options.some(
+        (
+          option
+        ) =>
+          String(
+            option?.key ||
+            ""
+          )
+            .trim()
+            .toLowerCase() ===
+          selected
+      );
+    }
+  );
+}
+
+
+function createPendingChoiceNotice(
+  pendingGroups
+) {
+  if (
+    pendingGroups.length ===
+    0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <div
+      class="
+        character-creation-pending
+        mb-2
+      "
+    >
+
+      <span
+        class="
+          character-creation-pending-icon
+        "
+      >
+        !
+      </span>
+
+      <div>
+
+        <strong>
+          Benefício de clã pendente
+        </strong>
+
+        <small>
+          ${pendingGroups.length === 1
+            ? "Selecione o benefício obrigatório do clã antes de concluir a criação."
+            : `Selecione os ${pendingGroups.length} benefícios obrigatórios do clã antes de concluir a criação.`}
+        </small>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
 export function createClanInfluenceChoiceEditor(
   character,
   state
@@ -53,6 +135,13 @@ export function createClanInfluenceChoiceEditor(
     );
 
 
+  const pendingGroups =
+    getPendingGroups(
+      groups,
+      selections
+    );
+
+
   return `
     <div
       class="
@@ -72,6 +161,10 @@ export function createClanInfluenceChoiceEditor(
           Benefícios do clã
         </span>
       </div>
+
+      ${createPendingChoiceNotice(
+        pendingGroups
+      )}
 
       <div
         class="
@@ -95,6 +188,17 @@ export function createClanInfluenceChoiceEditor(
                 );
 
 
+              const pending =
+                pendingGroups
+                  .some(
+                    (
+                      pendingGroup
+                    ) =>
+                      pendingGroup.id ===
+                      group.id
+                  );
+
+
               return `
                 <label
                   class="
@@ -107,12 +211,18 @@ export function createClanInfluenceChoiceEditor(
                   <span
                     class="
                       small
-                      text-secondary
+                      ${pending
+                        ? "text-danger"
+                        : "text-secondary"}
                     "
                   >
                     ${escapeSheetHtml(
                       group.label
                     )}
+
+                    ${pending
+                      ? " — escolha obrigatória"
+                      : ""}
                   </span>
 
                   <select
@@ -121,7 +231,9 @@ export function createClanInfluenceChoiceEditor(
                       form-select-sm
                       bg-black
                       text-light
-                      border-secondary
+                      ${pending
+                        ? "border-danger"
+                        : "border-secondary"}
                     "
                     data-creation-clan-background-influence-choice="${escapeSheetHtml(
                       group.id

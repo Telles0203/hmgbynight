@@ -16,6 +16,7 @@ const {
 
 const {
   INFLUENCE_AREAS,
+  getCoreBackground,
 } = require(
   "../../../../data/vampire/backgrounds"
 );
@@ -301,11 +302,26 @@ function validateBackgrounds(
 
 
       if (
-        level >
-          0 &&
+        level <=
+        0
+      ) {
+        return;
+      }
+
+
+      const option =
+        getCoreBackground(
+          background
+        );
+
+
+      if (
         !isCoreBackground(
           background
-        )
+        ) ||
+        option
+          ?.requiresNarratorApproval ===
+          true
       ) {
         requiresApproval.push(
           background

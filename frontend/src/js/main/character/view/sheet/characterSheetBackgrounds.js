@@ -13,6 +13,11 @@ import {
 } from "../../creation/form/background/characterCreationBackgroundAllocation.js";
 
 import {
+  createCreationRuleErrorNotice,
+  createGenerationApprovalNotice,
+} from "../../creation/form/background/characterCreationBackgroundNotices.js";
+
+import {
   getStateFreeTraitPurchaseOrder,
 } from "../../creation/freeTraits/characterCreationFreeTraitPurchases.js";
 
@@ -379,6 +384,14 @@ export function createCharacterBackgroundContent({
       state,
       progress,
       showFreeTraitMarkers
+    )}
+
+    ${createGenerationApprovalNotice(
+      state
+    )}
+
+    ${createCreationRuleErrorNotice(
+      progress
     )}
 
     ${createBackgroundCostNotice(
