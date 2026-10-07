@@ -18,6 +18,7 @@ import {
 import {
   adjustCharacterCreationAbilityLevel,
   handleCharacterCreationAbilityFieldChange,
+  handleCharacterCreationAbilityRowAction,
 } from "./form/characterCreationAbilityForm.js";
 
 import {
@@ -197,6 +198,27 @@ function handleDocumentClick(
 
     removeAttributeTraitSelection(
       removeAttributeTraitButton
+    );
+
+
+    return;
+  }
+
+
+  const abilityRowButton =
+    target.closest(
+      "[data-character-creation-ability-row-action]"
+    );
+
+
+  if (
+    abilityRowButton
+  ) {
+    event.preventDefault();
+
+
+    handleCharacterCreationAbilityRowAction(
+      abilityRowButton
     );
 
 

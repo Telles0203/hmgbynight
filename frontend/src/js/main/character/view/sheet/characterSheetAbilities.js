@@ -188,11 +188,11 @@ function createAbilityList(
 
                   ${specialization
                     ? `
-                      <small class="character-creation-specialization">
+                      <span class="character-creation-specialization">
                         [${escapeSheetHtml(
                           specialization
                         )}]
-                      </small>
+                      </span>
                     `
                     : ""}
 

@@ -21,6 +21,12 @@ import {
   adjustCharacterCreationAbilityLevel,
 } from "./ability/characterCreationAbilityProgress.js";
 
+import {
+  collapseCharacterCreationAbilityRows,
+  concludeCharacterCreationAbilityRow,
+  openCharacterCreationAbilityRow,
+} from "./ability/characterCreationAbilityRowState.js";
+
 
 export function createAbilitiesCreationEditor(
   character,
@@ -184,6 +190,11 @@ export function appendCharacterCreationAbilityRow(
     5;
 
 
+  collapseCharacterCreationAbilityRows(
+    container
+  );
+
+
   const wrapper =
     document.createElement(
       "div"
@@ -195,7 +206,8 @@ export function appendCharacterCreationAbilityRow(
       "",
       1,
       "",
-      maximum
+      maximum,
+      true
     );
 
 
@@ -296,6 +308,40 @@ export function handleCharacterCreationAbilityFieldChange(
   refreshCharacterCreationAbilityEditor(
     form
   );
+}
+
+
+export function handleCharacterCreationAbilityRowAction(
+  button
+) {
+  const action =
+    String(
+      button.dataset
+        .characterCreationAbilityRowAction ||
+      ""
+    );
+
+
+  if (
+    action ===
+    "edit"
+  ) {
+    openCharacterCreationAbilityRow(
+      button
+    );
+
+    return;
+  }
+
+
+  if (
+    action ===
+    "conclude"
+  ) {
+    concludeCharacterCreationAbilityRow(
+      button
+    );
+  }
 }
 
 

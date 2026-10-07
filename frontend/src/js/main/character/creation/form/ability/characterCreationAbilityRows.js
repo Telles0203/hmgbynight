@@ -5,6 +5,7 @@ import {
 import {
   abilityRequiresFocus,
   createAbilityEntryKey,
+  getAbilityDisplayLabel,
   getAbilityLabel,
   parseAbilityEntryKey,
 } from "../../data/abilityCatalog.js";
@@ -132,36 +133,111 @@ function getAbilityEntryKeyFromRow(
 }
 
 
-export function createAbilityRow(
-  entryKey = "",
-  level = 1,
-  specialization = "",
-  maximum = 5
+function createAbilitySummary(
+  entryKey,
+  level,
+  specialization,
+  expanded
 ) {
-  const parsed =
-    parseAbilityEntryKey(
-      entryKey
-    );
-
-
-  const normalizedLevel =
-    Number.isInteger(
-      Number(
-        level
-      )
-    )
-      ? Math.max(
-          1,
-          Math.min(
-            maximum,
-            Number(
-              level
-            )
-          )
+  const label =
+    entryKey
+      ? getAbilityDisplayLabel(
+          entryKey
         )
-      : 1;
+      : "Nova Habilidade";
 
 
+  return `
+    <div
+      class="
+        character-creation-ability-summary
+        ${expanded
+          ? "d-none"
+          : ""}
+      "
+      data-creation-ability-summary
+    >
+
+      <div
+        class="
+          character-creation-ability-summary-name
+        "
+      >
+
+        <span
+          class="
+            character-creation-specialization
+            ${specialization
+              ? ""
+              : "d-none"}
+          "
+          data-creation-ability-summary-specialization
+        >
+          ${specialization
+            ? `[${escapeSheetHtml(
+                specialization
+              )}]`
+            : ""}
+        </span>
+
+        <span
+          data-creation-ability-summary-label
+        >
+          ${escapeSheetHtml(
+            label
+          )}
+        </span>
+
+      </div>
+
+      <span
+        class="
+          character-creation-ability-summary-level
+        "
+        data-creation-ability-summary-level
+      >
+        ${level}
+      </span>
+
+      <button
+        type="button"
+        class="
+          character-creation-ability-edit
+        "
+        data-character-creation-ability-row-action="edit"
+        aria-label="Editar Habilidade"
+        title="Editar Habilidade"
+      >
+        ✎
+      </button>
+
+      <button
+        type="button"
+        class="
+          btn
+          btn-outline-danger
+          btn-sm
+          character-creation-ability-remove
+        "
+        data-character-creation-remove-row
+        aria-label="Remover Habilidade"
+        title="Remover Habilidade"
+      >
+        ×
+      </button>
+
+    </div>
+  `;
+}
+
+
+function createAbilityEditor(
+  parsed,
+  normalizedLevel,
+  specialization,
+  maximum,
+  expanded
+) {
   const selected =
     Boolean(
       parsed.ability
@@ -170,12 +246,13 @@ export function createAbilityRow(
 
   return `
     <div
-      class="character-creation-map-row"
-      data-creation-map="abilities"
-      data-creation-map-type="ability"
-      data-creation-ability-base="${escapeSheetHtml(
-        parsed.ability
-      )}"
+      class="
+        character-creation-ability-editor
+        ${expanded
+          ? ""
+          : "d-none"}
+      "
+      data-creation-ability-editor
     >
 
       <div
@@ -184,6 +261,7 @@ export function createAbilityRow(
           flex-column
           gap-2
           flex-grow-1
+          character-creation-ability-fields
         "
       >
 
@@ -231,11 +309,7 @@ export function createAbilityRow(
 
       <div
         class="
-          d-inline-flex
-          align-items-center
-          justify-content-end
-          gap-2
-          flex-shrink-0
+          character-creation-ability-level-controls
         "
       >
 
@@ -262,7 +336,6 @@ export function createAbilityRow(
             fw-semibold
             text-center
           "
-          style="min-width: 1.5rem;"
           data-creation-ability-level
         >
           ${normalizedLevel}
@@ -288,15 +361,104 @@ export function createAbilityRow(
 
       </div>
 
-      <button
-        type="button"
-        class="btn btn-outline-danger btn-sm"
-        data-character-creation-remove-row
-        aria-label="Remover Habilidade"
-        title="Remover Habilidade"
+      <div
+        class="
+          character-creation-ability-editor-actions
+        "
       >
-        ×
-      </button>
+
+        <button
+          type="button"
+          class="
+            btn
+            btn-outline-light
+            btn-sm
+          "
+          data-character-creation-ability-row-action="conclude"
+        >
+          Concluir
+        </button>
+
+        <button
+          type="button"
+          class="
+            btn
+            btn-outline-danger
+            btn-sm
+          "
+          data-character-creation-remove-row
+        >
+          Remover
+        </button>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+export function createAbilityRow(
+  entryKey = "",
+  level = 1,
+  specialization = "",
+  maximum = 5,
+  expanded = !entryKey
+) {
+  const parsed =
+    parseAbilityEntryKey(
+      entryKey
+    );
+
+
+  const normalizedLevel =
+    Number.isInteger(
+      Number(
+        level
+      )
+    )
+      ? Math.max(
+          1,
+          Math.min(
+            maximum,
+            Number(
+              level
+            )
+          )
+        )
+      : 1;
+
+
+  return `
+    <div
+      class="
+        character-creation-map-row
+        character-creation-ability-row
+        ${expanded
+          ? "is-expanded"
+          : ""}
+      "
+      data-creation-map="abilities"
+      data-creation-map-type="ability"
+      data-creation-ability-base="${escapeSheetHtml(
+        parsed.ability
+      )}"
+    >
+
+      ${createAbilitySummary(
+        entryKey,
+        normalizedLevel,
+        specialization,
+        expanded
+      )}
+
+      ${createAbilityEditor(
+        parsed,
+        normalizedLevel,
+        specialization,
+        maximum,
+        expanded
+      )}
 
     </div>
   `;
@@ -323,7 +485,8 @@ export function createAbilityRows(
       "",
       1,
       "",
-      maximum
+      maximum,
+      true
     );
   }
 
@@ -343,7 +506,8 @@ export function createAbilityRows(
             ] ||
             ""
           ),
-          maximum
+          maximum,
+          false
         )
     )
     .join("");
