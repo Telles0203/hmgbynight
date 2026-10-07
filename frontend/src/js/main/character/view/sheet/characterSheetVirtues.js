@@ -91,6 +91,45 @@ function createVirtueTitle({
 }
 
 
+function createVirtueFreeTraitCostNotice(
+  virtuePoints
+) {
+  const cost =
+    Number(
+      virtuePoints
+        ?.freeTraitCost
+    );
+
+
+  const normalizedCost =
+    Number.isFinite(
+      cost
+    )
+      ? Math.max(
+          0,
+          cost
+        )
+      : 0;
+
+
+  return `
+    <small
+      class="
+        character-free-trait-inline-cost
+        ${normalizedCost > 0
+          ? ""
+          : "d-none"}
+      "
+      data-virtue-free-trait-cost
+    >
+      ${normalizedCost > 0
+        ? `Extra da criação: -${normalizedCost} Free Traits`
+        : ""}
+    </small>
+  `;
+}
+
+
 function createVirtueRows({
   activeVirtues,
   editable,
@@ -268,6 +307,10 @@ export function createCharacterVirtuesSection({
         activeVirtues,
         editable,
       })}
+
+      ${createVirtueFreeTraitCostNotice(
+        virtuePoints
+      )}
 
       ${
         editable

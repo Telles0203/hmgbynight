@@ -10,7 +10,6 @@ import {
   } from "./virtues/characterVirtueDraftStore.js";
 
 import {
-  calculateVirtueProgress,
   getActiveVirtue,
   getEditableActiveVirtueValues,
   hasVirtueDraftChanges,
@@ -467,19 +466,11 @@ function changeVirtueDraft({
   };
 
 
-  const progress =
-    calculateVirtueProgress(
-      character,
-      proposed
-    );
-
-
-  if (
-    progress.spent >
-    progress.total
-  ) {
-    return;
-  }
+  clearVirtueError(
+    section.querySelector(
+      ".character-virtue-error"
+    )
+  );
 
 
   const nextDraft = {

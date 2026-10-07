@@ -27,6 +27,13 @@ const VIRTUE_CREATION_BUDGET =
     .total;
 
 
+const VIRTUE_FREE_TRAIT_COST =
+  CHARACTER_CREATION_RULES
+    .freeTraits
+    .costs
+    .virtue;
+
+
 const VIRTUE_OPTIONS = [
   {
     key:
@@ -353,6 +360,14 @@ function getVirtueCreationProgress(
     );
 
 
+  const extra =
+    Math.max(
+      0,
+      spent -
+        VIRTUE_CREATION_BUDGET
+    );
+
+
   return {
     total:
       VIRTUE_CREATION_BUDGET,
@@ -365,12 +380,14 @@ function getVirtueCreationProgress(
       spent >=
       VIRTUE_CREATION_BUDGET,
 
-    extra:
-      Math.max(
-        0,
-        spent -
-          VIRTUE_CREATION_BUDGET
-      ),
+    extra,
+
+    freeTraitCostPerPoint:
+      VIRTUE_FREE_TRAIT_COST,
+
+    freeTraitCost:
+      extra *
+      VIRTUE_FREE_TRAIT_COST,
   };
 }
 

@@ -12,7 +12,6 @@ const {
   VIRTUE_MAX,
   isActiveVirtueKey,
   getVirtueMinimumValue,
-  getVirtueCreationProgress,
 } = require(
   "../../../data/vampire/virtues"
 );
@@ -214,6 +213,14 @@ async function updateCharacterVirtues(
     }
 
 
+    const creation =
+      buildCharacterCreationAfterVirtueChange(
+        effective.character,
+        validation
+          .proposedVirtues
+      );
+
+
     const persisted =
       await persistCharacterChanges({
         character,
@@ -241,14 +248,6 @@ async function updateCharacterVirtues(
     const serialized =
       serializeVirtues(
         moralityPath,
-        validation
-          .proposedVirtues
-      );
-
-
-    const creation =
-      buildCharacterCreationAfterVirtueChange(
-        effective.character,
         validation
           .proposedVirtues
       );
@@ -470,29 +469,11 @@ async function updateCharacterVirtue(
     };
 
 
-    const virtuePoints =
-      getVirtueCreationProgress(
-        moralityPath,
+    const creation =
+      buildCharacterCreationAfterVirtueChange(
+        effective.character,
         proposedVirtues
       );
-
-
-    if (
-      virtuePoints.spent >
-      virtuePoints.total
-    ) {
-      return res
-        .status(
-          400
-        )
-        .json({
-          ok:
-            false,
-
-          error:
-            "Você já distribuiu todos os pontos disponíveis de Virtudes.",
-        });
-    }
 
 
     const persisted =
@@ -521,13 +502,6 @@ async function updateCharacterVirtue(
     const serialized =
       serializeVirtues(
         moralityPath,
-        proposedVirtues
-      );
-
-
-    const creation =
-      buildCharacterCreationAfterVirtueChange(
-        effective.character,
         proposedVirtues
       );
 

@@ -2,7 +2,6 @@ const {
   VIRTUE_MAX,
   getActiveVirtueKeys,
   getVirtueMinimumValue,
-  getVirtueCreationProgress,
 } = require(
   "../../../data/vampire/virtues"
 );
@@ -205,27 +204,6 @@ function validateSubmittedVirtues(
       virtueKey
     ] =
       value;
-  }
-
-
-  const virtuePoints =
-    getVirtueCreationProgress(
-      moralityPath,
-      proposedVirtues
-    );
-
-
-  if (
-    virtuePoints.spent >
-    virtuePoints.total
-  ) {
-    return {
-      ok:
-        false,
-
-      error:
-        `Você possui apenas ${virtuePoints.total} pontos para distribuir entre as Virtudes.`,
-    };
   }
 
 

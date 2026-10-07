@@ -14,6 +14,18 @@ export function calculateVirtueProgress(
       : 7;
 
 
+  const freeTraitCostPerPoint =
+    Number.isFinite(
+      character
+        ?.virtuePoints
+        ?.freeTraitCostPerPoint
+    )
+      ? character
+          .virtuePoints
+          .freeTraitCostPerPoint
+      : 2;
+
+
   let spent =
     0;
 
@@ -54,6 +66,14 @@ export function calculateVirtueProgress(
   );
 
 
+  const extra =
+    Math.max(
+      0,
+      spent -
+        total
+    );
+
+
   return {
     total,
 
@@ -67,8 +87,16 @@ export function calculateVirtueProgress(
       ),
 
     complete:
-      spent ===
+      spent >=
       total,
+
+    extra,
+
+    freeTraitCostPerPoint,
+
+    freeTraitCost:
+      extra *
+      freeTraitCostPerPoint,
   };
 }
 
@@ -132,17 +160,7 @@ export function isValidVirtueDraft(
   }
 
 
-  const progress =
-    calculateVirtueProgress(
-      character,
-      values
-    );
-
-
-  return (
-    progress.spent <=
-    progress.total
-  );
+  return true;
 }
 
 

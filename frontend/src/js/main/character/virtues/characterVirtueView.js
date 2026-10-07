@@ -57,6 +57,12 @@ export function renderSavedVirtueState(
   );
 
 
+  updateVirtueFreeTraitCost(
+    section,
+    progress
+  );
+
+
   updateUnusedVirtueWarning(
     section,
     progress
@@ -217,6 +223,12 @@ export function renderVirtueEditState(
     section,
     progress,
     dirty
+  );
+
+
+  updateVirtueFreeTraitCost(
+    section,
+    progress
   );
 
 
@@ -391,11 +403,68 @@ export function renderVirtueEditState(
       if (increase) {
         increase.disabled =
           currentValue >=
-            maximum ||
-          progress.remaining <=
-            0;
+          maximum;
       }
     }
+  );
+}
+
+
+function updateVirtueFreeTraitCost(
+  section,
+  progress
+) {
+  const element =
+    section.querySelector(
+      "[data-virtue-free-trait-cost]"
+    );
+
+
+  if (!element) {
+    return;
+  }
+
+
+  const cost =
+    Number(
+      progress
+        ?.freeTraitCost
+    );
+
+
+  const normalizedCost =
+    Number.isFinite(
+      cost
+    )
+      ? Math.max(
+          0,
+          cost
+        )
+      : 0;
+
+
+  if (
+    normalizedCost ===
+    0
+  ) {
+    element.textContent =
+      "";
+
+    element.classList.add(
+      "d-none"
+    );
+
+
+    return;
+  }
+
+
+  element.textContent =
+    `Extra da criação: -${normalizedCost} Free Traits`;
+
+
+  element.classList.remove(
+    "d-none"
   );
 }
 
@@ -447,7 +516,9 @@ function updateVirtueCounter(
   const highlight =
     dirty ||
     remaining >
-      0;
+      0 ||
+    spent >
+      total;
 
 
   counter.textContent =
