@@ -4,16 +4,16 @@ import {
   } from "./characterSheetCommon.js";
 
 import {
-  createCreationMapList,
-  } from "./characterSheetCreationLists.js";
-
-import {
   createCharacterAbilityContent,
 } from "./characterSheetAbilities.js";
 
 import {
   createCharacterDisciplineContent,
 } from "./characterSheetDisciplines.js";
+
+import {
+  createCharacterBackgroundContent,
+} from "./characterSheetBackgrounds.js";
 
 import {
   createCreationSectionTitle,
@@ -528,6 +528,9 @@ export function createCharacterCreationSections(
               createCharacterDisciplineContent({
                 character,
                 state,
+
+                progress:
+                  sections.disciplines,
               }),
           })}
 
@@ -563,10 +566,12 @@ export function createCharacterCreationSections(
             editable,
 
             content:
-              createCreationMapList(
-                state.backgrounds,
-                "Nenhum antecedente cadastrado."
-              ),
+              createCharacterBackgroundContent({
+                state,
+
+                progress:
+                  sections.backgrounds,
+              }),
           })}
 
           ${createEditableGroup({

@@ -30,6 +30,10 @@ import {
 } from "./actions/characterCreationDisciplineActions.js";
 
 import {
+  handleCharacterCreationBackgroundActionClick,
+} from "./actions/characterCreationBackgroundActions.js";
+
+import {
   adjustMoralityCreation,
 } from "./form/characterCreationMoralityForm.js";
 
@@ -211,6 +215,18 @@ function handleDocumentClick(
 
   if (
     handleCharacterCreationDisciplineActionClick(
+      target
+    )
+  ) {
+    event.preventDefault();
+
+
+    return;
+  }
+
+
+  if (
+    handleCharacterCreationBackgroundActionClick(
       target
     )
   ) {

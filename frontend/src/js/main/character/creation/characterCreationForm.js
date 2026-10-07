@@ -3,10 +3,6 @@ import {
 } from "./characterCreationState.js";
 
 import {
-  appendCharacterCreationMapRow,
-} from "./form/characterCreationFormCommon.js";
-
-import {
   createAbilitiesCreationEditor,
   appendCharacterCreationAbilityRow,
   readAbilitiesCreationSection,
@@ -21,14 +17,14 @@ import {
 } from "./form/characterCreationAttributeForm.js";
 
 import {
-  createSingleMapCreationEditor,
-  readSingleMapCreationSection,
-} from "./form/characterCreationMapForm.js";
-
-import {
   createDisciplineCreationEditor,
   readDisciplineCreationSection,
 } from "./form/characterCreationDisciplineForm.js";
+
+import {
+  createBackgroundCreationEditor,
+  readBackgroundCreationSection,
+} from "./form/characterCreationBackgroundForm.js";
 
 import {
   createMeritsFlawsCreationEditor,
@@ -96,19 +92,9 @@ export function createCharacterCreationSectionEditor(
     section ===
     "backgrounds"
   ) {
-    return createSingleMapCreationEditor(
+    return createBackgroundCreationEditor(
       character,
-      state,
-      {
-        section:
-          "backgrounds",
-
-        mapName:
-          "backgrounds",
-
-        title:
-          "Antecedentes",
-      }
+      state
     );
   }
 
@@ -206,10 +192,9 @@ export function readCharacterCreationSection(
     section ===
     "backgrounds"
   ) {
-    return readSingleMapCreationSection(
+    return readBackgroundCreationSection(
       form,
-      state,
-      "backgrounds"
+      state
     );
   }
 
@@ -252,7 +237,6 @@ export function readCharacterCreationSection(
 
 
 export {
-  appendCharacterCreationMapRow,
   appendCharacterCreationAbilityRow,
   addAttributeTraitSelection,
   removeAttributeTraitSelection,

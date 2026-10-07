@@ -1161,3 +1161,89 @@
   color: #9faab8;
   font-size: 0.64rem;
 }
+
+
+.character-creation-background-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.character-creation-background-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 32px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.character-creation-background-row:last-child {
+  border-bottom: 0;
+}
+
+.character-creation-background-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #eef3fb;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.character-creation-background-controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+.character-creation-background-controls
+[data-creation-background-level] {
+  min-width: 20px;
+}
+
+.character-creation-background-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-creation-background-picker-note {
+  color: #cfd8e4;
+  font-size: 0.64rem;
+}
+
+.character-creation-background-rule-notice {
+  border: 1px solid rgba(185, 0, 25, 0.34);
+  background: rgba(185, 0, 25, 0.07);
+  color: #cfd8e4;
+}
+
+.character-creation-background-rule-highlight {
+  color: #f1c7cd;
+  font-weight: 700;
+}
+
+.character-creation-background-rule-reference {
+  color: #9faab8;
+  font-size: 0.64rem;
+}
+
+.character-background-special-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border: 1px solid rgba(185, 0, 25, 0.55);
+  border-radius: 999px;
+  color: #efc2c8;
+  font-size: 0.6rem;
+  font-weight: 500;
+  line-height: 1.2;
+}

@@ -12,6 +12,121 @@ import {
 } from "../../creation/form/discipline/characterCreationDisciplineRows.js";
 
 
+function normalizeDisciplineProgress(
+  progress,
+  state
+) {
+  const total =
+    Number(
+      progress
+        ?.points
+        ?.total
+    );
+
+
+  const spent =
+    Number(
+      progress
+        ?.totalLevels
+    );
+
+
+  const fallbackSpent =
+    Object.values(
+      state?.disciplines ||
+      {}
+    ).reduce(
+      (
+        sum,
+        level
+      ) => {
+        const normalized =
+          Number(
+            level
+          );
+
+
+        return (
+          sum +
+          (
+            Number.isInteger(
+              normalized
+            ) &&
+            normalized >
+              0
+              ? normalized
+              : 0
+          )
+        );
+      },
+      0
+    );
+
+
+  return {
+    total:
+      Number.isInteger(
+        total
+      )
+        ? total
+        : 3,
+
+    spent:
+      Number.isInteger(
+        spent
+      )
+        ? spent
+        : fallbackSpent,
+  };
+}
+
+
+function createDisciplineProgress(
+  progress,
+  state
+) {
+  const normalized =
+    normalizeDisciplineProgress(
+      progress,
+      state
+    );
+
+
+  const highlight =
+    normalized.spent >
+    normalized.total;
+
+
+  return `
+    <div
+      class="
+        d-flex
+        justify-content-end
+        mb-2
+      "
+    >
+      <span
+        class="
+          badge
+          rounded-pill
+          border
+          bg-transparent
+          ${highlight
+            ? "border-danger text-danger"
+            : "border-secondary text-secondary"}
+        "
+      >
+        ${escapeSheetHtml(
+          normalized.spent
+        )}/${escapeSheetHtml(
+          normalized.total
+        )}
+      </span>
+    </div>
+  `;
+}
+
+
 function getDisciplineEntries(
   character,
   state
@@ -123,10 +238,10 @@ function createApprovalWarning() {
 }
 
 
-export function createCharacterDisciplineContent({
+function createDisciplineList(
   character,
-  state,
-}) {
+  state
+) {
   const entries =
     getDisciplineEntries(
       character,
@@ -224,5 +339,24 @@ export function createCharacterDisciplineContent({
         .join("")}
 
     </div>
+  `;
+}
+
+
+export function createCharacterDisciplineContent({
+  character,
+  state,
+  progress,
+}) {
+  return `
+    ${createDisciplineProgress(
+      progress,
+      state
+    )}
+
+    ${createDisciplineList(
+      character,
+      state
+    )}
   `;
 }

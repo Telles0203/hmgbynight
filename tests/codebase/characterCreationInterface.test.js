@@ -218,19 +218,26 @@ test(
       );
 
 
-    assert.equal(
-      source.includes(
-        "./form/characterCreationFormCommon.js"
-      ),
-      true
-    );
-
-
-    assert.equal(
-      source.includes(
-        "./form/characterCreationAttributeForm.js"
-      ),
-      true
+    [
+      "./form/characterCreationAttributeForm.js",
+      "./form/characterCreationAbilityForm.js",
+      "./form/characterCreationDisciplineForm.js",
+      "./form/characterCreationBackgroundForm.js",
+      "./form/characterCreationAdjustmentForm.js",
+      "./form/characterCreationWillpowerForm.js",
+      "./form/characterCreationMoralityForm.js",
+    ].forEach(
+      (
+        modulePath
+      ) => {
+        assert.equal(
+          source.includes(
+            modulePath
+          ),
+          true,
+          `Módulo ausente em characterCreationForm.js: ${modulePath}`
+        );
+      }
     );
 
 
@@ -238,15 +245,7 @@ test(
       source.includes(
         "./form/characterCreationMapForm.js"
       ),
-      true
-    );
-
-
-    assert.equal(
-      source.includes(
-        "./form/characterCreationAdjustmentForm.js"
-      ),
-      true
+      false
     );
   }
 );
