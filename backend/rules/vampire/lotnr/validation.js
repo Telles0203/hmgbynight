@@ -92,6 +92,10 @@ function normalizeCreationState(
       value.backgrounds ||
       {},
 
+    influences:
+      value.influences ||
+      {},
+
     freeTraitPurchases: {
       ...defaults
         .freeTraitPurchases,

@@ -15,6 +15,12 @@ const {
 );
 
 const {
+  INFLUENCE_AREAS,
+} = require(
+  "../../../../data/vampire/backgrounds"
+);
+
+const {
   normalizeInteger,
   normalizeLevelMap,
   createPointProgress,
@@ -159,6 +165,12 @@ function validateBackgrounds(
     );
 
 
+  const influences =
+    normalizeLevelMap(
+      creation?.influences
+    );
+
+
   const errors =
     [];
 
@@ -167,7 +179,11 @@ function validateBackgrounds(
     [];
 
 
-  let totalLevels =
+  let backgroundLevels =
+    0;
+
+
+  let influenceLevels =
     0;
 
 
@@ -205,13 +221,59 @@ function validateBackgrounds(
       }
 
 
-      totalLevels +=
+      backgroundLevels +=
         Math.max(
           0,
           level
         );
     }
   );
+
+
+  Object.entries(
+    influences
+  ).forEach(
+    ([
+      influence,
+      level,
+    ]) => {
+      if (
+        !INFLUENCE_AREAS.includes(
+          influence
+        )
+      ) {
+        errors.push(
+          `${influence} não é uma área válida de Influência.`
+        );
+      }
+
+
+      if (
+        level <
+          0 ||
+        level >
+          CHARACTER_CREATION_RULES
+            .backgrounds
+            .maximumPerBackground
+      ) {
+        errors.push(
+          `${influence} deve possuir entre 0 e ${CHARACTER_CREATION_RULES.backgrounds.maximumPerBackground} níveis de Influência.`
+        );
+      }
+
+
+      influenceLevels +=
+        Math.max(
+          0,
+          level
+        );
+    }
+  );
+
+
+  const totalLevels =
+    backgroundLevels +
+    influenceLevels;
 
 
   const initialTotal =
@@ -235,9 +297,15 @@ function validateBackgrounds(
       "backgrounds",
 
     label:
-      "Antecedentes",
+      "Antecedentes / Influências",
 
     backgrounds,
+
+    influences,
+
+    backgroundLevels,
+
+    influenceLevels,
 
     totalLevels,
 

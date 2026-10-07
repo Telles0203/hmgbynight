@@ -650,6 +650,9 @@ function createEmptyCharacterCreationState() {
     backgrounds:
       {},
 
+    influences:
+      {},
+
     freeTraitPurchases: {
       abilities:
         [],

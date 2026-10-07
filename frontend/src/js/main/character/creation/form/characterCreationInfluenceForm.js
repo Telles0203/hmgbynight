@@ -4,23 +4,7 @@ import {
 
 import {
   getBackgroundCreationRules,
-  getBackgroundEntries,
 } from "./background/characterCreationBackgroundCatalog.js";
-
-import {
-  createBackgroundRows,
-  readBackgrounds,
-} from "./background/characterCreationBackgroundRows.js";
-
-import {
-  createBackgroundPicker,
-  addBackground,
-  removeBackground,
-} from "./background/characterCreationBackgroundPicker.js";
-
-import {
-  adjustCharacterCreationBackgroundLevel,
-} from "./background/characterCreationBackgroundProgress.js";
 
 import {
   createBackgroundAllocationPeerInput,
@@ -28,6 +12,25 @@ import {
   getBackgroundAllocationSpent,
   normalizeBackgroundAllocationPurchaseOrder,
 } from "./background/characterCreationBackgroundAllocation.js";
+
+import {
+  getInfluenceEntries,
+} from "./influence/characterCreationInfluenceCatalog.js";
+
+import {
+  createInfluenceRows,
+  readInfluences,
+} from "./influence/characterCreationInfluenceRows.js";
+
+import {
+  createInfluencePicker,
+  addInfluence,
+  removeInfluence,
+} from "./influence/characterCreationInfluencePicker.js";
+
+import {
+  adjustCharacterCreationInfluenceLevel,
+} from "./influence/characterCreationInfluenceProgress.js";
 
 import {
   createFreeTraitPurchaseInput,
@@ -38,7 +41,7 @@ import {
 } from "../freeTraits/characterCreationFreeTraitPurchases.js";
 
 
-function createBackgroundRuleNotice(
+function createInfluenceRuleNotice(
   rules,
   character
 ) {
@@ -50,7 +53,7 @@ function createBackgroundRuleNotice(
   return `
     <div
       class="
-        character-creation-background-rule-notice
+        character-creation-influence-rule-notice
         rounded
         px-2
         py-2
@@ -59,21 +62,21 @@ function createBackgroundRuleNotice(
       <div>
         <strong
           class="
-            character-creation-background-rule-highlight
+            character-creation-influence-rule-highlight
           "
         >
-          Criação:
+          Pool compartilhado:
         </strong>
 
         ${sabbat
-          ? "personagens Sabbat não recebem Antecedentes gratuitos."
-          : `distribua ${rules.total} Traits entre Antecedentes e Influências.`}
+          ? "personagens Sabbat não recebem Traits gratuitos neste pool."
+          : `Antecedentes e Influências dividem os mesmos ${rules.total} Traits da criação.`}
 
-        Cada Antecedente pode possuir no máximo
+        Cada área de Influência pode possuir no máximo
 
         <strong
           class="
-            character-creation-background-rule-highlight
+            character-creation-influence-rule-highlight
           "
         >
           ${rules.maximum} Traits
@@ -83,11 +86,11 @@ function createBackgroundRuleNotice(
       <div
         class="
           mt-1
-          character-creation-background-rule-reference
+          character-creation-influence-rule-reference
         "
       >
         <em>
-          Referência: Laws of the Night Revised, p. 67; Antecedentes a partir da p. 93.
+          Referência: Laws of the Night Revised, Influence a partir da p. 96.
         </em>
       </div>
     </div>
@@ -95,7 +98,7 @@ function createBackgroundRuleNotice(
 }
 
 
-export function createBackgroundCreationEditor(
+export function createInfluenceCreationEditor(
   character,
   state
 ) {
@@ -106,7 +109,7 @@ export function createBackgroundCreationEditor(
 
 
   const entries =
-    getBackgroundEntries(
+    getInfluenceEntries(
       state
     );
 
@@ -158,7 +161,7 @@ export function createBackgroundCreationEditor(
     getBackgroundAllocationPurchaseCounts(
       freeTraitOrder
     )
-      .backgrounds;
+      .influences;
 
 
   return `
@@ -167,10 +170,10 @@ export function createBackgroundCreationEditor(
         character-creation-inline-editor
       "
       data-character-creation-inline-form
-      data-character-creation-section="backgrounds"
-      data-background-creation-total="${rules.total}"
-      data-background-free-trait-cost="${rules.freeTraitCost}"
-      data-background-maximum="${rules.maximum}"
+      data-character-creation-section="influences"
+      data-influence-creation-total="${rules.total}"
+      data-influence-free-trait-cost="${rules.freeTraitCost}"
+      data-influence-maximum="${rules.maximum}"
     >
 
       ${createFreeTraitPurchaseInput(
@@ -179,8 +182,8 @@ export function createBackgroundCreationEditor(
       )}
 
       ${createBackgroundAllocationPeerInput(
-        "influences",
-        state?.influences
+        "backgrounds",
+        state?.backgrounds
       )}
 
       <div
@@ -194,7 +197,7 @@ export function createBackgroundCreationEditor(
       >
 
         <strong>
-          Antecedentes
+          Influências
         </strong>
 
         <span
@@ -207,32 +210,32 @@ export function createBackgroundCreationEditor(
               ? "border-danger text-danger"
               : "border-secondary text-secondary"}
           "
-          data-creation-background-points
+          data-creation-influence-points
         >
           ${spent}/${rules.total}
         </span>
 
       </div>
 
-      ${createBackgroundRuleNotice(
+      ${createInfluenceRuleNotice(
         rules,
         character
       )}
 
       <div
         class="
-          character-creation-background-list
+          character-creation-influence-list
         "
-        data-creation-background-list
+        data-creation-influence-list
       >
-        ${createBackgroundRows(
+        ${createInfluenceRows(
           entries,
           rules.maximum,
           freeTraitPurchases
         )}
       </div>
 
-      ${createBackgroundPicker(
+      ${createInfluencePicker(
         entries
       )}
 
@@ -244,7 +247,7 @@ export function createBackgroundCreationEditor(
             ? ""
             : "d-none"}
         "
-        data-creation-background-free-trait-cost
+        data-creation-influence-free-trait-cost
       >
         ${freeTraitCost > 0
           ? `Pool compartilhado: -${freeTraitCost} Free Trait${freeTraitCost === 1 ? "" : "s"}`
@@ -260,21 +263,21 @@ export function createBackgroundCreationEditor(
 }
 
 
-export function readBackgroundCreationSection(
+export function readInfluenceCreationSection(
   form,
   state
 ) {
-  state.backgrounds =
-    readBackgrounds(
+  state.influences =
+    readInfluences(
       form
     );
 
 
-  state.influences =
-    state.influences &&
-    typeof state.influences ===
+  state.backgrounds =
+    state.backgrounds &&
+    typeof state.backgrounds ===
       "object"
-      ? state.influences
+      ? state.backgrounds
       : {};
 
 
@@ -297,7 +300,7 @@ export function readBackgroundCreationSection(
       total:
         Number(
           form.dataset
-            .backgroundCreationTotal
+            .influenceCreationTotal
         ) ||
         5,
     })
@@ -309,7 +312,7 @@ export function readBackgroundCreationSection(
 
 
 export {
-  adjustCharacterCreationBackgroundLevel,
-  addBackground,
-  removeBackground,
+  adjustCharacterCreationInfluenceLevel,
+  addInfluence,
+  removeInfluence,
 };

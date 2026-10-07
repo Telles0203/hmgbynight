@@ -27,6 +27,11 @@ import {
 } from "./form/characterCreationBackgroundForm.js";
 
 import {
+  createInfluenceCreationEditor,
+  readInfluenceCreationSection,
+} from "./form/characterCreationInfluenceForm.js";
+
+import {
   createMeritsFlawsCreationEditor,
   readMeritsFlawsCreationSection,
 } from "./form/characterCreationAdjustmentForm.js";
@@ -93,6 +98,17 @@ export function createCharacterCreationSectionEditor(
     "backgrounds"
   ) {
     return createBackgroundCreationEditor(
+      character,
+      state
+    );
+  }
+
+
+  if (
+    section ===
+    "influences"
+  ) {
+    return createInfluenceCreationEditor(
       character,
       state
     );
@@ -193,6 +209,17 @@ export function readCharacterCreationSection(
     "backgrounds"
   ) {
     return readBackgroundCreationSection(
+      form,
+      state
+    );
+  }
+
+
+  if (
+    section ===
+    "influences"
+  ) {
+    return readInfluenceCreationSection(
       form,
       state
     );

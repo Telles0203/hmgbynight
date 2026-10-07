@@ -20,6 +20,10 @@ import {
 } from "./characterSheetBackgrounds.js";
 
 import {
+  createCharacterInfluenceContent,
+} from "./characterSheetInfluences.js";
+
+import {
   createCreationSectionTitle,
   createAttributeSection,
   } from "./characterSheetCreationAttributes.js";
@@ -292,6 +296,30 @@ export function createCharacterCreationSections(
 
   const sections =
     creation.sections ||
+    {};
+
+
+  const sharedBackgroundCreation =
+    character?.draftCreation ||
+    creation;
+
+
+  const sharedBackgroundState =
+    sharedBackgroundCreation
+      ?.state ||
+    state;
+
+
+  const sharedBackgroundSections =
+    sharedBackgroundCreation
+      ?.sections ||
+    sections;
+
+
+  const sharedBackgroundSpending =
+    sharedBackgroundCreation
+      ?.freeTraits
+      ?.spending ||
     {};
 
 
@@ -644,13 +672,43 @@ export function createCharacterCreationSections(
 
             content:
               createCharacterBackgroundContent({
-                state,
+                state:
+                  sharedBackgroundState,
 
                 progress:
-                  sections.backgrounds,
+                  sharedBackgroundSections
+                    .backgrounds,
 
                 backgroundFreeTraitCost:
-                  freeTraitSpending
+                  sharedBackgroundSpending
+                    .backgrounds,
+
+                showFreeTraitMarkers,
+              }),
+          })}
+
+          ${createEditableGroup({
+            character,
+
+            title:
+              "Influências",
+
+            section:
+              "influences",
+
+            editable,
+
+            content:
+              createCharacterInfluenceContent({
+                state:
+                  sharedBackgroundState,
+
+                progress:
+                  sharedBackgroundSections
+                    .backgrounds,
+
+                backgroundFreeTraitCost:
+                  sharedBackgroundSpending
                     .backgrounds,
 
                 showFreeTraitMarkers,
@@ -689,11 +747,6 @@ export function createCharacterCreationSections(
             )}
 
           </div>
-
-          ${createStaticGroup(
-            "Influências",
-            "Nenhuma influência cadastrada."
-          )}
 
           ${createStaticGroup(
             "Laços de Sangue / Vinculum",

@@ -608,6 +608,15 @@ function sanitizeCharacterCreationPayload(
         }
       ),
 
+    influences:
+      sanitizeLevelMap(
+        source.influences,
+        {
+          maximum:
+            10,
+        }
+      ),
+
     freeTraitPurchases: {
       abilities:
         sanitizeFreeTraitPurchaseList(

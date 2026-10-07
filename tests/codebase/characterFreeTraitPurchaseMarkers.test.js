@@ -100,12 +100,11 @@ test(
 
 
 test(
-  "Ability Discipline and Background sheets render Free Trait markers",
+  "Ability Discipline Background and Influence sheets render Free Trait markers",
   () => {
     [
       "frontend/src/js/main/character/view/sheet/characterSheetAbilities.js",
       "frontend/src/js/main/character/view/sheet/characterSheetDisciplines.js",
-      "frontend/src/js/main/character/view/sheet/characterSheetBackgrounds.js",
     ].forEach(
       (
         file
@@ -127,6 +126,37 @@ test(
         assert.equal(
           source.includes(
             "normalizeFreeTraitPurchaseOrder"
+          ),
+          true
+        );
+      }
+    );
+
+
+    [
+      "frontend/src/js/main/character/view/sheet/characterSheetBackgrounds.js",
+      "frontend/src/js/main/character/view/sheet/characterSheetInfluences.js",
+    ].forEach(
+      (
+        file
+      ) => {
+        const source =
+          assertBelowEightHundredLines(
+            file
+          );
+
+
+        assert.equal(
+          source.includes(
+            "is-free-trait-spend"
+          ),
+          true
+        );
+
+
+        assert.equal(
+          source.includes(
+            "normalizeBackgroundAllocationPurchaseOrder"
           ),
           true
         );
@@ -191,6 +221,14 @@ test(
     assert.equal(
       source.includes(
         ".character-background-sheet-row.is-free-trait-spend"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        ".character-influence-sheet-row.is-free-trait-spend"
       ),
       true
     );

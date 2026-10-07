@@ -3,8 +3,9 @@ import {
 } from "./characterSheetCommon.js";
 
 import {
-  getBackgroundLabel,
-} from "../../creation/form/background/characterCreationBackgroundCatalog.js";
+  getInfluenceEntries,
+  getInfluenceLabel,
+} from "../../creation/form/influence/characterCreationInfluenceCatalog.js";
 
 import {
   getBackgroundAllocationPurchaseCounts,
@@ -17,7 +18,7 @@ import {
 } from "../../creation/freeTraits/characterCreationFreeTraitPurchases.js";
 
 
-function normalizeBackgroundProgress(
+function normalizeInfluenceProgress(
   progress,
   state
 ) {
@@ -57,12 +58,12 @@ function normalizeBackgroundProgress(
 }
 
 
-function createBackgroundProgress(
+function createInfluenceProgress(
   progress,
   state
 ) {
   const normalized =
-    normalizeBackgroundProgress(
+    normalizeInfluenceProgress(
       progress,
       state
     );
@@ -103,7 +104,7 @@ function createBackgroundProgress(
 }
 
 
-function createBackgroundCostNotice(
+function createInfluenceCostNotice(
   cost,
   show
 ) {
@@ -134,7 +135,7 @@ function createBackgroundCostNotice(
 }
 
 
-function createBackgroundList(
+function createInfluenceList(
   state,
   progress,
   showFreeTraitMarkers
@@ -147,7 +148,7 @@ function createBackgroundList(
     );
 
 
-  const freeTraitOrder =
+  const order =
     showFreeTraitMarkers
       ? normalizeBackgroundAllocationPurchaseOrder({
           order:
@@ -172,39 +173,27 @@ function createBackgroundList(
       : [];
 
 
-  const freeTraitPurchases =
+  const purchases =
     getBackgroundAllocationPurchaseCounts(
-      freeTraitOrder
+      order
     )
-      .backgrounds;
+      .influences;
 
 
   const entries =
-    Object.entries(
-      state?.backgrounds ||
-      {}
+    getInfluenceEntries(
+      state
     )
-      .filter(
-        ([
-          ,
-          level,
-        ]) =>
-          Number(
-            level
-          ) >
-          0
-      )
       .sort(
-        ([
+        (
           first,
-        ], [
-          second,
-        ]) =>
-          getBackgroundLabel(
-            first
+          second
+        ) =>
+          getInfluenceLabel(
+            first.influence
           ).localeCompare(
-            getBackgroundLabel(
-              second
+            getInfluenceLabel(
+              second.influence
             )
           )
       );
@@ -215,12 +204,8 @@ function createBackgroundList(
       0
   ) {
     return `
-      <div
-        class="
-          character-sheet-empty
-        "
-      >
-        Nenhum antecedente cadastrado.
+      <div class="character-sheet-empty">
+        Nenhuma influência cadastrada.
       </div>
     `;
   }
@@ -230,23 +215,22 @@ function createBackgroundList(
     <div
       class="
         character-creation-map-list
-        character-background-sheet-list
+        character-influence-sheet-list
       "
     >
 
       ${entries
         .map(
-          ([
-            background,
-            level,
-          ]) => `
+          (
+            entry
+          ) => `
             <div
               class="
                 character-sheet-row
-                character-background-sheet-row
+                character-influence-sheet-row
                 ${(
-                  freeTraitPurchases[
-                    background
+                  purchases[
+                    entry.influence
                   ] ||
                   0
                 ) > 0
@@ -258,12 +242,12 @@ function createBackgroundList(
               <span
                 class="
                   character-sheet-label
-                  character-background-sheet-name
+                  character-influence-sheet-name
                 "
               >
                 ${escapeSheetHtml(
-                  getBackgroundLabel(
-                    background
+                  getInfluenceLabel(
+                    entry.influence
                   )
                 )}
               </span>
@@ -274,7 +258,7 @@ function createBackgroundList(
                 "
               >
                 ${Number(
-                  level
+                  entry.level
                 )}
               </span>
 
@@ -288,14 +272,14 @@ function createBackgroundList(
 }
 
 
-export function createCharacterBackgroundContent({
+export function createCharacterInfluenceContent({
   state,
   progress,
   backgroundFreeTraitCost = 0,
   showFreeTraitMarkers = true,
 }) {
   return `
-    ${createBackgroundProgress(
+    ${createInfluenceProgress(
       progress,
       state
     )}
@@ -308,16 +292,16 @@ export function createCharacterBackgroundContent({
         mb-2
       "
     >
-      Pool compartilhado com Influências.
+      Pool compartilhado com Antecedentes.
     </small>
 
-    ${createBackgroundList(
+    ${createInfluenceList(
       state,
       progress,
       showFreeTraitMarkers
     )}
 
-    ${createBackgroundCostNotice(
+    ${createInfluenceCostNotice(
       backgroundFreeTraitCost,
       showFreeTraitMarkers
     )}

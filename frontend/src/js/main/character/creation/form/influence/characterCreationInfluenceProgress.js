@@ -4,15 +4,15 @@ import {
 } from "../../freeTraits/characterCreationFreeTraitPurchases.js";
 
 import {
-  createBackgroundAllocationKey,
+  createInfluenceAllocationKey,
   getBackgroundAllocationPurchaseCounts,
   getBackgroundAllocationSpent,
   normalizeBackgroundAllocationPurchaseOrder,
   readBackgroundAllocationPeerValues,
-} from "./characterCreationBackgroundAllocation.js";
+} from "../background/characterCreationBackgroundAllocation.js";
 
 
-function getBackgroundValues(
+function getInfluenceValues(
   form
 ) {
   const values =
@@ -21,7 +21,7 @@ function getBackgroundValues(
 
   form
     ?.querySelectorAll(
-      "[data-creation-background-row]"
+      "[data-creation-influence-row]"
     )
     .forEach(
       (
@@ -30,7 +30,7 @@ function getBackgroundValues(
         const key =
           String(
             row.dataset
-              .creationBackgroundKey ||
+              .creationInfluenceKey ||
             ""
           )
             .trim()
@@ -40,7 +40,7 @@ function getBackgroundValues(
         const level =
           Number(
             row.querySelector(
-              "[data-creation-background-level]"
+              "[data-creation-influence-level]"
             )?.textContent
           );
 
@@ -66,12 +66,12 @@ function getBackgroundValues(
 }
 
 
-function getBackgroundRowKey(
+function getInfluenceRowKey(
   row
 ) {
   return String(
     row?.dataset
-      ?.creationBackgroundKey ||
+      ?.creationInfluenceKey ||
     ""
   )
     .trim()
@@ -79,33 +79,33 @@ function getBackgroundRowKey(
 }
 
 
-export function getBackgroundEditorProgress(
+export function getInfluenceEditorProgress(
   form
 ) {
   const total =
     Number(
       form?.dataset
-        ?.backgroundCreationTotal
+        ?.influenceCreationTotal
     );
 
 
   const freeTraitCost =
     Number(
       form?.dataset
-        ?.backgroundFreeTraitCost
+        ?.influenceFreeTraitCost
     );
 
 
   const backgrounds =
-    getBackgroundValues(
-      form
+    readBackgroundAllocationPeerValues(
+      form,
+      "backgrounds"
     );
 
 
   const influences =
-    readBackgroundAllocationPeerValues(
-      form,
-      "influences"
+    getInfluenceValues(
+      form
     );
 
 
@@ -155,7 +155,7 @@ export function getBackgroundEditorProgress(
 }
 
 
-function refreshBackgroundRows(
+function refreshInfluenceRows(
   form,
   order
 ) {
@@ -163,36 +163,27 @@ function refreshBackgroundRows(
     getBackgroundAllocationPurchaseCounts(
       order
     )
-      .backgrounds;
+      .influences;
 
 
   const maximum =
     Number(
       form.dataset
-        .backgroundMaximum
+        .influenceMaximum
     ) ||
     5;
 
 
   form
     .querySelectorAll(
-      "[data-creation-background-row]"
+      "[data-creation-influence-row]"
     )
     .forEach(
       (
         row
       ) => {
-        if (
-          row.dataset
-            .creationBackgroundSpecialMode ===
-          "influence"
-        ) {
-          return;
-        }
-
-
         const key =
-          getBackgroundRowKey(
+          getInfluenceRowKey(
             row
           );
 
@@ -207,7 +198,7 @@ function refreshBackgroundRows(
         const level =
           Number(
             row.querySelector(
-              "[data-creation-background-level]"
+              "[data-creation-influence-level]"
             )?.textContent
           ) ||
           0;
@@ -229,13 +220,13 @@ function refreshBackgroundRows(
 
         const decrease =
           row.querySelector(
-            '[data-character-creation-background-action="decrease"]'
+            '[data-character-creation-influence-action="decrease"]'
           );
 
 
         const increase =
           row.querySelector(
-            '[data-character-creation-background-action="increase"]'
+            '[data-character-creation-influence-action="increase"]'
           );
 
 
@@ -256,7 +247,7 @@ function refreshBackgroundRows(
 }
 
 
-export function refreshCharacterCreationBackgroundEditor(
+export function refreshCharacterCreationInfluenceEditor(
   form,
   {
     preferredRow = null,
@@ -269,21 +260,21 @@ export function refreshCharacterCreationBackgroundEditor(
 
 
   const progress =
-    getBackgroundEditorProgress(
+    getInfluenceEditorProgress(
       form
     );
 
 
   const backgrounds =
-    getBackgroundValues(
-      form
+    readBackgroundAllocationPeerValues(
+      form,
+      "backgrounds"
     );
 
 
   const influences =
-    readBackgroundAllocationPeerValues(
-      form,
-      "influences"
+    getInfluenceValues(
+      form
     );
 
 
@@ -302,15 +293,15 @@ export function refreshCharacterCreationBackgroundEditor(
         progress.total,
 
       preferredKey:
-        createBackgroundAllocationKey(
-          getBackgroundRowKey(
+        createInfluenceAllocationKey(
+          getInfluenceRowKey(
             preferredRow
           )
         ),
 
       reductionKey:
-        createBackgroundAllocationKey(
-          getBackgroundRowKey(
+        createInfluenceAllocationKey(
+          getInfluenceRowKey(
             reductionRow
           )
         ),
@@ -324,7 +315,7 @@ export function refreshCharacterCreationBackgroundEditor(
   );
 
 
-  refreshBackgroundRows(
+  refreshInfluenceRows(
     form,
     order
   );
@@ -332,7 +323,7 @@ export function refreshCharacterCreationBackgroundEditor(
 
   const counter =
     form.querySelector(
-      "[data-creation-background-points]"
+      "[data-creation-influence-points]"
     );
 
 
@@ -373,7 +364,7 @@ export function refreshCharacterCreationBackgroundEditor(
 
   const cost =
     form.querySelector(
-      "[data-creation-background-free-trait-cost]"
+      "[data-creation-influence-free-trait-cost]"
     );
 
 
@@ -401,12 +392,12 @@ export function refreshCharacterCreationBackgroundEditor(
 }
 
 
-export function adjustCharacterCreationBackgroundLevel(
+export function adjustCharacterCreationInfluenceLevel(
   button
 ) {
   const row =
     button.closest(
-      "[data-creation-background-row]"
+      "[data-creation-influence-row]"
     );
 
 
@@ -418,10 +409,7 @@ export function adjustCharacterCreationBackgroundLevel(
 
   if (
     !row ||
-    !form ||
-    row.dataset
-      .creationBackgroundSpecialMode ===
-      "influence"
+    !form
   ) {
     return;
   }
@@ -429,7 +417,7 @@ export function adjustCharacterCreationBackgroundLevel(
 
   const levelElement =
     row.querySelector(
-      "[data-creation-background-level]"
+      "[data-creation-influence-level]"
     );
 
 
@@ -448,7 +436,7 @@ export function adjustCharacterCreationBackgroundLevel(
   const maximum =
     Number(
       form.dataset
-        .backgroundMaximum
+        .influenceMaximum
     ) ||
     5;
 
@@ -456,7 +444,7 @@ export function adjustCharacterCreationBackgroundLevel(
   const action =
     String(
       button.dataset
-        .characterCreationBackgroundAction ||
+        .characterCreationInfluenceAction ||
       ""
     );
 
@@ -499,7 +487,7 @@ export function adjustCharacterCreationBackgroundLevel(
     );
 
 
-  refreshCharacterCreationBackgroundEditor(
+  refreshCharacterCreationInfluenceEditor(
     form,
     direction >
       0

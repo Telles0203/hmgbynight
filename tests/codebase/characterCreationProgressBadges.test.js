@@ -151,7 +151,50 @@ test(
 
 
 test(
-  "creation sheet passes validation progress to Disciplines and Backgrounds",
+  "Influence sheet exposes shared creation progress badge",
+  () => {
+    const source =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/view/sheet/characterSheetInfluences.js"
+      );
+
+
+    assert.equal(
+      source.includes(
+        "normalizeInfluenceProgress"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "createInfluenceProgress"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "rounded-pill"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "totalLevels"
+      ),
+      true
+    );
+  }
+);
+
+
+test(
+  "creation sheet passes validation progress to Disciplines Backgrounds and Influences",
   () => {
     const source =
       assertBelowEightHundredLines(
@@ -169,8 +212,30 @@ test(
 
     assert.equal(
       source.includes(
-        "sections.backgrounds"
+        "sharedBackgroundSections"
       ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "sharedBackgroundSections\n                    .backgrounds"
+      ),
+      true
+    );
+
+
+    const sharedProgressUses =
+      source.match(
+        /sharedBackgroundSections\s*\.backgrounds/g
+      ) ||
+      [];
+
+
+    assert.equal(
+      sharedProgressUses.length >=
+        2,
       true
     );
   }

@@ -294,6 +294,16 @@ export function createPendingCreationNotice(
     ],
 
     [
+      "Influências",
+
+      officialState
+        .influences,
+
+      draftState
+        .influences,
+    ],
+
+    [
       "Qualidades / Defeitos",
 
       [

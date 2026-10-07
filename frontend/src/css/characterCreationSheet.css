@@ -1247,3 +1247,68 @@
   font-weight: 500;
   line-height: 1.2;
 }
+
+
+.character-creation-influence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.character-creation-influence-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 32px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.character-creation-influence-row:last-child {
+  border-bottom: 0;
+}
+
+.character-creation-influence-name {
+  min-width: 0;
+  color: #eef3fb;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.character-creation-influence-controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+.character-creation-influence-controls
+[data-creation-influence-level] {
+  min-width: 20px;
+}
+
+.character-creation-influence-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-creation-influence-rule-notice {
+  border: 1px solid rgba(185, 0, 25, 0.34);
+  background: rgba(185, 0, 25, 0.07);
+  color: #cfd8e4;
+}
+
+.character-creation-influence-rule-highlight {
+  color: #f1c7cd;
+  font-weight: 700;
+}
+
+.character-creation-influence-rule-reference {
+  color: #9faab8;
+  font-size: 0.64rem;
+}
