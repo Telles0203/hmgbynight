@@ -8,7 +8,6 @@ import {
 } from "./characterCreationState.js";
 
 import {
-  appendCharacterCreationMapRow,
   createCharacterCreationSectionEditor,
   readCharacterCreationSection,
   addAttributeTraitSelection,
@@ -27,6 +26,11 @@ import {
 import {
   refreshCharacterCreationView,
 } from "./characterCreationViewRefresh.js";
+
+import {
+  addCharacterCreationMapRow,
+  removeCharacterCreationMapRow,
+} from "./actions/characterCreationMapActions.js";
 
 
 let activeEditor =
@@ -207,7 +211,7 @@ function handleDocumentClick(
     event.preventDefault();
 
 
-    removeMapRow(
+    removeCharacterCreationMapRow(
       removeButton
     );
 
@@ -228,7 +232,7 @@ function handleDocumentClick(
     event.preventDefault();
 
 
-    addMapRow(
+    addCharacterCreationMapRow(
       addButton
     );
   }
@@ -677,106 +681,6 @@ function cancelEditor() {
   ) {
     refreshCharacterCreationView(
       character
-    );
-  }
-}
-
-
-function addMapRow(
-  button
-) {
-  const mapName =
-    String(
-      button.dataset
-        .characterCreationAddRow ||
-      ""
-    );
-
-
-  if (
-    !mapName
-  ) {
-    return;
-  }
-
-
-  const form =
-    button.closest(
-      "[data-character-creation-inline-form]"
-    );
-
-
-  const container =
-    form?.querySelector(
-      `[data-character-creation-map-container="${CSS.escape(
-        mapName
-      )}"]`
-    );
-
-
-  if (
-    !container
-  ) {
-    return;
-  }
-
-
-  appendCharacterCreationMapRow(
-    container,
-    mapName,
-    button.dataset
-      .characterCreationAddType ||
-    "level"
-  );
-}
-
-
-function removeMapRow(
-  button
-) {
-  const row =
-    button.closest(
-      ".character-creation-map-row"
-    );
-
-
-  const container =
-    row?.parentElement;
-
-
-  if (
-    !row ||
-    !container
-  ) {
-    return;
-  }
-
-
-  const mapName =
-    String(
-      container.dataset
-        .characterCreationMapContainer ||
-      ""
-    );
-
-
-  const type =
-    row.dataset
-      .creationMapType ||
-    "level";
-
-
-  row.remove();
-
-
-  if (
-    container.children.length ===
-      0
-  ) {
-    appendCharacterCreationMapRow(
-      container,
-      mapName,
-      type
     );
   }
 }

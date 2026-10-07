@@ -5,6 +5,12 @@ const {
   "../../../rules/vampire/lotnr/ruleset"
 );
 
+const {
+  isCoreAbility,
+} = require(
+  "../../../data/vampire/abilities"
+);
+
 
 const UNSAFE_KEYS =
   new Set([
@@ -237,6 +243,30 @@ function sanitizeLevelMap(
 }
 
 
+function sanitizeAbilityMap(
+  value
+) {
+  const levels =
+    sanitizeLevelMap(
+      value
+    );
+
+
+  return Object.fromEntries(
+    Object.entries(
+      levels
+    ).filter(
+      ([
+        ability,
+      ]) =>
+        isCoreAbility(
+          ability
+        )
+    )
+  );
+}
+
+
 function sanitizeSpecializationMap(
   value
 ) {
@@ -382,7 +412,7 @@ function sanitizeCharacterCreationPayload(
     },
 
     abilities:
-      sanitizeLevelMap(
+      sanitizeAbilityMap(
         source.abilities
       ),
 
@@ -528,6 +558,7 @@ module.exports = {
   sanitizeStringArray,
   sanitizeInteger,
   sanitizeLevelMap,
+  sanitizeAbilityMap,
   sanitizeSpecializationMap,
   sanitizeCharacterCreationPayload,
 };

@@ -192,6 +192,11 @@ test(
         creationFormDirectory,
         "characterCreationAdjustmentForm.js"
       ),
+
+      path.join(
+        creationDirectory,
+        "actions/characterCreationMapActions.js"
+      ),
     ].forEach(
       assertFileBelowEightHundredLines
     );

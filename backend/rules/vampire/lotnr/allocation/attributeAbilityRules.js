@@ -13,6 +13,12 @@ const {
   "./allocationHelpers"
 );
 
+const {
+  isCoreAbility,
+} = require(
+  "../../../../data/vampire/abilities"
+);
+
 
 function validateAttributes(
   creation,
@@ -242,6 +248,20 @@ function validateAbilities(
       ability,
       level,
     ]) => {
+      if (
+        !isCoreAbility(
+          ability
+        )
+      ) {
+        errors.push(
+          `${ability} não pertence ao catálogo de Habilidades.`
+        );
+
+
+        return;
+      }
+
+
       if (
         level <
         0

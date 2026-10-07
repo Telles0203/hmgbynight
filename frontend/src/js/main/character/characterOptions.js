@@ -72,6 +72,13 @@ async function loadCharacterOptions() {
             ? data.moralityPaths
             : [],
 
+        abilities:
+          Array.isArray(
+            data.abilities
+          )
+            ? data.abilities
+            : [],
+
         disciplines:
           Array.isArray(
             data.disciplines

@@ -258,6 +258,33 @@ export function createCharacterCreationSections(
     {};
 
 
+  const abilityLabels =
+    Object.fromEntries(
+      (
+        window.ByNightMain
+          ?.character
+          ?.options
+          ?.abilities ||
+        []
+      ).map(
+        (
+          ability
+        ) => [
+          String(
+            ability?.value ||
+            ""
+          ),
+
+          String(
+            ability?.label ||
+            ability?.value ||
+            ""
+          ),
+        ]
+      )
+    );
+
+
   const bloodTitle =
     createGenerationResourceTitle(
       "Sangue Máximo",
@@ -450,7 +477,8 @@ export function createCharacterCreationSections(
               createCreationMapList(
                 state.abilities,
                 "Nenhuma habilidade cadastrada.",
-                state.specializations
+                state.specializations,
+                abilityLabels
               ),
           })}
 

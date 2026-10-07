@@ -50,7 +50,8 @@ export function createCreationList(
 export function createCreationMapList(
   values,
   emptyText,
-  specializations = {}
+  specializations = {},
+  labels = {}
 ) {
   const entries =
     Object.entries(
@@ -107,6 +108,9 @@ export function createCreationMapList(
               <span class="character-sheet-label">
 
                 ${escapeSheetHtml(
+                  labels[
+                    key
+                  ] ||
                   humanizeSheetKey(
                     key
                   )

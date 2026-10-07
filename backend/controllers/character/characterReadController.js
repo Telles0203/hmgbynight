@@ -19,6 +19,12 @@ const {
 );
 
 const {
+  getCoreAbilities,
+} = require(
+  "../../data/vampire/abilities"
+);
+
+const {
   getCoreMoralityPaths,
 } = require(
   "../../data/vampire/moralityPaths"
@@ -136,6 +142,10 @@ async function getCharacterOptions(
                 true,
             })
           ),
+
+      abilities:
+        getCoreAbilities(),
+
 
       disciplines:
         CORE_DISCIPLINES.map(

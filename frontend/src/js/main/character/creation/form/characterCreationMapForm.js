@@ -6,59 +6,7 @@ import {
   createCreationActions,
   createCreationMapEditor,
   readCreationLevelMap,
-  readCreationSpecializations,
 } from "./characterCreationFormCommon.js";
-
-
-export function createAbilitiesCreationEditor(
-  character,
-  state
-) {
-  return `
-    <form
-      class="character-creation-inline-editor"
-      data-character-creation-inline-form
-      data-character-creation-section="abilities"
-    >
-
-      <div class="character-creation-inline-heading">
-        <strong>
-          Habilidades
-        </strong>
-      </div>
-
-      ${createCreationMapEditor({
-        mapName:
-          "abilities",
-
-        title:
-          "Habilidades",
-
-        values:
-          state?.abilities,
-      })}
-
-      ${createCreationMapEditor({
-        mapName:
-          "specializations",
-
-        title:
-          "Especializações",
-
-        values:
-          state?.specializations,
-
-        type:
-          "specialization",
-      })}
-
-      ${createCreationActions(
-        character
-      )}
-
-    </form>
-  `;
-}
 
 
 export function createSingleMapCreationEditor(
@@ -105,27 +53,6 @@ export function createSingleMapCreationEditor(
 
     </form>
   `;
-}
-
-
-export function readAbilitiesCreationSection(
-  form,
-  state
-) {
-  state.abilities =
-    readCreationLevelMap(
-      form,
-      "abilities"
-    );
-
-
-  state.specializations =
-    readCreationSpecializations(
-      form
-    );
-
-
-  return state;
 }
 
 

@@ -7,6 +7,12 @@ import {
 } from "./form/characterCreationFormCommon.js";
 
 import {
+  createAbilitiesCreationEditor,
+  appendCharacterCreationAbilityRow,
+  readAbilitiesCreationSection,
+} from "./form/characterCreationAbilityForm.js";
+
+import {
   createAttributeCreationEditor,
   readAttributeCreationSection,
   addAttributeTraitSelection,
@@ -15,9 +21,7 @@ import {
 } from "./form/characterCreationAttributeForm.js";
 
 import {
-  createAbilitiesCreationEditor,
   createSingleMapCreationEditor,
-  readAbilitiesCreationSection,
   readSingleMapCreationSection,
 } from "./form/characterCreationMapForm.js";
 
@@ -255,6 +259,7 @@ export function readCharacterCreationSection(
 
 export {
   appendCharacterCreationMapRow,
+  appendCharacterCreationAbilityRow,
   addAttributeTraitSelection,
   removeAttributeTraitSelection,
   handleAttributePriorityChange,
