@@ -25,6 +25,12 @@ const {
 );
 
 const {
+  getCoreBackgrounds,
+} = require(
+  "../../data/vampire/backgrounds"
+);
+
+const {
   getCoreMoralityPaths,
 } = require(
   "../../data/vampire/moralityPaths"
@@ -44,7 +50,6 @@ const {
 
 const {
   CORE_DISCIPLINES,
-  CORE_BACKGROUNDS,
 } = require(
   "../../rules/vampire/lotnr/catalogs"
 );
@@ -214,20 +219,31 @@ async function getCharacterOptions(
           })
         ),
 
-      backgrounds:
-        CORE_BACKGROUNDS.map(
-          (
-            background
-          ) => ({
-            value:
-              background,
+      backgroundRules: {
+        defaultTotal:
+          CHARACTER_CREATION_RULES
+            .backgrounds
+            .default,
 
-            label:
-              humanizeRuleKey(
-                background
-              ),
-          })
-        ),
+        sabbatTotal:
+          CHARACTER_CREATION_RULES
+            .backgrounds
+            .sabbat,
+
+        maximumPerBackground:
+          CHARACTER_CREATION_RULES
+            .backgrounds
+            .maximumPerBackground,
+
+        freeTraitCost:
+          CHARACTER_CREATION_RULES
+            .freeTraits
+            .costs
+            .background,
+      },
+
+      backgrounds:
+        getCoreBackgrounds(),
 
       ruleset: {
         ...RULESET_REFERENCE,

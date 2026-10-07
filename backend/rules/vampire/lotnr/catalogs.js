@@ -6,6 +6,13 @@ const {
   "./clanRules"
 );
 
+const {
+  CORE_BACKGROUNDS,
+  isCoreBackground,
+} = require(
+  "../../../data/vampire/backgrounds"
+);
+
 
 const CORE_DISCIPLINES =
   Object.freeze([
@@ -30,21 +37,6 @@ const CORE_DISCIPLINES =
   ]);
 
 
-const CORE_BACKGROUNDS =
-  Object.freeze([
-    "allies",
-    "contacts",
-    "fame",
-    "generation",
-    "herd",
-    "influence",
-    "mentor",
-    "resources",
-    "retainers",
-    "status",
-  ]);
-
-
 function normalizeRuleKey(
   value
 ) {
@@ -63,17 +55,6 @@ function isCoreDiscipline(
   return CORE_DISCIPLINES.includes(
     normalizeRuleKey(
       discipline
-    )
-  );
-}
-
-
-function isCoreBackground(
-  background
-) {
-  return CORE_BACKGROUNDS.includes(
-    normalizeRuleKey(
-      background
     )
   );
 }

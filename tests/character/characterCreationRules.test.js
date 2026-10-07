@@ -176,7 +176,7 @@ function createCharacter(
         mentor:
           1,
 
-        status:
+        herd:
           1,
       },
 

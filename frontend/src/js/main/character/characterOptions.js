@@ -128,6 +128,25 @@ async function loadCharacterOptions() {
             ? data.disciplines
             : [],
 
+        backgroundRules:
+          data.backgroundRules &&
+          typeof data.backgroundRules ===
+            "object"
+            ? data.backgroundRules
+            : {
+                defaultTotal:
+                  5,
+
+                sabbatTotal:
+                  0,
+
+                maximumPerBackground:
+                  5,
+
+                freeTraitCost:
+                  1,
+              },
+
         backgrounds:
           Array.isArray(
             data.backgrounds
