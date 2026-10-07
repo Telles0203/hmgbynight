@@ -299,7 +299,6 @@ function fillMissingPurchases(
   Object.keys(
     levels
   )
-    .reverse()
     .forEach(
       appendAvailable
     );

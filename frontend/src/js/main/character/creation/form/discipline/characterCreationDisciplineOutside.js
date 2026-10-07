@@ -432,7 +432,7 @@ export function addOutsideDiscipline(
   }
 
 
-  list.appendChild(
+  list.prepend(
     row
   );
 

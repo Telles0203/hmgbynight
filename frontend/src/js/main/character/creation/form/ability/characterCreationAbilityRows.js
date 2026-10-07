@@ -467,7 +467,20 @@ export function createAbilityRows(
       values,
       specializations,
       grants
-    );
+    )
+      .sort(
+        (
+          first,
+          second
+        ) =>
+          getAbilityDisplayLabel(
+            first.entryKey
+          ).localeCompare(
+            getAbilityDisplayLabel(
+              second.entryKey
+            )
+          )
+      );
 
 
   if (

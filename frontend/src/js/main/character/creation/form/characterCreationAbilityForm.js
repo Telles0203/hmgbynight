@@ -285,7 +285,7 @@ export function appendCharacterCreationAbilityRow(
   }
 
 
-  container.appendChild(
+  container.prepend(
     row
   );
 
@@ -397,8 +397,24 @@ export function handleCharacterCreationAbilityFieldChange(
   }
 
 
+  const changesAbilityIdentity =
+    target.matches(
+      [
+        "[data-creation-ability-key]",
+        "[data-creation-ability-focus]",
+        "[data-creation-ability-custom-focus]",
+      ].join(",")
+    );
+
+
   refreshCharacterCreationAbilityEditor(
-    form
+    form,
+    changesAbilityIdentity
+      ? {
+          preferredRow:
+            row,
+        }
+      : {}
   );
 }
 

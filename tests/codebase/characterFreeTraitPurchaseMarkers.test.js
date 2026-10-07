@@ -231,3 +231,65 @@ test(
     );
   }
 );
+
+
+test(
+  "Free Trait fallback follows prepended editor row order",
+  () => {
+    const source =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/freeTraits/characterCreationFreeTraitPurchases.js"
+      );
+
+
+    assert.equal(
+      source.includes(
+        ".reverse()"
+      ),
+      false
+    );
+
+
+    assert.equal(
+      source.includes(
+        "Object.keys"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "appendAvailable"
+      ),
+      true
+    );
+  }
+);
+
+
+test(
+  "Ability identity changes prioritize the edited row for Free Trait tracking",
+  () => {
+    const source =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/characterCreationAbilityForm.js"
+      );
+
+
+    assert.equal(
+      source.includes(
+        "changesAbilityIdentity"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "preferredRow:"
+      ),
+      true
+    );
+  }
+);

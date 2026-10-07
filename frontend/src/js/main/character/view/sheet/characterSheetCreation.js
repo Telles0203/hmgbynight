@@ -543,6 +543,10 @@ export function createCharacterCreationSections(
                 progress:
                   sections.disciplines,
 
+                disciplineFreeTraitCost:
+                  freeTraitSpending
+                    .disciplines,
+
                 showFreeTraitMarkers,
               }),
           })}

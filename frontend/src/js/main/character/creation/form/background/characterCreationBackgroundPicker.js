@@ -416,7 +416,7 @@ export function addBackground(
   }
 
 
-  list.appendChild(
+  list.prepend(
     row
   );
 

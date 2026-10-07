@@ -133,6 +133,35 @@ function createDisciplineProgress(
 }
 
 
+function createDisciplineCostNotice(
+  cost
+) {
+  const normalized =
+    Number(
+      cost
+    );
+
+
+  if (
+    !Number.isFinite(
+      normalized
+    ) ||
+    normalized <=
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <small class="character-free-trait-inline-cost">
+      Extra da criação:
+      -${normalized} Free Trait${normalized === 1 ? "" : "s"}
+    </small>
+  `;
+}
+
+
 function getDisciplineEntries(
   character,
   state
@@ -210,7 +239,19 @@ function getDisciplineEntries(
   return [
     ...clanEntries,
     ...extraEntries,
-  ];
+  ].sort(
+    (
+      first,
+      second
+    ) =>
+      getDisciplineLabel(
+        first.discipline
+      ).localeCompare(
+        getDisciplineLabel(
+          second.discipline
+        )
+      )
+  );
 }
 
 
@@ -406,6 +447,7 @@ export function createCharacterDisciplineContent({
   character,
   state,
   progress,
+  disciplineFreeTraitCost = 0,
   showFreeTraitMarkers = true,
 }) {
   return `
@@ -419,6 +461,12 @@ export function createCharacterDisciplineContent({
       state,
       progress,
       showFreeTraitMarkers
+    )}
+
+    ${createDisciplineCostNotice(
+      showFreeTraitMarkers
+        ? disciplineFreeTraitCost
+        : 0
     )}
   `;
 }

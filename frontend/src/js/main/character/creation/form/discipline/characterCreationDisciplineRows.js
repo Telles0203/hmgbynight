@@ -196,7 +196,22 @@ export function createDisciplineRows(
   maximum,
   freeTraitPurchases = {}
 ) {
-  return entries
+  return [
+    ...entries,
+  ]
+    .sort(
+      (
+        first,
+        second
+      ) =>
+        getDisciplineLabel(
+          first?.discipline
+        ).localeCompare(
+          getDisciplineLabel(
+            second?.discipline
+          )
+        )
+    )
     .map(
       (
         entry

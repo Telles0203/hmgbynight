@@ -212,7 +212,22 @@ export function createBackgroundRows(
   }
 
 
-  return entries
+  return [
+    ...entries,
+  ]
+    .sort(
+      (
+        first,
+        second
+      ) =>
+        getBackgroundLabel(
+          first?.background
+        ).localeCompare(
+          getBackgroundLabel(
+            second?.background
+          )
+        )
+    )
     .map(
       (
         entry
