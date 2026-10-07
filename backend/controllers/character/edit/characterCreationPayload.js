@@ -11,6 +11,14 @@ const {
   "../../../data/vampire/abilities"
 );
 
+const {
+  parseAbilityEntryKey,
+  createAbilityEntryKey,
+  abilityRequiresFocus,
+} = require(
+  "../../../data/vampire/abilityFocus"
+);
+
 
 const UNSAFE_KEYS =
   new Set([
@@ -56,12 +64,13 @@ function sanitizeText(
 
 
 function sanitizeMapKey(
-  value
+  value,
+  maxLength = 60
 ) {
   const key =
     sanitizeText(
       value,
-      60
+      maxLength
     )
       .toLowerCase()
       .replace(
@@ -246,24 +255,100 @@ function sanitizeLevelMap(
 function sanitizeAbilityMap(
   value
 ) {
-  const levels =
-    sanitizeLevelMap(
+  const source =
+    ensurePlainObject(
       value
     );
 
 
-  return Object.fromEntries(
-    Object.entries(
-      levels
-    ).filter(
-      ([
-        ability,
-      ]) =>
-        isCoreAbility(
-          ability
-        )
+  const result =
+    {};
+
+
+  Object.entries(
+    source
+  )
+    .slice(
+      0,
+      60
     )
-  );
+    .forEach(
+      ([
+        rawKey,
+        rawLevel,
+      ]) => {
+        const key =
+          sanitizeMapKey(
+            rawKey,
+            100
+          );
+
+
+        const parsed =
+          parseAbilityEntryKey(
+            key
+          );
+
+
+        if (
+          !isCoreAbility(
+            parsed.ability
+          )
+        ) {
+          return;
+        }
+
+
+        if (
+          parsed.focus &&
+          !abilityRequiresFocus(
+            parsed.ability
+          )
+        ) {
+          return;
+        }
+
+
+        const level =
+          sanitizeInteger(
+            rawLevel,
+            {
+              minimum:
+                0,
+
+              maximum:
+                20,
+
+              fallback:
+                0,
+            }
+          );
+
+
+        if (
+          level <=
+          0
+        ) {
+          return;
+        }
+
+
+        const entryKey =
+          createAbilityEntryKey(
+            parsed.ability,
+            parsed.focus
+          );
+
+
+        result[
+          entryKey
+        ] =
+          level;
+      }
+    );
+
+
+  return result;
 }
 
 

@@ -3,15 +3,90 @@ import {
 } from "../../../view/sheet/characterSheetCommon.js";
 
 import {
+  abilityRequiresFocus,
+  createAbilityEntryKey,
+  getAbilityLabel,
+  parseAbilityEntryKey,
+} from "../../data/abilityCatalog.js";
+
+import {
   createAbilityOptions,
+  createAbilityFocusEditor,
 } from "./characterCreationAbilityCatalog.js";
 
 
+function readAbilityFocus(
+  row
+) {
+  const ability =
+    String(
+      row.querySelector(
+        "[data-creation-ability-key]"
+      )?.value ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    !abilityRequiresFocus(
+      ability
+    )
+  ) {
+    return "";
+  }
+
+
+  const select =
+    row.querySelector(
+      "[data-creation-ability-focus]"
+    );
+
+
+  const selected =
+    String(
+      select?.value ||
+      ""
+    );
+
+
+  if (
+    selected !==
+    "__custom__"
+  ) {
+    return selected
+      .trim()
+      .toLowerCase();
+  }
+
+
+  return String(
+    row.querySelector(
+      "[data-creation-ability-custom-focus]"
+    )?.value ||
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(
+      /\s+/g,
+      " "
+    );
+}
+
+
 export function createAbilityRow(
-  ability = "",
+  entryKey = "",
   level = 1,
   maximum = 5
 ) {
+  const parsed =
+    parseAbilityEntryKey(
+      entryKey
+    );
+
+
   const normalizedLevel =
     Number.isInteger(
       Number(
@@ -32,7 +107,7 @@ export function createAbilityRow(
 
   const selected =
     Boolean(
-      ability
+      parsed.ability
     );
 
 
@@ -41,22 +116,41 @@ export function createAbilityRow(
       class="character-creation-map-row"
       data-creation-map="abilities"
       data-creation-map-type="ability"
+      data-creation-ability-base="${escapeSheetHtml(
+        parsed.ability
+      )}"
     >
 
-      <select
+      <div
         class="
-          form-select
-          form-select-sm
-          bg-black
-          text-light
-          border-secondary
+          d-flex
+          flex-column
+          gap-2
+          flex-grow-1
         "
-        data-creation-ability-key
       >
-        ${createAbilityOptions(
-          ability
+
+        <select
+          class="
+            form-select
+            form-select-sm
+            bg-black
+            text-light
+            border-secondary
+          "
+          data-creation-ability-key
+        >
+          ${createAbilityOptions(
+            parsed.ability
+          )}
+        </select>
+
+        ${createAbilityFocusEditor(
+          parsed.ability,
+          parsed.focus
         )}
-      </select>
+
+      </div>
 
       <div
         class="
@@ -158,16 +252,123 @@ export function createAbilityRows(
   return entries
     .map(
       ([
-        ability,
+        entryKey,
         level,
       ]) =>
         createAbilityRow(
-          ability,
+          entryKey,
           level,
           maximum
         )
     )
     .join("");
+}
+
+
+export function refreshCharacterCreationAbilityFocus(
+  row
+) {
+  if (!row) {
+    return;
+  }
+
+
+  const ability =
+    String(
+      row.querySelector(
+        "[data-creation-ability-key]"
+      )?.value ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const previousAbility =
+    String(
+      row.dataset
+        .creationAbilityBase ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const focus =
+    previousAbility ===
+    ability
+      ? readAbilityFocus(
+          row
+        )
+      : "";
+
+
+  const container =
+    row.querySelector(
+      "[data-creation-ability-focus-container]"
+    );
+
+
+  if (container) {
+    container.outerHTML =
+      createAbilityFocusEditor(
+        ability,
+        focus
+      );
+  }
+
+
+  row.dataset
+    .creationAbilityBase =
+    ability;
+}
+
+
+export function refreshCharacterCreationAbilityCustomFocus(
+  row
+) {
+  if (!row) {
+    return;
+  }
+
+
+  const select =
+    row.querySelector(
+      "[data-creation-ability-focus]"
+    );
+
+
+  const input =
+    row.querySelector(
+      "[data-creation-ability-custom-focus]"
+    );
+
+
+  if (!input) {
+    return;
+  }
+
+
+  const custom =
+    select?.value ===
+    "__custom__";
+
+
+  input.classList.toggle(
+    "d-none",
+    !custom
+  );
+
+
+  if (!custom) {
+    input.value =
+      "";
+  }
+
+
+  if (custom) {
+    input.focus();
+  }
 }
 
 
@@ -197,6 +398,38 @@ export function readAbilityMap(
             .toLowerCase();
 
 
+        if (!ability) {
+          return;
+        }
+
+
+        const focus =
+          readAbilityFocus(
+            row
+          );
+
+
+        if (
+          abilityRequiresFocus(
+            ability
+          ) &&
+          !focus
+        ) {
+          throw new Error(
+            `Selecione um foco para ${getAbilityLabel(
+              ability
+            )}.`
+          );
+        }
+
+
+        const entryKey =
+          createAbilityEntryKey(
+            ability,
+            focus
+          );
+
+
         const level =
           Number(
             row.querySelector(
@@ -206,7 +439,7 @@ export function readAbilityMap(
 
 
         if (
-          ability &&
+          entryKey &&
           Number.isInteger(
             level
           ) &&
@@ -214,11 +447,11 @@ export function readAbilityMap(
             0
         ) {
           abilities[
-            ability
+            entryKey
           ] =
             (
               abilities[
-                ability
+                entryKey
               ] ||
               0
             ) +

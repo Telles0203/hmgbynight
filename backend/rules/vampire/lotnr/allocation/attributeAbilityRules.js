@@ -15,8 +15,16 @@ const {
 
 const {
   isCoreAbility,
+  getCoreAbilityLabel,
 } = require(
   "../../../../data/vampire/abilities"
+);
+
+const {
+  parseAbilityEntryKey,
+  abilityRequiresFocus,
+} = require(
+  "../../../../data/vampire/abilityFocus"
 );
 
 
@@ -248,9 +256,15 @@ function validateAbilities(
       ability,
       level,
     ]) => {
+      const parsed =
+        parseAbilityEntryKey(
+          ability
+        );
+
+
       if (
         !isCoreAbility(
-          ability
+          parsed.ability
         )
       ) {
         errors.push(
@@ -259,6 +273,33 @@ function validateAbilities(
 
 
         return;
+      }
+
+
+      if (
+        parsed.focus &&
+        !abilityRequiresFocus(
+          parsed.ability
+        )
+      ) {
+        errors.push(
+          `${getCoreAbilityLabel(parsed.ability)} não aceita foco nesta regra.`
+        );
+
+
+        return;
+      }
+
+
+      if (
+        abilityRequiresFocus(
+          parsed.ability
+        ) &&
+        !parsed.focus
+      ) {
+        errors.push(
+          `${getCoreAbilityLabel(parsed.ability)} exige um foco.`
+        );
       }
 
 

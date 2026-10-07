@@ -89,9 +89,9 @@ test(
       );
 
 
-    const creationForm =
-      readFile(
-        "frontend/src/js/main/character/creation/characterCreationForm.js"
+    const data =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/data/abilityCatalog.js"
       );
 
 
@@ -120,6 +120,22 @@ test(
 
 
     assert.equal(
+      rows.includes(
+        "data-creation-ability-focus"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      rows.includes(
+        "data-creation-ability-custom-focus"
+      ),
+      true
+    );
+
+
+    assert.equal(
       progress.includes(
         "data-creation-ability-points"
       ),
@@ -128,16 +144,8 @@ test(
 
 
     assert.equal(
-      rows.includes(
-        'type="number"'
-      ),
-      false
-    );
-
-
-    assert.equal(
-      creationForm.includes(
-        "./form/characterCreationAbilityForm.js"
+      data.includes(
+        "getAbilityDisplayLabel"
       ),
       true
     );
@@ -168,52 +176,52 @@ test(
       ),
       true
     );
+
+
+    assert.equal(
+      source.includes(
+        "getAbilityDisplayLabel"
+      ),
+      true
+    );
   }
 );
 
 
 test(
-  "Ability options and creation rules come from the backend",
+  "Ability options and focus rules come from the backend",
   () => {
-    const readController =
+    const abilities =
       readFile(
-        "backend/controllers/character/characterReadController.js"
+        "backend/data/vampire/abilities.js"
       );
 
 
-    const frontendOptions =
+    const focus =
       readFile(
-        "frontend/src/js/main/character/characterOptions.js"
+        "backend/data/vampire/abilityFocus.js"
       );
 
 
     assert.equal(
-      readController.includes(
-        "getCoreAbilities"
+      abilities.includes(
+        "abilityRequiresFocus"
       ),
       true
     );
 
 
     assert.equal(
-      readController.includes(
-        "abilityRules"
+      abilities.includes(
+        "focusOptions"
       ),
       true
     );
 
 
     assert.equal(
-      frontendOptions.includes(
-        "data.abilities"
-      ),
-      true
-    );
-
-
-    assert.equal(
-      frontendOptions.includes(
-        "data.abilityRules"
+      focus.includes(
+        "ABILITY_FOCUS_OPTIONS"
       ),
       true
     );

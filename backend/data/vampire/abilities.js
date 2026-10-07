@@ -1,3 +1,11 @@
+const {
+  abilityRequiresFocus,
+  getAbilityFocusOptions,
+} = require(
+  "./abilityFocus"
+);
+
+
 const ABILITY_OPTIONS =
   Object.freeze([
     {
@@ -337,6 +345,16 @@ function getCoreAbilities() {
       ability
     ) => ({
       ...ability,
+
+      requiresFocus:
+        abilityRequiresFocus(
+          ability.value
+        ),
+
+      focusOptions:
+        getAbilityFocusOptions(
+          ability.value
+        ),
     })
   );
 }

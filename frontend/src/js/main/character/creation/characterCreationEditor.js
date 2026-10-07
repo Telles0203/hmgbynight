@@ -18,6 +18,8 @@ import {
 import {
   adjustCharacterCreationAbilityLevel,
   refreshCharacterCreationAbilityEditor,
+  refreshCharacterCreationAbilityFocus,
+  refreshCharacterCreationAbilityCustomFocus,
 } from "./form/characterCreationAbilityForm.js";
 
 import {
@@ -298,9 +300,29 @@ function handleDocumentChange(
       "[data-creation-ability-key]"
     )
   ) {
+    refreshCharacterCreationAbilityFocus(
+      target.closest(
+        '.character-creation-map-row[data-creation-map="abilities"]'
+      )
+    );
+
+
     refreshCharacterCreationAbilityEditor(
       target.closest(
         "[data-character-creation-inline-form]"
+      )
+    );
+  }
+
+
+  if (
+    target.matches(
+      "[data-creation-ability-focus]"
+    )
+  ) {
+    refreshCharacterCreationAbilityCustomFocus(
+      target.closest(
+        '.character-creation-map-row[data-creation-map="abilities"]'
       )
     );
   }

@@ -10,6 +10,10 @@ import {
   createFreeTraitCostNotice,
 } from "./characterSheetCreationResources.js";
 
+import {
+  getAbilityDisplayLabel,
+} from "../../creation/data/abilityCatalog.js";
+
 
 function normalizeAbilityProgress(
   progress,
@@ -80,6 +84,33 @@ function normalizeAbilityProgress(
 }
 
 
+function createAbilityLabels(
+  state,
+  fallbackLabels
+) {
+  return Object.fromEntries(
+    Object.keys(
+      state?.abilities ||
+      {}
+    ).map(
+      (
+        entryKey
+      ) => [
+        entryKey,
+
+        getAbilityDisplayLabel(
+          entryKey
+        ) ||
+        fallbackLabels?.[
+          entryKey
+        ] ||
+        entryKey,
+      ]
+    )
+  );
+}
+
+
 export function createCharacterAbilityContent({
   state,
   progress,
@@ -96,6 +127,13 @@ export function createCharacterAbilityContent({
   const highlight =
     normalized.spent >
     normalized.total;
+
+
+  const abilityLabels =
+    createAbilityLabels(
+      state,
+      labels
+    );
 
 
   return `
@@ -129,7 +167,7 @@ export function createCharacterAbilityContent({
       state?.abilities,
       "Nenhuma habilidade cadastrada.",
       state?.specializations,
-      labels
+      abilityLabels
     )}
 
     ${createFreeTraitCostNotice(

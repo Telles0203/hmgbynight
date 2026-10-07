@@ -10,6 +10,8 @@ import {
   createAbilityRow,
   createAbilityRows,
   readAbilityMap,
+  refreshCharacterCreationAbilityFocus,
+  refreshCharacterCreationAbilityCustomFocus,
 } from "./ability/characterCreationAbilityRows.js";
 
 import {
@@ -130,7 +132,7 @@ export function createAbilitiesCreationEditor(
       </small>
 
       <div class="small text-secondary mt-2">
-        Focos e Especializações serão configurados nas próximas etapas.
+        Crafts, Performance, Science e Hobby / Professional / Expert exigem foco.
       </div>
 
       ${createCreationActions(
@@ -249,4 +251,6 @@ export function readAbilitiesCreationSection(
 export {
   refreshCharacterCreationAbilityEditor,
   adjustCharacterCreationAbilityLevel,
+  refreshCharacterCreationAbilityFocus,
+  refreshCharacterCreationAbilityCustomFocus,
 };
