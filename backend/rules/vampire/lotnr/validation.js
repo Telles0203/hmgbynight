@@ -216,6 +216,7 @@ function validateCharacterCreation(
 
   const freeTraits =
     calculateFreeTraitBudget({
+      character,
       creation,
       attributes,
       abilities,

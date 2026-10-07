@@ -49,11 +49,34 @@ function createPositiveTraitOptions(
 
 
 function createNegativeTraitOptions(
-  category
+  category,
+  excludedValues = []
 ) {
   const catalog =
     getAttributeTraitCatalog(
       category
+    );
+
+
+  const excluded =
+    new Set(
+      (
+        Array.isArray(
+          excludedValues
+        )
+          ? excludedValues
+          : []
+      ).map(
+        (
+          value
+        ) =>
+          String(
+            value ||
+            ""
+          )
+            .trim()
+            .toLowerCase()
+      )
     );
 
 
@@ -64,6 +87,19 @@ function createNegativeTraitOptions(
 
     ${catalog
       .negative
+      .filter(
+        (
+          trait
+        ) =>
+          !excluded.has(
+            String(
+              trait ||
+              ""
+            )
+              .trim()
+              .toLowerCase()
+          )
+      )
       .map(
         (
           trait
@@ -244,6 +280,7 @@ export function createAttributeTraitPicker({
   values,
   negative = false,
   baseTarget = 0,
+  excludedValues = [],
 }) {
   return `
     <div
@@ -290,7 +327,8 @@ export function createAttributeTraitPicker({
           ${
             negative
               ? createNegativeTraitOptions(
-                  category
+                  category,
+                  excludedValues
                 )
               : createPositiveTraitOptions(
                   category

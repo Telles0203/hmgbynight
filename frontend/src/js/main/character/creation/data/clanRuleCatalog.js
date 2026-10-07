@@ -242,3 +242,63 @@ export function getClanAbilityChoiceGrants(
       )
     : [];
 }
+
+
+export function getFixedClanNegativeTraitGrants(
+  character,
+  category
+) {
+  const source =
+    getCharacterClanRule(
+      character
+    )
+      ?.grants
+      ?.negativeTraits ||
+    {};
+
+
+  const cloneEntries =
+    (
+      entries
+    ) =>
+      Array.isArray(
+        entries
+      )
+        ? entries.map(
+            (
+              entry
+            ) => ({
+              ...entry,
+            })
+          )
+        : [];
+
+
+  if (
+    category
+  ) {
+    return cloneEntries(
+      source[
+        category
+      ]
+    );
+  }
+
+
+  return {
+    physical:
+      cloneEntries(
+        source.physical
+      ),
+
+    social:
+      cloneEntries(
+        source.social
+      ),
+
+    mental:
+      cloneEntries(
+        source.mental
+      ),
+  };
+}

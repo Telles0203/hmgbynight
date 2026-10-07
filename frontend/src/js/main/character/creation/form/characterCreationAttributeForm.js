@@ -25,6 +25,14 @@ import {
   updateAttributeTraitTarget,
 } from "./characterCreationAttributeTraitActions.js";
 
+import {
+  getFixedClanNegativeTraitGrants,
+} from "../data/clanRuleCatalog.js";
+
+import {
+  createClanNegativeTraitSummary,
+} from "./characterCreationClanNegativeTraits.js";
+
 
 const ATTRIBUTE_LABELS = {
   physical:
@@ -108,6 +116,25 @@ export function createAttributeCreationEditor(
         category
       ] ||
     [];
+
+
+  const clanNegativeTraits =
+    getFixedClanNegativeTraitGrants(
+      character,
+      category
+    );
+
+
+  const lockedNegativeTraitValues =
+    clanNegativeTraits.map(
+      (
+        grant
+      ) =>
+        String(
+          grant?.value ||
+          ""
+        )
+    );
 
 
   const priority =
@@ -215,6 +242,10 @@ export function createAttributeCreationEditor(
         baseTarget,
       })}
 
+      ${createClanNegativeTraitSummary(
+        clanNegativeTraits
+      )}
+
       ${createAttributeTraitPicker({
         category,
 
@@ -226,6 +257,9 @@ export function createAttributeCreationEditor(
 
         negative:
           true,
+
+        excludedValues:
+          lockedNegativeTraitValues,
       })}
 
       ${createCreationActions(

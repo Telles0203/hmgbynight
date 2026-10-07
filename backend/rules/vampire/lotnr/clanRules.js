@@ -12,6 +12,12 @@ const {
   "./clanAbilityGrants"
 );
 
+const {
+  getFixedClanNegativeTraitGrants,
+} = require(
+  "./clanNegativeTraitGrants"
+);
+
 
 const CLAN_DISCIPLINE_MODES =
   Object.freeze({
@@ -227,6 +233,12 @@ function createEmptyGrants(
     );
 
 
+  const negativeTraits =
+    getFixedClanNegativeTraitGrants(
+      clan
+    );
+
+
   return Object.freeze({
     abilities:
       Object.freeze({
@@ -259,13 +271,46 @@ function createEmptyGrants(
     negativeTraits:
       Object.freeze({
         physical:
-          Object.freeze([]),
+          Object.freeze(
+            negativeTraits
+              .physical
+              .map(
+                (
+                  entry
+                ) =>
+                  Object.freeze({
+                    ...entry,
+                  })
+              )
+          ),
 
         social:
-          Object.freeze([]),
+          Object.freeze(
+            negativeTraits
+              .social
+              .map(
+                (
+                  entry
+                ) =>
+                  Object.freeze({
+                    ...entry,
+                  })
+              )
+          ),
 
         mental:
-          Object.freeze([]),
+          Object.freeze(
+            negativeTraits
+              .mental
+              .map(
+                (
+                  entry
+                ) =>
+                  Object.freeze({
+                    ...entry,
+                  })
+              )
+          ),
       }),
   });
 }
@@ -471,26 +516,44 @@ function getAllClanRules() {
         },
 
         negativeTraits: {
-          physical: [
-            ...rule
+          physical:
+            rule
               .grants
               .negativeTraits
-              .physical,
-          ],
+              .physical
+              .map(
+                (
+                  entry
+                ) => ({
+                  ...entry,
+                })
+              ),
 
-          social: [
-            ...rule
+          social:
+            rule
               .grants
               .negativeTraits
-              .social,
-          ],
+              .social
+              .map(
+                (
+                  entry
+                ) => ({
+                  ...entry,
+                })
+              ),
 
-          mental: [
-            ...rule
+          mental:
+            rule
               .grants
               .negativeTraits
-              .mental,
-          ],
+              .mental
+              .map(
+                (
+                  entry
+                ) => ({
+                  ...entry,
+                })
+              ),
         },
       },
 

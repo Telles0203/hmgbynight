@@ -3,8 +3,8 @@ import {
 } from "./characterSheetCommon.js";
 
 import {
-  createCreationList,
-} from "./characterSheetCreationLists.js";
+  createCharacterNegativeTraitList,
+} from "./characterSheetNegativeTraits.js";
 
 import {
   getAttributeTraitLabel,
@@ -391,6 +391,16 @@ export function createAttributeSection({
     [];
 
 
+  const negativeTraitContent =
+    createCharacterNegativeTraitList({
+      character,
+      category,
+
+      selected:
+        negatives,
+    });
+
+
   const categoryProgress =
     progress
       ?.categories
@@ -415,8 +425,9 @@ export function createAttributeSection({
   const hasContent =
     traits.length >
       0 ||
-    negatives.length >
-      0;
+    Boolean(
+      negativeTraitContent
+    );
 
 
   const section =
@@ -478,8 +489,7 @@ export function createAttributeSection({
             }
 
             ${
-              negatives.length >
-                0
+              negativeTraitContent
                 ? `
                   <div class="character-sheet-group mt-3">
 
@@ -487,10 +497,7 @@ export function createAttributeSection({
                       Negativos
                     </div>
 
-                    ${createCreationList(
-                      negatives,
-                      ""
-                    )}
+                    ${negativeTraitContent}
 
                   </div>
                 `

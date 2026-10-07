@@ -1071,3 +1071,52 @@
     justify-content: center;
   }
 }
+
+
+.character-creation-clan-negative-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 8px;
+  border: 1px solid rgba(185, 0, 25, 0.34);
+  border-radius: 5px;
+  background: rgba(185, 0, 25, 0.07);
+}
+
+.character-creation-clan-negative-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #eef3fb;
+  font-size: 0.72rem;
+}
+
+.character-creation-clan-negative-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border: 1px solid rgba(185, 0, 25, 0.65);
+  border-radius: 999px;
+  color: #f1c7cd;
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.character-creation-clan-negative-note {
+  margin-top: 2px;
+  color: #cfd8e4;
+  font-size: 0.64rem;
+}
+
+.character-negative-trait-list
+.character-clan-negative-trait {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

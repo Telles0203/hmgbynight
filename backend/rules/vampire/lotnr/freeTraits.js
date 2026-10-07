@@ -5,6 +5,12 @@ const {
   "./ruleset"
 );
 
+const {
+  getFixedClanNegativeTraitGrants,
+} = require(
+  "./clanNegativeTraitGrants"
+);
+
 
 function normalizeArray(
   value
@@ -17,7 +23,62 @@ function normalizeArray(
 }
 
 
+function normalizeGrantedEntries(
+  value
+) {
+  return normalizeArray(
+    value
+  )
+    .map(
+      (
+        entry
+      ) => {
+        const count =
+          Number(
+            entry?.count
+          );
+
+
+        return {
+          value:
+            String(
+              entry?.value ||
+              ""
+            ).trim(),
+
+          count:
+            Number.isInteger(
+              count
+            )
+              ? Math.max(
+                  0,
+                  count
+                )
+              : 0,
+
+          locked:
+            entry?.locked ===
+            true,
+
+          grantsFreeTraits:
+            entry?.grantsFreeTraits ===
+            true,
+        };
+      }
+    )
+    .filter(
+      (
+        entry
+      ) =>
+        entry.value &&
+        entry.count >
+          0
+    );
+}
+
+
 function validateNegativeTraits(
+  character,
   creation
 ) {
   const errors =
@@ -28,8 +89,34 @@ function validateNegativeTraits(
     {};
 
 
+  const grantedCounts =
+    {};
+
+
+  const effectiveCounts =
+    {};
+
+
+  const granted =
+    {};
+
+
   let total =
     0;
+
+
+  let grantedTotal =
+    0;
+
+
+  let grantedFreeTraits =
+    0;
+
+
+  const clanGrants =
+    getFixedClanNegativeTraitGrants(
+      character?.clan
+    );
 
 
   ATTRIBUTE_CATEGORIES
@@ -59,14 +146,77 @@ function validateNegativeTraits(
             );
 
 
+        const categoryGrants =
+          normalizeGrantedEntries(
+            clanGrants[
+              category
+            ]
+          );
+
+
+        const categoryGrantedCount =
+          categoryGrants.reduce(
+            (
+              sum,
+              entry
+            ) =>
+              sum +
+              entry.count,
+            0
+          );
+
+
+        const categoryGrantedFreeTraits =
+          categoryGrants.reduce(
+            (
+              sum,
+              entry
+            ) =>
+              sum +
+              (
+                entry.grantsFreeTraits
+                  ? entry.count
+                  : 0
+              ),
+            0
+          );
+
+
         counts[
           category
         ] =
           traits.length;
 
 
+        grantedCounts[
+          category
+        ] =
+          categoryGrantedCount;
+
+
+        effectiveCounts[
+          category
+        ] =
+          traits.length +
+          categoryGrantedCount;
+
+
+        granted[
+          category
+        ] =
+          categoryGrants;
+
+
         total +=
           traits.length;
+
+
+        grantedTotal +=
+          categoryGrantedCount;
+
+
+        grantedFreeTraits +=
+          categoryGrantedFreeTraits;
 
 
         if (
@@ -100,6 +250,20 @@ function validateNegativeTraits(
 
     counts,
 
+    granted,
+
+    grantedTotal,
+
+    grantedCounts,
+
+    grantedFreeTraits,
+
+    effectiveTotal:
+      total +
+      grantedTotal,
+
+    effectiveCounts,
+
     errors,
 
     valid:
@@ -110,6 +274,7 @@ function validateNegativeTraits(
 
 
 function calculateFreeTraitBudget({
+  character = {},
   creation,
   attributes,
   abilities,
@@ -121,6 +286,7 @@ function calculateFreeTraitBudget({
 }) {
   const negativeTraits =
     validateNegativeTraits(
+      character,
       creation
     );
 
@@ -212,6 +378,8 @@ function calculateFreeTraitBudget({
       .freeTraits
       .base +
     negativeTraits.total +
+    negativeTraits
+      .grantedFreeTraits +
     Math.min(
       flawPoints,
       CHARACTER_CREATION_RULES
@@ -279,10 +447,10 @@ function calculateFreeTraitBudget({
       spending
     ).reduce(
       (
-        total,
+        totalSpent,
         value
       ) =>
-        total +
+        totalSpent +
         value,
       0
     );
@@ -327,7 +495,9 @@ function calculateFreeTraitBudget({
           .base,
 
       negativeTraits:
-        negativeTraits.total,
+        negativeTraits.total +
+        negativeTraits
+          .grantedFreeTraits,
 
       flaws:
         Math.min(
