@@ -1,4 +1,8 @@
 import {
+  refreshNegativeTraitGain,
+} from "./characterCreationNegativeTraitGain.js";
+
+import {
   createSelectedTraitRow,
   formatAttributeTraitSummary,
   EXTRA_TRAIT_HELP_TEXT,
@@ -275,6 +279,11 @@ export function refreshAttributeTraitSummary(
 
 
   refreshAddButtonState(
+    form
+  );
+
+
+  refreshNegativeTraitGain(
     form
   );
 }

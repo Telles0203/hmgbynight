@@ -33,6 +33,10 @@ import {
   createClanNegativeTraitSummary,
 } from "./characterCreationClanNegativeTraits.js";
 
+import {
+  createNegativeTraitGainNotice,
+} from "./characterCreationNegativeTraitGain.js";
+
 
 const ATTRIBUTE_LABELS = {
   physical:
@@ -261,6 +265,10 @@ export function createAttributeCreationEditor(
         excludedValues:
           lockedNegativeTraitValues,
       })}
+
+      ${createNegativeTraitGainNotice(
+        negativeTraits.length
+      )}
 
       ${createCreationActions(
         character

@@ -6,6 +6,10 @@ import {
   getFixedClanNegativeTraitGrants,
 } from "../../creation/data/clanRuleCatalog.js";
 
+import {
+  createSavedNegativeTraitGainNotice,
+} from "../../creation/form/characterCreationNegativeTraitGain.js";
+
 
 function expandClanNegativeTraits(
   grants
@@ -145,5 +149,9 @@ export function createCharacterNegativeTraitList({
         .join("")}
 
     </ul>
+
+    ${createSavedNegativeTraitGainNotice(
+      regular.length
+    )}
   `;
 }
