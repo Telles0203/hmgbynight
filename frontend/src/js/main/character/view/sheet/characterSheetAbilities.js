@@ -3,14 +3,6 @@ import {
 } from "./characterSheetCommon.js";
 
 import {
-  createCreationMapList,
-} from "./characterSheetCreationLists.js";
-
-import {
-  createFreeTraitCostNotice,
-} from "./characterSheetCreationResources.js";
-
-import {
   getAbilityDisplayLabel,
 } from "../../creation/data/abilityCatalog.js";
 
@@ -84,38 +76,156 @@ function normalizeAbilityProgress(
 }
 
 
-function createAbilityLabels(
-  state,
-  fallbackLabels
+function createCostNotice(
+  label,
+  cost
 ) {
-  return Object.fromEntries(
-    Object.keys(
-      state?.abilities ||
-      {}
-    ).map(
-      (
-        entryKey
-      ) => [
-        entryKey,
+  const normalized =
+    Number(
+      cost
+    );
 
-        getAbilityDisplayLabel(
-          entryKey
-        ) ||
-        fallbackLabels?.[
-          entryKey
-        ] ||
-        entryKey,
-      ]
+
+  if (
+    !Number.isFinite(
+      normalized
+    ) ||
+    normalized <=
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <small class="character-free-trait-inline-cost">
+      ${escapeSheetHtml(
+        label
+      )}:
+      -${normalized} Free Trait${normalized === 1 ? "" : "s"}
+    </small>
+  `;
+}
+
+
+function createAbilityList(
+  state
+) {
+  const abilities =
+    state?.abilities ||
+    {};
+
+
+  const specializations =
+    state?.specializations ||
+    {};
+
+
+  const entries =
+    Object.entries(
+      abilities
     )
-  );
+      .filter(
+        ([
+          ,
+          level,
+        ]) =>
+          Number(
+            level
+          ) >
+          0
+      )
+      .sort(
+        ([
+          first,
+        ], [
+          second,
+        ]) =>
+          getAbilityDisplayLabel(
+            first
+          ).localeCompare(
+            getAbilityDisplayLabel(
+              second
+            )
+          )
+      );
+
+
+  if (
+    entries.length ===
+    0
+  ) {
+    return `
+      <div class="character-sheet-empty">
+        Nenhuma habilidade cadastrada.
+      </div>
+    `;
+  }
+
+
+  return `
+    <div class="character-creation-map-list">
+
+      ${entries
+        .map(
+          ([
+            entryKey,
+            level,
+          ]) => {
+            const specialization =
+              String(
+                specializations?.[
+                  entryKey
+                ] ||
+                ""
+              ).trim();
+
+
+            return `
+              <div class="character-sheet-row">
+
+                <span class="character-sheet-label">
+
+                  ${specialization
+                    ? `
+                      <small class="character-creation-specialization">
+                        [${escapeSheetHtml(
+                          specialization
+                        )}]
+                      </small>
+                    `
+                    : ""}
+
+                  ${escapeSheetHtml(
+                    getAbilityDisplayLabel(
+                      entryKey
+                    )
+                  )}
+
+                </span>
+
+                <span class="character-sheet-value">
+                  ${Number(
+                    level
+                  )}
+                </span>
+
+              </div>
+            `;
+          }
+        )
+        .join("")}
+
+    </div>
+  `;
 }
 
 
 export function createCharacterAbilityContent({
   state,
   progress,
-  freeTraitCost,
-  labels,
+  abilityFreeTraitCost,
+  specializationFreeTraitCost,
 }) {
   const normalized =
     normalizeAbilityProgress(
@@ -127,13 +237,6 @@ export function createCharacterAbilityContent({
   const highlight =
     normalized.spent >
     normalized.total;
-
-
-  const abilityLabels =
-    createAbilityLabels(
-      state,
-      labels
-    );
 
 
   return `
@@ -163,15 +266,18 @@ export function createCharacterAbilityContent({
       </span>
     </div>
 
-    ${createCreationMapList(
-      state?.abilities,
-      "Nenhuma habilidade cadastrada.",
-      state?.specializations,
-      abilityLabels
+    ${createAbilityList(
+      state
     )}
 
-    ${createFreeTraitCostNotice(
-      freeTraitCost
+    ${createCostNotice(
+      "Extra da criação",
+      abilityFreeTraitCost
+    )}
+
+    ${createCostNotice(
+      "Especializações",
+      specializationFreeTraitCost
     )}
   `;
 }

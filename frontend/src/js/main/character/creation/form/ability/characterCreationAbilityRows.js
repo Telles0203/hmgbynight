@@ -76,9 +76,66 @@ function readAbilityFocus(
 }
 
 
+function getAbilityEntryKeyFromRow(
+  row,
+  {
+    requireFocus = false,
+  } = {}
+) {
+  const ability =
+    String(
+      row.querySelector(
+        "[data-creation-ability-key]"
+      )?.value ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (!ability) {
+    return "";
+  }
+
+
+  const focus =
+    readAbilityFocus(
+      row
+    );
+
+
+  if (
+    abilityRequiresFocus(
+      ability
+    ) &&
+    !focus
+  ) {
+    if (
+      requireFocus
+    ) {
+      throw new Error(
+        `Selecione um foco para ${getAbilityLabel(
+          ability
+        )}.`
+      );
+    }
+
+
+    return "";
+  }
+
+
+  return createAbilityEntryKey(
+    ability,
+    focus
+  );
+}
+
+
 export function createAbilityRow(
   entryKey = "",
   level = 1,
+  specialization = "",
   maximum = 5
 ) {
   const parsed =
@@ -149,6 +206,26 @@ export function createAbilityRow(
           parsed.ability,
           parsed.focus
         )}
+
+        <input
+          type="text"
+          class="
+            form-control
+            form-control-sm
+            bg-black
+            text-light
+            border-secondary
+          "
+          data-creation-ability-specialization
+          maxlength="120"
+          value="${escapeSheetHtml(
+            specialization
+          )}"
+          placeholder="Especialização (opcional)"
+          ${selected
+            ? ""
+            : "disabled"}
+        >
 
       </div>
 
@@ -228,6 +305,7 @@ export function createAbilityRow(
 
 export function createAbilityRows(
   values,
+  specializations,
   maximum
 ) {
   const entries =
@@ -244,6 +322,7 @@ export function createAbilityRows(
     return createAbilityRow(
       "",
       1,
+      "",
       maximum
     );
   }
@@ -258,6 +337,12 @@ export function createAbilityRows(
         createAbilityRow(
           entryKey,
           level,
+          String(
+            specializations?.[
+              entryKey
+            ] ||
+            ""
+          ),
           maximum
         )
     )
@@ -315,6 +400,27 @@ export function refreshCharacterCreationAbilityFocus(
         ability,
         focus
       );
+  }
+
+
+  const specialization =
+    row.querySelector(
+      "[data-creation-ability-specialization]"
+    );
+
+
+  if (specialization) {
+    if (
+      previousAbility !==
+      ability
+    ) {
+      specialization.value =
+        "";
+    }
+
+
+    specialization.disabled =
+      !ability;
   }
 
 
@@ -387,47 +493,19 @@ export function readAbilityMap(
       (
         row
       ) => {
-        const ability =
-          String(
-            row.querySelector(
-              "[data-creation-ability-key]"
-            )?.value ||
-            ""
-          )
-            .trim()
-            .toLowerCase();
+        const entryKey =
+          getAbilityEntryKeyFromRow(
+            row,
+            {
+              requireFocus:
+                true,
+            }
+          );
 
 
-        if (!ability) {
+        if (!entryKey) {
           return;
         }
-
-
-        const focus =
-          readAbilityFocus(
-            row
-          );
-
-
-        if (
-          abilityRequiresFocus(
-            ability
-          ) &&
-          !focus
-        ) {
-          throw new Error(
-            `Selecione um foco para ${getAbilityLabel(
-              ability
-            )}.`
-          );
-        }
-
-
-        const entryKey =
-          createAbilityEntryKey(
-            ability,
-            focus
-          );
 
 
         const level =
@@ -439,7 +517,6 @@ export function readAbilityMap(
 
 
         if (
-          entryKey &&
           Number.isInteger(
             level
           ) &&
@@ -462,4 +539,59 @@ export function readAbilityMap(
 
 
   return abilities;
+}
+
+
+export function readAbilitySpecializations(
+  form
+) {
+  const specializations =
+    {};
+
+
+  form
+    .querySelectorAll(
+      '.character-creation-map-row[data-creation-map="abilities"]'
+    )
+    .forEach(
+      (
+        row
+      ) => {
+        const entryKey =
+          getAbilityEntryKeyFromRow(
+            row,
+            {
+              requireFocus:
+                true,
+            }
+          );
+
+
+        if (!entryKey) {
+          return;
+        }
+
+
+        const specialization =
+          String(
+            row.querySelector(
+              "[data-creation-ability-specialization]"
+            )?.value ||
+            ""
+          ).trim();
+
+
+        if (
+          specialization
+        ) {
+          specializations[
+            entryKey
+          ] =
+            specialization;
+        }
+      }
+    );
+
+
+  return specializations;
 }

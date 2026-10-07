@@ -136,8 +136,24 @@ test(
 
 
     assert.equal(
+      rows.includes(
+        "data-creation-ability-specialization"
+      ),
+      true
+    );
+
+
+    assert.equal(
       progress.includes(
         "data-creation-ability-points"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      progress.includes(
+        "data-creation-specialization-free-trait-cost"
       ),
       true
     );
@@ -172,7 +188,7 @@ test(
 
     assert.equal(
       source.includes(
-        "createFreeTraitCostNotice"
+        "createCostNotice"
       ),
       true
     );
@@ -181,6 +197,22 @@ test(
     assert.equal(
       source.includes(
         "getAbilityDisplayLabel"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "character-creation-specialization"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "specializationFreeTraitCost"
       ),
       true
     );
@@ -203,6 +235,12 @@ test(
       );
 
 
+    const readController =
+      readFile(
+        "backend/controllers/character/characterReadController.js"
+      );
+
+
     assert.equal(
       abilities.includes(
         "abilityRequiresFocus"
@@ -222,6 +260,14 @@ test(
     assert.equal(
       focus.includes(
         "ABILITY_FOCUS_OPTIONS"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      readController.includes(
+        "specializationFreeTraitCost"
       ),
       true
     );

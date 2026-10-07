@@ -32,6 +32,13 @@ export function getAbilityCreationRules(
     );
 
 
+  const specializationFreeTraitCost =
+    Number(
+      options
+        .specializationFreeTraitCost
+    );
+
+
   const draftMaximum =
     Number(
       character
@@ -79,6 +86,13 @@ export function getAbilityCreationRules(
         freeTraitCost
       )
         ? freeTraitCost
+        : 1,
+
+    specializationFreeTraitCost:
+      Number.isInteger(
+        specializationFreeTraitCost
+      )
+        ? specializationFreeTraitCost
         : 1,
 
     maximum:

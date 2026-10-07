@@ -10,6 +10,7 @@ import {
   createAbilityRow,
   createAbilityRows,
   readAbilityMap,
+  readAbilitySpecializations,
   refreshCharacterCreationAbilityFocus,
   refreshCharacterCreationAbilityCustomFocus,
 } from "./ability/characterCreationAbilityRows.js";
@@ -35,7 +36,9 @@ export function createAbilitiesCreationEditor(
     getStateAbilityProgress(
       state,
       rules.total,
-      rules.freeTraitCost
+      rules.freeTraitCost,
+      rules
+        .specializationFreeTraitCost
     );
 
 
@@ -51,6 +54,7 @@ export function createAbilitiesCreationEditor(
       data-character-creation-section="abilities"
       data-ability-creation-total="${rules.total}"
       data-ability-free-trait-cost="${rules.freeTraitCost}"
+      data-ability-specialization-free-trait-cost="${rules.specializationFreeTraitCost}"
       data-ability-maximum="${rules.maximum}"
     >
 
@@ -110,6 +114,7 @@ export function createAbilitiesCreationEditor(
         >
           ${createAbilityRows(
             state?.abilities,
+            state?.specializations,
             rules.maximum
           )}
         </div>
@@ -131,8 +136,25 @@ export function createAbilitiesCreationEditor(
           : ""}
       </small>
 
+      <small
+        class="
+          character-free-trait-inline-cost
+          mt-1
+          ${progress.specializationFreeTraitCost > 0
+            ? ""
+            : "d-none"}
+        "
+        data-creation-specialization-free-trait-cost
+      >
+        ${progress.specializationFreeTraitCost > 0
+          ? `Especializações: -${progress.specializationFreeTraitCost} Free Trait${progress.specializationFreeTraitCost === 1 ? "" : "s"}`
+          : ""}
+      </small>
+
       <div class="small text-secondary mt-2">
-        Crafts, Performance, Science e Hobby / Professional / Expert exigem foco.
+        Cada Especialização custa
+        ${rules.specializationFreeTraitCost}
+        Free Trait.
       </div>
 
       ${createCreationActions(
@@ -172,6 +194,7 @@ export function appendCharacterCreationAbilityRow(
     createAbilityRow(
       "",
       1,
+      "",
       maximum
     );
 
@@ -215,32 +238,9 @@ export function readAbilitiesCreationSection(
     abilities;
 
 
-  const currentSpecializations =
-    state.specializations &&
-    typeof state.specializations ===
-      "object" &&
-    !Array.isArray(
-      state.specializations
-    )
-      ? state.specializations
-      : {};
-
-
   state.specializations =
-    Object.fromEntries(
-      Object.entries(
-        currentSpecializations
-      ).filter(
-        ([
-          ability,
-        ]) =>
-          Object.prototype
-            .hasOwnProperty
-            .call(
-              abilities,
-              ability
-            )
-      )
+    readAbilitySpecializations(
+      form
     );
 
 
@@ -248,9 +248,58 @@ export function readAbilitiesCreationSection(
 }
 
 
+export function handleCharacterCreationAbilityFieldChange(
+  target
+) {
+  const row =
+    target.closest(
+      '.character-creation-map-row[data-creation-map="abilities"]'
+    );
+
+
+  const form =
+    target.closest(
+      "[data-character-creation-inline-form]"
+    );
+
+
+  if (
+    !row ||
+    !form
+  ) {
+    return;
+  }
+
+
+  if (
+    target.matches(
+      "[data-creation-ability-key]"
+    )
+  ) {
+    refreshCharacterCreationAbilityFocus(
+      row
+    );
+  }
+
+
+  if (
+    target.matches(
+      "[data-creation-ability-focus]"
+    )
+  ) {
+    refreshCharacterCreationAbilityCustomFocus(
+      row
+    );
+  }
+
+
+  refreshCharacterCreationAbilityEditor(
+    form
+  );
+}
+
+
 export {
   refreshCharacterCreationAbilityEditor,
   adjustCharacterCreationAbilityLevel,
-  refreshCharacterCreationAbilityFocus,
-  refreshCharacterCreationAbilityCustomFocus,
 };

@@ -15,7 +15,18 @@ function getAbilityEditorProgress(
     );
 
 
+  const specializationFreeTraitCost =
+    Number(
+      form.dataset
+        .abilitySpecializationFreeTraitCost
+    );
+
+
   let spent =
+    0;
+
+
+  let specializationCount =
     0;
 
 
@@ -59,6 +70,23 @@ function getAbilityEditorProgress(
           spent +=
             level;
         }
+
+
+        const specialization =
+          String(
+            row.querySelector(
+              "[data-creation-ability-specialization]"
+            )?.value ||
+            ""
+          ).trim();
+
+
+        if (
+          specialization
+        ) {
+          specializationCount +=
+            1;
+        }
       }
     );
 
@@ -71,11 +99,19 @@ function getAbilityEditorProgress(
       : 5;
 
 
-  const normalizedCost =
+  const normalizedAbilityCost =
     Number.isInteger(
       freeTraitCost
     )
       ? freeTraitCost
+      : 1;
+
+
+  const normalizedSpecializationCost =
+    Number.isInteger(
+      specializationFreeTraitCost
+    )
+      ? specializationFreeTraitCost
       : 1;
 
 
@@ -95,9 +131,15 @@ function getAbilityEditorProgress(
 
     extra,
 
+    specializationCount,
+
     freeTraitCost:
       extra *
-      normalizedCost,
+      normalizedAbilityCost,
+
+    specializationFreeTraitCost:
+      specializationCount *
+      normalizedSpecializationCost,
   };
 }
 
@@ -153,6 +195,12 @@ function refreshAbilityRowControls(
           );
 
 
+        const specialization =
+          row.querySelector(
+            "[data-creation-ability-specialization]"
+          );
+
+
         if (decrease) {
           decrease.disabled =
             !selected ||
@@ -167,8 +215,49 @@ function refreshAbilityRowControls(
             level >=
               maximum;
         }
+
+
+        if (specialization) {
+          specialization.disabled =
+            !selected;
+        }
       }
     );
+}
+
+
+function updateCostNotice(
+  element,
+  label,
+  cost
+) {
+  if (!element) {
+    return;
+  }
+
+
+  if (
+    cost >
+    0
+  ) {
+    element.textContent =
+      `${label}: -${cost} Free Trait${cost === 1 ? "" : "s"}`;
+
+    element.classList.remove(
+      "d-none"
+    );
+
+
+    return;
+  }
+
+
+  element.textContent =
+    "";
+
+  element.classList.add(
+    "d-none"
+  );
 }
 
 
@@ -227,33 +316,23 @@ export function refreshCharacterCreationAbilityEditor(
   }
 
 
-  const cost =
+  updateCostNotice(
     form.querySelector(
       "[data-creation-ability-free-trait-cost]"
-    );
+    ),
+    "Extra da criação",
+    progress.freeTraitCost
+  );
 
 
-  if (cost) {
-    if (
-      progress.freeTraitCost >
-      0
-    ) {
-      cost.textContent =
-        `Extra da criação: -${progress.freeTraitCost} Free Trait${progress.freeTraitCost === 1 ? "" : "s"}`;
-
-      cost.classList.remove(
-        "d-none"
-      );
-
-    } else {
-      cost.textContent =
-        "";
-
-      cost.classList.add(
-        "d-none"
-      );
-    }
-  }
+  updateCostNotice(
+    form.querySelector(
+      "[data-creation-specialization-free-trait-cost]"
+    ),
+    "Especializações",
+    progress
+      .specializationFreeTraitCost
+  );
 
 
   refreshAbilityRowControls(
@@ -380,7 +459,8 @@ export function adjustCharacterCreationAbilityLevel(
 export function getStateAbilityProgress(
   state,
   total,
-  freeTraitCost
+  freeTraitCost,
+  specializationFreeTraitCost
 ) {
   const spent =
     Object.values(
@@ -422,13 +502,44 @@ export function getStateAbilityProgress(
     );
 
 
+  const specializationCount =
+    Object.entries(
+      state?.specializations ||
+      {}
+    ).filter(
+      ([
+        entryKey,
+        specialization,
+      ]) =>
+        Boolean(
+          String(
+            specialization ||
+            ""
+          ).trim()
+        ) &&
+        Object.prototype
+          .hasOwnProperty
+          .call(
+            state?.abilities ||
+            {},
+            entryKey
+          )
+    ).length;
+
+
   return {
     spent,
 
     total,
 
+    specializationCount,
+
     freeTraitCost:
       extra *
       freeTraitCost,
+
+    specializationFreeTraitCost:
+      specializationCount *
+      specializationFreeTraitCost,
   };
 }

@@ -668,7 +668,31 @@
 .character-creation-map-row .form-control,
 .character-creation-inline-editor .form-control,
 .character-creation-inline-editor .form-select {
+  color: #f8fbff;
   font-size: 0.72rem;
+}
+
+.character-creation-inline-editor
+.form-control::placeholder {
+  color: rgba(
+    248,
+    251,
+    255,
+    0.72
+  );
+  opacity: 1;
+}
+
+.character-creation-inline-editor
+.form-control:disabled,
+.character-creation-inline-editor
+.form-select:disabled {
+  color: rgba(
+    248,
+    251,
+    255,
+    0.5
+  );
 }
 
 .character-creation-map-level {

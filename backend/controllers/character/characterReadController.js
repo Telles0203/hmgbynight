@@ -158,6 +158,12 @@ async function getCharacterOptions(
             .freeTraits
             .costs
             .ability,
+
+        specializationFreeTraitCost:
+          CHARACTER_CREATION_RULES
+            .freeTraits
+            .costs
+            .specialization,
       },
 
 

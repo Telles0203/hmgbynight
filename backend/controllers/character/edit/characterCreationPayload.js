@@ -353,7 +353,8 @@ function sanitizeAbilityMap(
 
 
 function sanitizeSpecializationMap(
-  value
+  value,
+  abilities = {}
 ) {
   const source =
     ensurePlainObject(
@@ -379,8 +380,53 @@ function sanitizeSpecializationMap(
       ]) => {
         const key =
           sanitizeMapKey(
-            rawKey
+            rawKey,
+            100
           );
+
+
+        const parsed =
+          parseAbilityEntryKey(
+            key
+          );
+
+
+        if (
+          !isCoreAbility(
+            parsed.ability
+          )
+        ) {
+          return;
+        }
+
+
+        if (
+          parsed.focus &&
+          !abilityRequiresFocus(
+            parsed.ability
+          )
+        ) {
+          return;
+        }
+
+
+        const entryKey =
+          createAbilityEntryKey(
+            parsed.ability,
+            parsed.focus
+          );
+
+
+        if (
+          !Object.prototype
+            .hasOwnProperty
+            .call(
+              abilities,
+              entryKey
+            )
+        ) {
+          return;
+        }
 
 
         const specialization =
@@ -391,11 +437,10 @@ function sanitizeSpecializationMap(
 
 
         if (
-          key &&
           specialization
         ) {
           result[
-            key
+            entryKey
           ] =
             specialization;
         }
@@ -459,6 +504,12 @@ function sanitizeCharacterCreationPayload(
     );
 
 
+  const abilities =
+    sanitizeAbilityMap(
+      source.abilities
+    );
+
+
   return {
     ...defaults,
 
@@ -496,14 +547,12 @@ function sanitizeCharacterCreationPayload(
         ),
     },
 
-    abilities:
-      sanitizeAbilityMap(
-        source.abilities
-      ),
+    abilities,
 
     specializations:
       sanitizeSpecializationMap(
-        source.specializations
+        source.specializations,
+        abilities
       ),
 
     disciplines:

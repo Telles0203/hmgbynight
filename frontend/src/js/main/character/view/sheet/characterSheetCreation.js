@@ -484,12 +484,13 @@ export function createCharacterCreationSections(
                 progress:
                   sections.abilities,
 
-                freeTraitCost:
+                abilityFreeTraitCost:
                   freeTraitSpending
                     .abilities,
 
-                labels:
-                  abilityLabels,
+                specializationFreeTraitCost:
+                  freeTraitSpending
+                    .specializations,
               }),
           })}
 

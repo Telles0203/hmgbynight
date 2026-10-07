@@ -90,6 +90,9 @@ async function loadCharacterOptions() {
 
                 freeTraitCost:
                   1,
+
+                specializationFreeTraitCost:
+                  1,
               },
 
         disciplines:
