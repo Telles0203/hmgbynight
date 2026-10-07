@@ -7,6 +7,12 @@ const assert = require(
 );
 
 const {
+  INFLUENCE_AREAS,
+} = require(
+  "../../backend/data/vampire/backgrounds"
+);
+
+const {
   getFixedClanResourceGrants,
   getClanResourceChoiceGrants,
   resolveClanResourceGrants,
@@ -101,14 +107,54 @@ test(
 
 
 test(
-  "Ventrue receive free Resources and choose free Influence",
+  "Ventrue receive free Resources and may choose any Influence",
   () => {
+    const groups =
+      getClanResourceChoiceGrants(
+        "ventrue"
+      );
+
+
+    assert.equal(
+      groups.length,
+      1
+    );
+
+
+    assert.equal(
+      groups[
+        0
+      ].options.length,
+      INFLUENCE_AREAS.length
+    );
+
+
+    INFLUENCE_AREAS.forEach(
+      (
+        influence
+      ) => {
+        assert.equal(
+          groups[
+            0
+          ].options.some(
+            (
+              option
+            ) =>
+              option.key ===
+              `influence::${influence}`
+          ),
+          true
+        );
+      }
+    );
+
+
     const resolved =
       resolveClanResourceGrants(
         "ventrue",
         {
           ventrue_influence:
-            "influence::finance",
+            "influence::media",
         }
       );
 
@@ -124,7 +170,7 @@ test(
     assert.equal(
       resolved
         .influences
-        .finance,
+        .media,
       1
     );
 

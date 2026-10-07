@@ -1,3 +1,69 @@
+const {
+  INFLUENCE_AREAS,
+  INFLUENCE_AREA_LABELS,
+} = require(
+  "../../../data/vampire/backgrounds"
+);
+
+
+function createInfluenceOption(
+  value,
+  overrides = {}
+) {
+  return Object.freeze({
+    key:
+      `influence::${value}`,
+
+    section:
+      "influences",
+
+    value,
+
+    label:
+      INFLUENCE_AREA_LABELS[
+        value
+      ] ||
+      value,
+
+    ...overrides,
+  });
+}
+
+
+function createBackgroundOption(
+  value,
+  label
+) {
+  return Object.freeze({
+    key:
+      `background::${value}`,
+
+    section:
+      "backgrounds",
+
+    value,
+
+    label,
+  });
+}
+
+
+function createInfluenceOptions(
+  values
+) {
+  return Object.freeze(
+    values.map(
+      (
+        value
+      ) =>
+        createInfluenceOption(
+          value
+        )
+    )
+  );
+}
+
+
 const FIXED_CLAN_RESOURCE_GRANTS =
   Object.freeze({
     tremere:
@@ -39,56 +105,29 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
 
           options:
             Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::political",
+              createInfluenceOption(
+                "political",
+                {
+                  linkedAbility:
+                    "politics",
+                }
+              ),
 
-                section:
-                  "influences",
+              createInfluenceOption(
+                "university",
+                {
+                  linkedAbility:
+                    "academics",
+                }
+              ),
 
-                value:
-                  "political",
-
-                label:
-                  "Political",
-
-                linkedAbility:
-                  "politics",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::university",
-
-                section:
-                  "influences",
-
-                value:
-                  "university",
-
-                label:
-                  "University",
-
-                linkedAbility:
-                  "academics",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::street",
-
-                section:
-                  "influences",
-
-                value:
-                  "street",
-
-                label:
-                  "Street",
-
-                linkedAbility:
-                  "streetwise",
-              }),
+              createInfluenceOption(
+                "street",
+                {
+                  linkedAbility:
+                    "streetwise",
+                }
+              ),
             ]),
         }),
       ]),
@@ -103,48 +142,10 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
             "Conexões Setitas",
 
           options:
-            Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::political",
-
-                section:
-                  "influences",
-
-                value:
-                  "political",
-
-                label:
-                  "Political",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::street",
-
-                section:
-                  "influences",
-
-                value:
-                  "street",
-
-                label:
-                  "Street",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::underworld",
-
-                section:
-                  "influences",
-
-                value:
-                  "underworld",
-
-                label:
-                  "Underworld",
-              }),
+            createInfluenceOptions([
+              "political",
+              "street",
+              "underworld",
             ]),
         }),
       ]),
@@ -159,34 +160,9 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
             "Influência da família",
 
           options:
-            Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::finance",
-
-                section:
-                  "influences",
-
-                value:
-                  "finance",
-
-                label:
-                  "Finance",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::health",
-
-                section:
-                  "influences",
-
-                value:
-                  "health",
-
-                label:
-                  "Health",
-              }),
+            createInfluenceOptions([
+              "finance",
+              "health",
             ]),
         }),
 
@@ -199,47 +175,26 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
 
           options:
             Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::finance",
+              createInfluenceOption(
+                "finance",
+                {
+                  label:
+                    "Finance +1",
+                }
+              ),
 
-                section:
-                  "influences",
+              createInfluenceOption(
+                "health",
+                {
+                  label:
+                    "Health +1",
+                }
+              ),
 
-                value:
-                  "finance",
-
-                label:
-                  "Finance +1",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::health",
-
-                section:
-                  "influences",
-
-                value:
-                  "health",
-
-                label:
-                  "Health +1",
-              }),
-
-              Object.freeze({
-                key:
-                  "background::retainers",
-
-                section:
-                  "backgrounds",
-
-                value:
-                  "retainers",
-
-                label:
-                  "Retainers +1",
-              }),
+              createBackgroundOption(
+                "retainers",
+                "Retainers +1"
+              ),
             ]),
         }),
       ]),
@@ -254,48 +209,10 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
             "Influência Lasombra",
 
           options:
-            Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::church",
-
-                section:
-                  "influences",
-
-                value:
-                  "church",
-
-                label:
-                  "Church",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::political",
-
-                section:
-                  "influences",
-
-                value:
-                  "political",
-
-                label:
-                  "Political",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::underworld",
-
-                section:
-                  "influences",
-
-                value:
-                  "underworld",
-
-                label:
-                  "Underworld",
-              }),
+            createInfluenceOptions([
+              "church",
+              "political",
+              "underworld",
             ]),
         }),
       ]),
@@ -310,34 +227,9 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
             "Influência Ravnos",
 
           options:
-            Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::street",
-
-                section:
-                  "influences",
-
-                value:
-                  "street",
-
-                label:
-                  "Street",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::transportation",
-
-                section:
-                  "influences",
-
-                value:
-                  "transportation",
-
-                label:
-                  "Transportation",
-              }),
+            createInfluenceOptions([
+              "street",
+              "transportation",
             ]),
         }),
       ]),
@@ -352,49 +244,9 @@ const CLAN_RESOURCE_CHOICE_GRANTS =
             "Influência Ventrue",
 
           options:
-            Object.freeze([
-              Object.freeze({
-                key:
-                  "influence::finance",
-
-                section:
-                  "influences",
-
-                value:
-                  "finance",
-
-                label:
-                  "Finance",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::high_society",
-
-                section:
-                  "influences",
-
-                value:
-                  "high_society",
-
-                label:
-                  "High Society",
-              }),
-
-              Object.freeze({
-                key:
-                  "influence::political",
-
-                section:
-                  "influences",
-
-                value:
-                  "political",
-
-                label:
-                  "Political",
-              }),
-            ]),
+            createInfluenceOptions(
+              INFLUENCE_AREAS
+            ),
         }),
       ]),
   });
