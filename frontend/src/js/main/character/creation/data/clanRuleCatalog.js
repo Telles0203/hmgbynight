@@ -143,3 +143,70 @@ export function hasFixedClanDisciplines(
     0
   );
 }
+
+
+export function getFixedClanAbilityGrants(
+  character
+) {
+  const rule =
+    getCharacterClanRule(
+      character
+    );
+
+
+  const abilities =
+    rule
+      ?.grants
+      ?.abilities;
+
+
+  if (
+    !abilities ||
+    typeof abilities !==
+      "object" ||
+    Array.isArray(
+      abilities
+    )
+  ) {
+    return {};
+  }
+
+
+  return {
+    ...abilities,
+  };
+}
+
+
+export function getClanAbilityChoiceGrants(
+  character
+) {
+  const groups =
+    getCharacterClanRule(
+      character
+    )
+      ?.grants
+      ?.abilityChoices;
+
+
+  return Array.isArray(
+    groups
+  )
+    ? groups.map(
+        (
+          group
+        ) => ({
+          ...group,
+
+          options:
+            Array.isArray(
+              group?.options
+            )
+              ? [
+                  ...group.options,
+                ]
+              : [],
+        })
+      )
+    : [];
+}

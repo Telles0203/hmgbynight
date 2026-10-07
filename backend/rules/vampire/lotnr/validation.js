@@ -170,6 +170,7 @@ function validateCharacterCreation(
 
   const abilities =
     validateAbilities(
+      character,
       creation,
       generation.rules
     );

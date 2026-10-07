@@ -27,6 +27,10 @@ import {
   openCharacterCreationAbilityRow,
 } from "./ability/characterCreationAbilityRowState.js";
 
+import {
+  createClanAbilityGrantSummary,
+} from "./ability/characterCreationAbilityGrants.js";
+
 
 export function createAbilitiesCreationEditor(
   character,
@@ -94,6 +98,10 @@ export function createAbilitiesCreationEditor(
         </span>
 
       </div>
+
+      ${createClanAbilityGrantSummary(
+        character
+      )}
 
       <div class="character-creation-map-editor">
 

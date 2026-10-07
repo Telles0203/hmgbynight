@@ -27,7 +27,7 @@ test(
   () => {
     assert.equal(
       CORE_ABILITIES.length,
-      32
+      33
     );
 
 
@@ -42,6 +42,14 @@ test(
     assert.equal(
       isCoreAbility(
         "animal_ken"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      isCoreAbility(
+        "awareness"
       ),
       true
     );

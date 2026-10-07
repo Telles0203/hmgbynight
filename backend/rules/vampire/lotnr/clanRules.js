@@ -4,6 +4,14 @@ const {
   "../../../data/vampire/clans"
 );
 
+const {
+  getFixedClanAbilityGrants,
+  getClanAbilityChoiceGrants,
+  getClanAbilityGrantStatus,
+} = require(
+  "./clanAbilityGrants"
+);
+
 
 const CLAN_DISCIPLINE_MODES =
   Object.freeze({
@@ -204,10 +212,43 @@ function normalizeClanKey(
 }
 
 
-function createEmptyGrants() {
+function createEmptyGrants(
+  clan
+) {
+  const abilities =
+    getFixedClanAbilityGrants(
+      clan
+    );
+
+
+  const abilityChoices =
+    getClanAbilityChoiceGrants(
+      clan
+    );
+
+
   return Object.freeze({
     abilities:
-      Object.freeze({}),
+      Object.freeze({
+        ...abilities,
+      }),
+
+    abilityChoices:
+      Object.freeze(
+        abilityChoices.map(
+          (
+            group
+          ) =>
+            Object.freeze({
+              ...group,
+
+              options:
+                Object.freeze([
+                  ...group.options,
+                ]),
+            })
+        )
+      ),
 
     backgrounds:
       Object.freeze({}),
@@ -278,7 +319,9 @@ function createClanRule(
       }),
 
     grants:
-      createEmptyGrants(),
+      createEmptyGrants(
+        clan.value
+      ),
 
     restrictions:
       Object.freeze([]),
@@ -290,6 +333,12 @@ function createClanRule(
 
         grants:
           false,
+
+        abilityGrants:
+          getClanAbilityGrantStatus(
+            clan.value
+          ) !==
+          "pending",
 
         restrictions:
           false,
@@ -392,6 +441,22 @@ function getAllClanRules() {
             .grants
             .abilities,
         },
+
+        abilityChoices:
+          rule
+            .grants
+            .abilityChoices
+            .map(
+              (
+                group
+              ) => ({
+                ...group,
+
+                options: [
+                  ...group.options,
+                ],
+              })
+            ),
 
         backgrounds: {
           ...rule
@@ -525,6 +590,35 @@ function getClanRuleCoverage() {
             .grants ===
           true
       ).length,
+
+    abilityGrantsConfigured:
+      rules.filter(
+        (
+          rule
+        ) =>
+          rule
+            .implementation
+            .abilityGrants ===
+          true
+      ).length,
+
+    pendingAbilityGrants:
+      rules
+        .filter(
+          (
+            rule
+          ) =>
+            rule
+              .implementation
+              .abilityGrants !==
+            true
+        )
+        .map(
+          (
+            rule
+          ) =>
+            rule.clan
+        ),
 
     restrictionsConfigured:
       rules.filter(

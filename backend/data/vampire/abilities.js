@@ -42,6 +42,14 @@ const ABILITY_OPTIONS =
 
     {
       value:
+        "awareness",
+
+      label:
+        "Awareness",
+    },
+
+    {
+      value:
         "brawl",
 
       label:

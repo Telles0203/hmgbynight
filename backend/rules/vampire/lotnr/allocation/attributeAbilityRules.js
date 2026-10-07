@@ -27,6 +27,13 @@ const {
   "../../../../data/vampire/abilityFocus"
 );
 
+const {
+  getFixedClanAbilityGrants,
+  getClanAbilityChoiceGrants,
+} = require(
+  "../clanAbilityGrants"
+);
+
 
 function validateAttributes(
   creation,
@@ -219,6 +226,7 @@ function validateAttributes(
 
 
 function validateAbilities(
+  character,
   creation,
   generationRules
 ) {
@@ -226,6 +234,45 @@ function validateAbilities(
     normalizeLevelMap(
       creation?.abilities
     );
+
+
+  const grantedAbilities =
+    getFixedClanAbilityGrants(
+      character?.clan
+    );
+
+
+  const pendingClanAbilityChoices =
+    getClanAbilityChoiceGrants(
+      character?.clan
+    );
+
+
+  const effectiveAbilities =
+    {
+      ...grantedAbilities,
+    };
+
+
+  Object.entries(
+    abilities
+  ).forEach(
+    ([
+      ability,
+      level,
+    ]) => {
+      effectiveAbilities[
+        ability
+      ] =
+        (
+          effectiveAbilities[
+            ability
+          ] ||
+          0
+        ) +
+        level;
+    }
+  );
 
 
   const specializations =
@@ -322,12 +369,21 @@ function validateAbilities(
         5;
 
 
+      const effectiveLevel =
+        Number(
+          effectiveAbilities[
+            ability
+          ] ||
+          0
+        );
+
+
       if (
-        level >
+        effectiveLevel >
         maximum
       ) {
         errors.push(
-          `${ability} está acima do máximo de ${maximum} para esta Geração.`
+          `${ability} está acima do máximo de ${maximum} para esta Geração após aplicar os bônus do clã.`
         );
       }
 
@@ -371,7 +427,7 @@ function validateAbilities(
 
 
       if (
-        !abilities[
+        !effectiveAbilities[
           String(
             ability
           )
@@ -385,6 +441,82 @@ function validateAbilities(
       }
     }
   );
+
+
+  Object.entries(
+    grantedAbilities
+  ).forEach(
+    ([
+      ability,
+      level,
+    ]) => {
+      if (
+        !isCoreAbility(
+          ability
+        )
+      ) {
+        errors.push(
+          `${ability} concedida pelo clã não pertence ao catálogo de Habilidades.`
+        );
+
+
+        return;
+      }
+
+
+      const maximum =
+        generationRules
+          ?.maximumAbilityLevel ||
+        5;
+
+
+      const effectiveLevel =
+        Number(
+          effectiveAbilities[
+            ability
+          ] ||
+          0
+        );
+
+
+      if (
+        level >
+        0 &&
+        effectiveLevel >
+        maximum &&
+        !Object.prototype
+          .hasOwnProperty
+          .call(
+            abilities,
+            ability
+          )
+      ) {
+        errors.push(
+          `${ability} está acima do máximo de ${maximum} para esta Geração após aplicar os bônus do clã.`
+        );
+      }
+    }
+  );
+
+
+  const effectiveTotalLevels =
+    Object.values(
+      effectiveAbilities
+    ).reduce(
+      (
+        total,
+        level
+      ) =>
+        total +
+        Math.max(
+          0,
+          Number(
+            level
+          ) ||
+          0
+        ),
+      0
+    );
 
 
   const initialTotal =
@@ -412,11 +544,19 @@ function validateAbilities(
 
     abilities,
 
+    grantedAbilities,
+
+    effectiveAbilities,
+
+    pendingClanAbilityChoices,
+
     specializations,
 
     specializationCount,
 
     totalLevels,
+
+    effectiveTotalLevels,
 
     extraTraits:
       Math.max(

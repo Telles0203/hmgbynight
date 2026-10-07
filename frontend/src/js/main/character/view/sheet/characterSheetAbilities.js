@@ -108,47 +108,118 @@ function createCostNotice(
 }
 
 
-function createAbilityList(
-  state
+function getEffectiveAbilityEntries(
+  state,
+  progress
 ) {
-  const abilities =
+  const purchased =
     state?.abilities ||
     {};
 
 
+  const granted =
+    progress?.grantedAbilities &&
+    typeof progress
+      .grantedAbilities ===
+      "object"
+      ? progress
+          .grantedAbilities
+      : {};
+
+
+  const keys =
+    new Set([
+      ...Object.keys(
+        purchased
+      ),
+
+      ...Object.keys(
+        granted
+      ),
+    ]);
+
+
+  return Array.from(
+    keys
+  )
+    .map(
+      (
+        entryKey
+      ) => {
+        const purchasedLevel =
+          Math.max(
+            0,
+            Number(
+              purchased[
+                entryKey
+              ]
+            ) ||
+            0
+          );
+
+
+        const grantedLevel =
+          Math.max(
+            0,
+            Number(
+              granted[
+                entryKey
+              ]
+            ) ||
+            0
+          );
+
+
+        return {
+          entryKey,
+
+          purchasedLevel,
+
+          grantedLevel,
+
+          level:
+            purchasedLevel +
+            grantedLevel,
+        };
+      }
+    )
+    .filter(
+      (
+        entry
+      ) =>
+        entry.level >
+        0
+    )
+    .sort(
+      (
+        first,
+        second
+      ) =>
+        getAbilityDisplayLabel(
+          first.entryKey
+        ).localeCompare(
+          getAbilityDisplayLabel(
+            second.entryKey
+          )
+        )
+    );
+}
+
+
+function createAbilityList(
+  state,
+  progress
+) {
   const specializations =
     state?.specializations ||
     {};
 
 
   const entries =
-    Object.entries(
-      abilities
-    )
-      .filter(
-        ([
-          ,
-          level,
-        ]) =>
-          Number(
-            level
-          ) >
-          0
-      )
-      .sort(
-        ([
-          first,
-        ], [
-          second,
-        ]) =>
-          getAbilityDisplayLabel(
-            first
-          ).localeCompare(
-            getAbilityDisplayLabel(
-              second
-            )
-          )
-      );
+    getEffectiveAbilityEntries(
+      state,
+      progress
+    );
 
 
   if (
@@ -168,14 +239,13 @@ function createAbilityList(
 
       ${entries
         .map(
-          ([
-            entryKey,
-            level,
-          ]) => {
+          (
+            entry
+          ) => {
             const specialization =
               String(
                 specializations?.[
-                  entryKey
+                  entry.entryKey
                 ] ||
                 ""
               ).trim();
@@ -198,16 +268,27 @@ function createAbilityList(
 
                   ${escapeSheetHtml(
                     getAbilityDisplayLabel(
-                      entryKey
+                      entry.entryKey
                     )
                   )}
+
+                  ${entry.grantedLevel >
+                    0
+                      ? `
+                        <small
+                          class="
+                            character-creation-clan-grant-badge
+                          "
+                        >
+                          Clã +${entry.grantedLevel}
+                        </small>
+                      `
+                      : ""}
 
                 </span>
 
                 <span class="character-sheet-value">
-                  ${Number(
-                    level
-                  )}
+                  ${entry.level}
                 </span>
 
               </div>
@@ -267,7 +348,8 @@ export function createCharacterAbilityContent({
     </div>
 
     ${createAbilityList(
-      state
+      state,
+      progress
     )}
 
     ${createCostNotice(

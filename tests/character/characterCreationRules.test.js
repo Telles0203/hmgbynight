@@ -476,6 +476,7 @@ test(
 
     const abilities =
       validateAbilities(
+        character,
         character.creation,
         generation.rules
       );
@@ -512,6 +513,7 @@ test(
 
     const abilities =
       validateAbilities(
+        character,
         character.creation,
         generation.rules
       );
@@ -813,6 +815,7 @@ test(
 
     const abilities =
       validateAbilities(
+        character,
         character.creation,
         generation.rules
       );

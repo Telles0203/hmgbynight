@@ -579,6 +579,47 @@
   font-weight: inherit;
 }
 
+.character-creation-clan-ability-grants {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 8px;
+  border: 1px solid rgba(185, 0, 25, 0.28);
+  border-radius: 5px;
+  background: rgba(185, 0, 25, 0.06);
+}
+
+.character-creation-clan-ability-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #eef3fb;
+  font-size: 0.72rem;
+}
+
+.character-creation-clan-grant-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  padding: 1px 5px;
+  border: 1px solid rgba(185, 0, 25, 0.55);
+  border-radius: 999px;
+  color: #f1c7cd;
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.character-creation-clan-choice-pending {
+  margin-top: 3px;
+  color: #cfd8e4;
+  font-size: 0.64rem;
+}
+
 .character-creation-inline-editor {
   display: flex;
   flex-direction: column;
