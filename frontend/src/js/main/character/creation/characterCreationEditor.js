@@ -52,34 +52,28 @@ import {
   removeCharacterCreationMapRow,
 } from "./actions/characterCreationMapActions.js";
 
-
 let activeEditor =
   null;
-
 
 document.addEventListener(
   "click",
   handleDocumentClick
 );
 
-
 document.addEventListener(
   "change",
   handleDocumentChange
 );
-
 
 document.addEventListener(
   "submit",
   handleDocumentSubmit
 );
 
-
 function handleDocumentClick(
   event
 ) {
   reconcileActiveEditorState();
-
 
   const target =
     event.target instanceof
@@ -87,137 +81,111 @@ function handleDocumentClick(
       ? event.target
       : null;
 
-
   if (
     !target
   ) {
     return;
   }
 
-
   const editButton =
     target.closest(
       "[data-character-creation-edit]"
     );
-
 
   if (
     editButton
   ) {
     event.preventDefault();
 
-
     openSectionEditor(
       editButton
     );
 
-
     return;
   }
-
 
   const cancelButton =
     target.closest(
       '[data-character-creation-action="cancel"]'
     );
 
-
   if (
     cancelButton
   ) {
     event.preventDefault();
 
-
     cancelEditor();
-
 
     return;
   }
-
 
   const willpowerButton =
     target.closest(
       "[data-character-creation-willpower-action]"
     );
 
-
   if (
     willpowerButton
   ) {
     event.preventDefault();
 
-
     adjustWillpowerCreation(
       willpowerButton
     );
 
-
     return;
   }
-
 
   const moralityButton =
     target.closest(
       "[data-character-creation-morality-action]"
     );
 
-
   if (
     moralityButton
   ) {
     event.preventDefault();
 
-
     adjustMoralityCreation(
       moralityButton
     );
 
-
     return;
   }
-
 
   const addAttributeTraitButton =
     target.closest(
       "[data-character-creation-add-attribute-trait]"
     );
 
-
   if (
     addAttributeTraitButton
   ) {
     event.preventDefault();
 
-
     addAttributeTraitSelection(
       addAttributeTraitButton
     );
 
-
     return;
   }
-
 
   const removeAttributeTraitButton =
     target.closest(
       "[data-character-creation-remove-attribute-trait]"
     );
 
-
   if (
     removeAttributeTraitButton
   ) {
     event.preventDefault();
 
-
     removeAttributeTraitSelection(
       removeAttributeTraitButton
     );
 
-
     return;
   }
-
 
   if (
     handleCharacterCreationDisciplineActionClick(
@@ -226,10 +194,8 @@ function handleDocumentClick(
   ) {
     event.preventDefault();
 
-
     return;
   }
-
 
   if (
     handleCharacterCreationBackgroundActionClick(
@@ -238,10 +204,8 @@ function handleDocumentClick(
   ) {
     event.preventDefault();
 
-
     return;
   }
-
 
   if (
     handleCharacterCreationInfluenceActionClick(
@@ -250,85 +214,69 @@ function handleDocumentClick(
   ) {
     event.preventDefault();
 
-
     return;
   }
-
 
   const abilityRowButton =
     target.closest(
       "[data-character-creation-ability-row-action]"
     );
 
-
   if (
     abilityRowButton
   ) {
     event.preventDefault();
 
-
     handleCharacterCreationAbilityRowAction(
       abilityRowButton
     );
 
-
     return;
   }
-
 
   const abilityButton =
     target.closest(
       "[data-character-creation-ability-action]"
     );
 
-
   if (
     abilityButton
   ) {
     event.preventDefault();
 
-
     adjustCharacterCreationAbilityLevel(
       abilityButton
     );
 
-
     return;
   }
-
 
   const removeButton =
     target.closest(
       "[data-character-creation-remove-row]"
     );
 
-
   if (
     removeButton
   ) {
     event.preventDefault();
 
-
     removeCharacterCreationMapRow(
       removeButton
     );
 
-
     return;
   }
-
 
   const addButton =
     target.closest(
       "[data-character-creation-add-row]"
     );
 
-
   if (
     addButton
   ) {
     event.preventDefault();
-
 
     addCharacterCreationMapRow(
       addButton
@@ -336,12 +284,10 @@ function handleDocumentClick(
   }
 }
 
-
 function handleDocumentChange(
   event
 ) {
   reconcileActiveEditorState();
-
 
   const target =
     event.target instanceof
@@ -349,13 +295,11 @@ function handleDocumentChange(
       ? event.target
       : null;
 
-
   if (
     !target
   ) {
     return;
   }
-
 
   if (
     target.matches(
@@ -366,7 +310,6 @@ function handleDocumentChange(
       target
     );
   }
-
 
   if (
     target.matches(
@@ -384,16 +327,13 @@ function handleDocumentChange(
   }
 }
 
-
 async function handleDocumentSubmit(
   event
 ) {
   reconcileActiveEditorState();
 
-
   const form =
     event.target;
-
 
   if (
     !(form instanceof
@@ -405,15 +345,12 @@ async function handleDocumentSubmit(
     return;
   }
 
-
   event.preventDefault();
-
 
   await saveEditor(
     form
   );
 }
-
 
 function reconcileActiveEditorState() {
   if (
@@ -421,7 +358,6 @@ function reconcileActiveEditorState() {
   ) {
     return;
   }
-
 
   if (
     !(activeEditor.container instanceof
@@ -433,7 +369,6 @@ function reconcileActiveEditorState() {
       null;
   }
 }
-
 
 function getCreationSectionContainer(
   characterId,
@@ -448,13 +383,11 @@ function getCreationSectionContainer(
       )}"]`
     );
 
-
   if (
     !root
   ) {
     return null;
   }
-
 
   return root.querySelector(
     `[data-character-creation-section="${CSS.escape(
@@ -464,7 +397,6 @@ function getCreationSectionContainer(
     )}"]`
   );
 }
-
 
 function openSectionEditor(
   button
@@ -480,14 +412,12 @@ function openSectionEditor(
       ""
     );
 
-
   const section =
     String(
       button.dataset
         .characterCreationEdit ||
       ""
     );
-
 
   if (
     !characterId ||
@@ -496,19 +426,16 @@ function openSectionEditor(
     return;
   }
 
-
   const character =
     getCharacterById(
       characterId
     );
-
 
   if (
     !character
   ) {
     return;
   }
-
 
   if (
     character.editState
@@ -519,13 +446,10 @@ function openSectionEditor(
       "Esta ficha não está disponível para edição neste estado."
     );
 
-
     return;
   }
 
-
   reconcileActiveEditorState();
-
 
   if (
     activeEditor &&
@@ -539,13 +463,11 @@ function openSectionEditor(
     return;
   }
 
-
   if (
     activeEditor
   ) {
     cancelEditor();
   }
-
 
   const container =
     getCreationSectionContainer(
@@ -553,19 +475,16 @@ function openSectionEditor(
       section
     );
 
-
   if (
     !container
   ) {
     return;
   }
 
-
   const state =
     getEditableCreationState(
       character
     );
-
 
   const markup =
     createCharacterCreationSectionEditor(
@@ -574,13 +493,11 @@ function openSectionEditor(
       state
     );
 
-
   if (
     !markup
   ) {
     return;
   }
-
 
   activeEditor = {
     characterId,
@@ -590,22 +507,18 @@ function openSectionEditor(
     container,
   };
 
-
   container.classList.add(
     "is-editing"
   );
-
 
   container.innerHTML =
     markup;
 }
 
-
 async function saveEditor(
   form
 ) {
   reconcileActiveEditorState();
-
 
   if (
     !activeEditor
@@ -613,19 +526,16 @@ async function saveEditor(
     return;
   }
 
-
   const {
     characterId,
     section,
   } =
     activeEditor;
 
-
   const character =
     getCharacterById(
       characterId
     );
-
 
   if (
     !character
@@ -633,16 +543,13 @@ async function saveEditor(
     activeEditor =
       null;
 
-
     return;
   }
-
 
   const saveButton =
     form.querySelector(
       '[data-character-creation-action="save"]'
     );
-
 
   if (
     saveButton
@@ -654,13 +561,11 @@ async function saveEditor(
       "Salvando...";
   }
 
-
   try {
     const currentState =
       getEditableCreationState(
         character
       );
-
 
     const creation =
       readCharacterCreationSection(
@@ -668,7 +573,6 @@ async function saveEditor(
         section,
         currentState
       );
-
 
     const response =
       await fetch(
@@ -694,14 +598,12 @@ async function saveEditor(
         }
       );
 
-
     const data =
       await response
         .json()
         .catch(
           () => ({})
         );
-
 
     if (
       !response.ok ||
@@ -713,16 +615,13 @@ async function saveEditor(
       );
     }
 
-
     applyCreationSaveResult(
       character,
       data
     );
 
-
     activeEditor =
       null;
-
 
     refreshCharacterCreationView(
       character
@@ -734,12 +633,10 @@ async function saveEditor(
       error
     );
 
-
     window.alert(
       error?.message ||
       "Não foi possível salvar a alteração."
     );
-
 
     if (
       saveButton
@@ -757,10 +654,8 @@ async function saveEditor(
   }
 }
 
-
 function cancelEditor() {
   reconcileActiveEditorState();
-
 
   if (
     !activeEditor
@@ -768,14 +663,11 @@ function cancelEditor() {
     return;
   }
 
-
   const currentEditor =
     activeEditor;
 
-
   activeEditor =
     null;
-
 
   if (
     !currentEditor
@@ -785,13 +677,11 @@ function cancelEditor() {
     return;
   }
 
-
   const character =
     getCharacterById(
       currentEditor
         .characterId
     );
-
 
   if (
     character

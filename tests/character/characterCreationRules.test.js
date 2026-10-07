@@ -180,6 +180,13 @@ function createCharacter(
           1,
       },
 
+      clanGrantChoices: {
+        backgroundInfluence: {
+          revolution_influence:
+            "influence::political",
+        },
+      },
+
       meritPoints:
         5,
     },
