@@ -1,7 +1,10 @@
 import {
-  createSheetPips,
   escapeSheetHtml,
 } from "../../view/sheet/characterSheetCommon.js";
+
+import {
+  createCreationResourcePips,
+} from "../resource/characterCreationResourcePips.js";
 
 import {
   createCreationActions,
@@ -93,16 +96,21 @@ function getWillpowerBonus(
 
 
 function createWillpowerPips(
+  start,
   current,
   maximum
 ) {
-  return createSheetPips(
-    Math.min(
-      current,
-      maximum
-    ),
-    maximum
-  );
+  return createCreationResourcePips({
+    base:
+      start,
+
+    current,
+
+    maximum,
+
+    showSacrificed:
+      false,
+  });
 }
 
 
@@ -202,6 +210,7 @@ export function createWillpowerCreationEditor(
             data-creation-willpower-pips
           >
             ${createWillpowerPips(
+              start,
               current,
               maximum
             )}
@@ -365,6 +374,7 @@ function refreshWillpowerCreationEditor(
   ) {
     pips.innerHTML =
       createWillpowerPips(
+        start,
         current,
         maximum
       );

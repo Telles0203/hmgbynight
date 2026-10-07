@@ -194,3 +194,54 @@
       0.35
     );
 }
+
+
+.character-sheet-pips
+.character-sheet-pip.is-creation-sacrificed {
+  background: #73d99a !important;
+  border-color: #73d99a !important;
+  box-shadow:
+    0 0 4px
+    rgba(
+      115,
+      217,
+      154,
+      0.35
+    );
+}
+
+.character-sheet-pips
+.character-sheet-pip.is-creation-purchased {
+  background: #ff6b6b !important;
+  border-color: #ff8a8a !important;
+  box-shadow:
+    0 0 4px
+    rgba(
+      255,
+      107,
+      107,
+      0.4
+    );
+}
+
+.character-sheet-pips
+.character-sheet-pip.is-creation-sacrificed::selection {
+  background:
+    rgba(
+      40,
+      167,
+      69,
+      0.35
+    );
+}
+
+.character-sheet-pips
+.character-sheet-pip.is-creation-purchased::selection {
+  background:
+    rgba(
+      220,
+      53,
+      69,
+      0.35
+    );
+}

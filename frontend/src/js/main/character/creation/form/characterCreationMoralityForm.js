@@ -1,7 +1,10 @@
 import {
-  createSheetPips,
   escapeSheetHtml,
 } from "../../view/sheet/characterSheetCommon.js";
+
+import {
+  createCreationResourcePips,
+} from "../resource/characterCreationResourcePips.js";
 
 import {
   createCreationActions,
@@ -120,12 +123,16 @@ function normalizeMoralityValue(
 
 
 function createMoralityPips(
+  base,
   current
 ) {
-  return createSheetPips(
+  return createCreationResourcePips({
+    base,
     current,
-    MORALITY_MAXIMUM
-  );
+
+    maximum:
+      MORALITY_MAXIMUM,
+  });
 }
 
 
@@ -232,6 +239,7 @@ export function createMoralityCreationEditor(
             data-creation-morality-pips
           >
             ${createMoralityPips(
+              base,
               current
             )}
           </div>
@@ -397,6 +405,7 @@ function refreshMoralityCreationEditor(
   ) {
     pips.innerHTML =
       createMoralityPips(
+        base,
         current
       );
   }

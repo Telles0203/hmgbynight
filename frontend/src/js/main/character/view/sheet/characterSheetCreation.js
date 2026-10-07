@@ -4,6 +4,10 @@ import {
   } from "./characterSheetCommon.js";
 
 import {
+  createCreationResourcePips,
+} from "../../creation/resource/characterCreationResourcePips.js";
+
+import {
   createCharacterAbilityContent,
 } from "./characterSheetAbilities.js";
 
@@ -114,24 +118,68 @@ function createBloodContent(
 function createWillpowerContent(
   value,
   maximum,
-  freeTraitCost = 0
+  freeTraitCost = 0,
+  start = null,
+  showCreationMarkers = true
 ) {
+  const normalizedMaximum =
+    Number.isInteger(
+      Number(
+        maximum
+      )
+    )
+      ? Number(
+          maximum
+        )
+      : 10;
+
+
+  const normalizedValue =
+    Number.isInteger(
+      Number(
+        value
+      )
+    )
+      ? Number(
+          value
+        )
+      : 0;
+
+
+  const normalizedStart =
+    Number(
+      start
+    );
+
+
+  const pips =
+    showCreationMarkers &&
+    Number.isInteger(
+      normalizedStart
+    )
+      ? createCreationResourcePips({
+          base:
+            normalizedStart,
+
+          current:
+            normalizedValue,
+
+          maximum:
+            normalizedMaximum,
+
+          showSacrificed:
+            false,
+        })
+      : createSheetPips(
+          normalizedValue,
+          normalizedMaximum
+        );
+
+
   return `
     <div class="character-sheet-pips">
 
-      ${createSheetPips(
-        Number.isInteger(
-          value
-        )
-          ? value
-          : 0,
-
-        Number.isInteger(
-          maximum
-        )
-          ? maximum
-          : 10
-      )}
+      ${pips}
 
     </div>
 
@@ -360,7 +408,13 @@ export function createCharacterCreationSections(
               derived.willpower,
               derived.willpowerMaximum,
               freeTraitSpending
-                .willpower
+                .willpower,
+
+              derived
+                ?.generationRules
+                ?.willpowerStart,
+
+              showFreeTraitMarkers
             ),
 
           editSection:
@@ -393,7 +447,13 @@ export function createCharacterCreationSections(
                 .morality,
 
               freeTraitSources
-                .moralitySacrifice
+                .moralitySacrifice,
+
+              sections
+                ?.morality
+                ?.base,
+
+              showFreeTraitMarkers
             ),
 
           editSection:

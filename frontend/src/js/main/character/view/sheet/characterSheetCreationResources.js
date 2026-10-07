@@ -3,6 +3,10 @@ import {
   createSheetPips,
 } from "./characterSheetCommon.js";
 
+import {
+  createCreationResourcePips,
+} from "../../creation/resource/characterCreationResourcePips.js";
+
 
 const BLOOD_HELP_TEXT =
   "Laws of the Night Revised, página 95. O formato exibido no título é (Pool Máximo/Gasto Máximo por Turno). Esses dois valores são definidos pela Geração do personagem.";
@@ -515,7 +519,9 @@ export function createCreationResourceCard({
 export function createMoralityResourceContent(
   morality,
   freeTraitCost = 0,
-  freeTraitGain = 0
+  freeTraitGain = 0,
+  moralityBase = null,
+  showCreationMarkers = true
 ) {
   const value =
     Number(
@@ -537,13 +543,37 @@ export function createMoralityResourceContent(
       : 0;
 
 
+  const normalizedBase =
+    Number(
+      moralityBase
+    );
+
+
+  const pips =
+    showCreationMarkers &&
+    Number.isFinite(
+      normalizedBase
+    )
+      ? createCreationResourcePips({
+          base:
+            normalizedBase,
+
+          current:
+            normalizedValue,
+
+          maximum:
+            10,
+        })
+      : createSheetPips(
+          normalizedValue,
+          10
+        );
+
+
   return `
     <div class="character-sheet-pips">
 
-      ${createSheetPips(
-        normalizedValue,
-        10
-      )}
+      ${pips}
 
     </div>
 
