@@ -1,3 +1,23 @@
+function getRowGrantLevel(
+  row
+) {
+  const level =
+    Number(
+      row?.dataset
+        ?.creationAbilityGrant
+    );
+
+
+  return Number.isInteger(
+    level
+  ) &&
+  level >
+    0
+    ? level
+    : 0;
+}
+
+
 function getAbilityEditorProgress(
   form
 ) {
@@ -60,6 +80,12 @@ function getAbilityEditorProgress(
           );
 
 
+        const grantedLevel =
+          getRowGrantLevel(
+            row
+          );
+
+
         if (
           Number.isInteger(
             level
@@ -68,7 +94,11 @@ function getAbilityEditorProgress(
             0
         ) {
           spent +=
-            level;
+            Math.max(
+              0,
+              level -
+                grantedLevel
+            );
         }
 
 
@@ -183,6 +213,19 @@ function refreshAbilityRowControls(
           1;
 
 
+        const grantedLevel =
+          getRowGrantLevel(
+            row
+          );
+
+
+        const minimum =
+          grantedLevel >
+          0
+            ? grantedLevel
+            : 1;
+
+
         const decrease =
           row.querySelector(
             '[data-character-creation-ability-action="decrease"]'
@@ -205,7 +248,7 @@ function refreshAbilityRowControls(
           decrease.disabled =
             !selected ||
             level <=
-              1;
+              minimum;
         }
 
 
@@ -404,6 +447,19 @@ export function adjustCharacterCreationAbilityLevel(
     5;
 
 
+  const grantedLevel =
+    getRowGrantLevel(
+      row
+    );
+
+
+  const minimum =
+    grantedLevel >
+    0
+      ? grantedLevel
+      : 1;
+
+
   const action =
     String(
       button.dataset
@@ -436,7 +492,7 @@ export function adjustCharacterCreationAbilityLevel(
 
   if (
     next <
-      1 ||
+      minimum ||
     next >
       maximum
   ) {

@@ -135,34 +135,12 @@ test(
 
 
 test(
-  "Ability UI exposes clan grants without making them creation spending",
+  "Ability sheet exposes clan grants",
   () => {
-    const grants =
-      assertBelowEightHundredLines(
-        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityGrants.js"
-      );
-
-
     const sheet =
       assertBelowEightHundredLines(
         "frontend/src/js/main/character/view/sheet/characterSheetAbilities.js"
       );
-
-
-    assert.equal(
-      grants.includes(
-        "Concedidas pelo clã"
-      ),
-      true
-    );
-
-
-    assert.equal(
-      grants.includes(
-        "character-creation-clan-grant-badge"
-      ),
-      true
-    );
 
 
     assert.equal(
@@ -176,6 +154,97 @@ test(
     assert.equal(
       sheet.includes(
         "entry.grantedLevel"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      sheet.includes(
+        "character-creation-clan-grant-badge"
+      ),
+      true
+    );
+  }
+);
+
+
+test(
+  "Ability editor uses clan grants as minimum effective levels",
+  () => {
+    const form =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/characterCreationAbilityForm.js"
+      );
+
+
+    const rows =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityRows.js"
+      );
+
+
+    const reader =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityRead.js"
+      );
+
+
+    const progress =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityProgress.js"
+      );
+
+
+    const effective =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityEffective.js"
+      );
+
+
+    assert.equal(
+      form.includes(
+        "getFixedClanAbilityGrants"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      rows.includes(
+        "data-creation-ability-grant"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      reader.includes(
+        "getPurchasedAbilityLevel"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      reader.includes(
+        "readAbilityMap"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      progress.includes(
+        "creationAbilityGrant"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      effective.includes(
+        "createEffectiveAbilityRows"
       ),
       true
     );

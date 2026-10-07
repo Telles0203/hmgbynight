@@ -3,10 +3,7 @@ import {
 } from "../../../view/sheet/characterSheetCommon.js";
 
 import {
-  abilityRequiresFocus,
-  createAbilityEntryKey,
   getAbilityDisplayLabel,
-  getAbilityLabel,
   parseAbilityEntryKey,
 } from "../../data/abilityCatalog.js";
 
@@ -15,121 +12,31 @@ import {
   createAbilityFocusEditor,
 } from "./characterCreationAbilityCatalog.js";
 
+import {
+  createEffectiveAbilityRows,
+} from "./characterCreationAbilityEffective.js";
 
-function readAbilityFocus(
-  row
+import {
+  readAbilityFocus,
+} from "./characterCreationAbilityRead.js";
+
+
+function normalizeGrantLevel(
+  value
 ) {
-  const ability =
-    String(
-      row.querySelector(
-        "[data-creation-ability-key]"
-      )?.value ||
-      ""
-    )
-      .trim()
-      .toLowerCase();
-
-
-  if (
-    !abilityRequiresFocus(
-      ability
-    )
-  ) {
-    return "";
-  }
-
-
-  const select =
-    row.querySelector(
-      "[data-creation-ability-focus]"
+  const level =
+    Number(
+      value
     );
 
 
-  const selected =
-    String(
-      select?.value ||
-      ""
-    );
-
-
-  if (
-    selected !==
-    "__custom__"
-  ) {
-    return selected
-      .trim()
-      .toLowerCase();
-  }
-
-
-  return String(
-    row.querySelector(
-      "[data-creation-ability-custom-focus]"
-    )?.value ||
-    ""
-  )
-    .trim()
-    .toLowerCase()
-    .replace(
-      /\s+/g,
-      " "
-    );
-}
-
-
-function getAbilityEntryKeyFromRow(
-  row,
-  {
-    requireFocus = false,
-  } = {}
-) {
-  const ability =
-    String(
-      row.querySelector(
-        "[data-creation-ability-key]"
-      )?.value ||
-      ""
-    )
-      .trim()
-      .toLowerCase();
-
-
-  if (!ability) {
-    return "";
-  }
-
-
-  const focus =
-    readAbilityFocus(
-      row
-    );
-
-
-  if (
-    abilityRequiresFocus(
-      ability
-    ) &&
-    !focus
-  ) {
-    if (
-      requireFocus
-    ) {
-      throw new Error(
-        `Selecione um foco para ${getAbilityLabel(
-          ability
-        )}.`
-      );
-    }
-
-
-    return "";
-  }
-
-
-  return createAbilityEntryKey(
-    ability,
-    focus
-  );
+  return Number.isInteger(
+    level
+  ) &&
+  level >
+    0
+    ? level
+    : 0;
 }
 
 
@@ -137,7 +44,8 @@ function createAbilitySummary(
   entryKey,
   level,
   specialization,
-  expanded
+  expanded,
+  grantedLevel
 ) {
   const label =
     entryKey
@@ -145,6 +53,11 @@ function createAbilitySummary(
           entryKey
         )
       : "Nova Habilidade";
+
+
+  const clanGranted =
+    grantedLevel >
+    0;
 
 
   return `
@@ -188,6 +101,18 @@ function createAbilitySummary(
           )}
         </span>
 
+        ${clanGranted
+          ? `
+            <small
+              class="
+                character-creation-clan-grant-badge
+              "
+            >
+              Clã +${grantedLevel}
+            </small>
+          `
+          : ""}
+
       </div>
 
       <span
@@ -211,20 +136,24 @@ function createAbilitySummary(
         ✎
       </button>
 
-      <button
-        type="button"
-        class="
-          btn
-          btn-outline-danger
-          btn-sm
-          character-creation-ability-remove
-        "
-        data-character-creation-remove-row
-        aria-label="Remover Habilidade"
-        title="Remover Habilidade"
-      >
-        ×
-      </button>
+      ${!clanGranted
+        ? `
+          <button
+            type="button"
+            class="
+              btn
+              btn-outline-danger
+              btn-sm
+              character-creation-ability-remove
+            "
+            data-character-creation-remove-row
+            aria-label="Remover Habilidade"
+            title="Remover Habilidade"
+          >
+            ×
+          </button>
+        `
+        : ""}
 
     </div>
   `;
@@ -236,12 +165,24 @@ function createAbilityEditor(
   normalizedLevel,
   specialization,
   maximum,
-  expanded
+  expanded,
+  grantedLevel
 ) {
   const selected =
     Boolean(
       parsed.ability
     );
+
+
+  const clanGranted =
+    grantedLevel >
+    0;
+
+
+  const minimum =
+    clanGranted
+      ? grantedLevel
+      : 1;
 
 
   return `
@@ -274,6 +215,9 @@ function createAbilityEditor(
             border-secondary
           "
           data-creation-ability-key
+          ${clanGranted
+            ? "disabled"
+            : ""}
         >
           ${createAbilityOptions(
             parsed.ability
@@ -324,7 +268,8 @@ function createAbilityEditor(
           "
           data-character-creation-ability-action="decrease"
           ${!selected ||
-          normalizedLevel <= 1
+          normalizedLevel <=
+            minimum
             ? "disabled"
             : ""}
         >
@@ -361,6 +306,19 @@ function createAbilityEditor(
 
       </div>
 
+      ${clanGranted
+        ? `
+          <small
+            class="
+              character-creation-clan-choice-pending
+            "
+          >
+            Nível mínimo do clã:
+            ${grantedLevel}
+          </small>
+        `
+        : ""}
+
       <div
         class="
           character-creation-ability-editor-actions
@@ -379,17 +337,21 @@ function createAbilityEditor(
           Concluir
         </button>
 
-        <button
-          type="button"
-          class="
-            btn
-            btn-outline-danger
-            btn-sm
-          "
-          data-character-creation-remove-row
-        >
-          Remover
-        </button>
+        ${!clanGranted
+          ? `
+            <button
+              type="button"
+              class="
+                btn
+                btn-outline-danger
+                btn-sm
+              "
+              data-character-creation-remove-row
+            >
+              Remover
+            </button>
+          `
+          : ""}
 
       </div>
 
@@ -403,12 +365,26 @@ export function createAbilityRow(
   level = 1,
   specialization = "",
   maximum = 5,
-  expanded = !entryKey
+  expanded = !entryKey,
+  grantedLevel = 0
 ) {
   const parsed =
     parseAbilityEntryKey(
       entryKey
     );
+
+
+  const normalizedGrant =
+    normalizeGrantLevel(
+      grantedLevel
+    );
+
+
+  const minimum =
+    normalizedGrant >
+    0
+      ? normalizedGrant
+      : 1;
 
 
   const normalizedLevel =
@@ -418,7 +394,7 @@ export function createAbilityRow(
       )
     )
       ? Math.max(
-          1,
+          minimum,
           Math.min(
             maximum,
             Number(
@@ -426,7 +402,7 @@ export function createAbilityRow(
             )
           )
         )
-      : 1;
+      : minimum;
 
 
   return `
@@ -443,13 +419,15 @@ export function createAbilityRow(
       data-creation-ability-base="${escapeSheetHtml(
         parsed.ability
       )}"
+      data-creation-ability-grant="${normalizedGrant}"
     >
 
       ${createAbilitySummary(
         entryKey,
         normalizedLevel,
         specialization,
-        expanded
+        expanded,
+        normalizedGrant
       )}
 
       ${createAbilityEditor(
@@ -457,7 +435,8 @@ export function createAbilityRow(
         normalizedLevel,
         specialization,
         maximum,
-        expanded
+        expanded,
+        normalizedGrant
       )}
 
     </div>
@@ -468,12 +447,14 @@ export function createAbilityRow(
 export function createAbilityRows(
   values,
   specializations,
-  maximum
+  maximum,
+  grants = {}
 ) {
   const entries =
-    Object.entries(
-      values ||
-      {}
+    createEffectiveAbilityRows(
+      values,
+      specializations,
+      grants
     );
 
 
@@ -486,28 +467,24 @@ export function createAbilityRows(
       1,
       "",
       maximum,
-      true
+      true,
+      0
     );
   }
 
 
   return entries
     .map(
-      ([
-        entryKey,
-        level,
-      ]) =>
+      (
+        entry
+      ) =>
         createAbilityRow(
-          entryKey,
-          level,
-          String(
-            specializations?.[
-              entryKey
-            ] ||
-            ""
-          ),
+          entry.entryKey,
+          entry.effectiveLevel,
+          entry.specialization,
           maximum,
-          false
+          false,
+          entry.grantedLevel
         )
     )
     .join("");
@@ -639,123 +616,4 @@ export function refreshCharacterCreationAbilityCustomFocus(
   if (custom) {
     input.focus();
   }
-}
-
-
-export function readAbilityMap(
-  form
-) {
-  const abilities =
-    {};
-
-
-  form
-    .querySelectorAll(
-      '.character-creation-map-row[data-creation-map="abilities"]'
-    )
-    .forEach(
-      (
-        row
-      ) => {
-        const entryKey =
-          getAbilityEntryKeyFromRow(
-            row,
-            {
-              requireFocus:
-                true,
-            }
-          );
-
-
-        if (!entryKey) {
-          return;
-        }
-
-
-        const level =
-          Number(
-            row.querySelector(
-              "[data-creation-ability-level]"
-            )?.textContent
-          );
-
-
-        if (
-          Number.isInteger(
-            level
-          ) &&
-          level >
-            0
-        ) {
-          abilities[
-            entryKey
-          ] =
-            (
-              abilities[
-                entryKey
-              ] ||
-              0
-            ) +
-            level;
-        }
-      }
-    );
-
-
-  return abilities;
-}
-
-
-export function readAbilitySpecializations(
-  form
-) {
-  const specializations =
-    {};
-
-
-  form
-    .querySelectorAll(
-      '.character-creation-map-row[data-creation-map="abilities"]'
-    )
-    .forEach(
-      (
-        row
-      ) => {
-        const entryKey =
-          getAbilityEntryKeyFromRow(
-            row,
-            {
-              requireFocus:
-                true,
-            }
-          );
-
-
-        if (!entryKey) {
-          return;
-        }
-
-
-        const specialization =
-          String(
-            row.querySelector(
-              "[data-creation-ability-specialization]"
-            )?.value ||
-            ""
-          ).trim();
-
-
-        if (
-          specialization
-        ) {
-          specializations[
-            entryKey
-          ] =
-            specialization;
-        }
-      }
-    );
-
-
-  return specializations;
 }

@@ -89,6 +89,12 @@ test(
       );
 
 
+    const reader =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityRead.js"
+      );
+
+
     const data =
       assertBelowEightHundredLines(
         "frontend/src/js/main/character/creation/data/abilityCatalog.js"
@@ -154,6 +160,22 @@ test(
     assert.equal(
       progress.includes(
         "data-creation-specialization-free-trait-cost"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      reader.includes(
+        "readAbilityMap"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      reader.includes(
+        "readAbilitySpecializations"
       ),
       true
     );

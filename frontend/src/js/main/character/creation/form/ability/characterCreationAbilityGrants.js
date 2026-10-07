@@ -1,12 +1,4 @@
 import {
-  escapeSheetHtml,
-} from "../../../view/sheet/characterSheetCommon.js";
-
-import {
-  getAbilityDisplayLabel,
-} from "../../data/abilityCatalog.js";
-
-import {
   getFixedClanAbilityGrants,
   getClanAbilityChoiceGrants,
 } from "../../data/clanRuleCatalog.js";
@@ -15,24 +7,9 @@ import {
 export function createClanAbilityGrantSummary(
   character
 ) {
-  const grants =
+  const fixed =
     getFixedClanAbilityGrants(
       character
-    );
-
-
-  const entries =
-    Object.entries(
-      grants
-    ).filter(
-      ([
-        ,
-        level,
-      ]) =>
-        Number(
-          level
-        ) >
-        0
     );
 
 
@@ -42,9 +19,22 @@ export function createClanAbilityGrantSummary(
     );
 
 
+  const hasFixed =
+    Object.values(
+      fixed
+    ).some(
+      (
+        level
+      ) =>
+        Number(
+          level
+        ) >
+        0
+    );
+
+
   if (
-    entries.length ===
-      0 &&
+    !hasFixed &&
     choices.length ===
       0
   ) {
@@ -59,48 +49,17 @@ export function createClanAbilityGrantSummary(
       "
     >
 
-      <div
-        class="
-          character-creation-editor-heading
-        "
-      >
-        <span>
-          Concedidas pelo clã
-        </span>
-      </div>
-
-      ${entries
-        .map(
-          ([
-            entryKey,
-            level,
-          ]) => `
-            <div
-              class="
-                character-creation-clan-ability-row
-              "
-            >
-              <span>
-                ${escapeSheetHtml(
-                  getAbilityDisplayLabel(
-                    entryKey
-                  )
-                )}
-              </span>
-
-              <span
-                class="
-                  character-creation-clan-grant-badge
-                "
-              >
-                Clã +${Number(
-                  level
-                )}
-              </span>
-            </div>
-          `
-        )
-        .join("")}
+      ${hasFixed
+        ? `
+          <small
+            class="
+              character-creation-clan-choice-pending
+            "
+          >
+            Habilidades de clã já aparecem abaixo com o nível gratuito aplicado. Apenas os níveis adquiridos além desse mínimo contam nos pontos de criação.
+          </small>
+        `
+        : ""}
 
       ${choices.length >
         0
@@ -110,7 +69,7 @@ export function createClanAbilityGrantSummary(
                 character-creation-clan-choice-pending
               "
             >
-              Este clã possui uma escolha de Habilidade gratuita que será configurada no próximo bloco.
+              Este clã possui uma escolha de Habilidade gratuita que será configurada em um bloco específico.
             </small>
           `
           : ""}

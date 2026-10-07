@@ -9,11 +9,14 @@ import {
 import {
   createAbilityRow,
   createAbilityRows,
-  readAbilityMap,
-  readAbilitySpecializations,
   refreshCharacterCreationAbilityFocus,
   refreshCharacterCreationAbilityCustomFocus,
 } from "./ability/characterCreationAbilityRows.js";
+
+import {
+  readAbilityMap,
+  readAbilitySpecializations,
+} from "./ability/characterCreationAbilityRead.js";
 
 import {
   getStateAbilityProgress,
@@ -31,6 +34,10 @@ import {
   createClanAbilityGrantSummary,
 } from "./ability/characterCreationAbilityGrants.js";
 
+import {
+  getFixedClanAbilityGrants,
+} from "../data/clanRuleCatalog.js";
+
 
 export function createAbilitiesCreationEditor(
   character,
@@ -38,6 +45,12 @@ export function createAbilitiesCreationEditor(
 ) {
   const rules =
     getAbilityCreationRules(
+      character
+    );
+
+
+  const clanAbilityGrants =
+    getFixedClanAbilityGrants(
       character
     );
 
@@ -129,7 +142,8 @@ export function createAbilitiesCreationEditor(
           ${createAbilityRows(
             state?.abilities,
             state?.specializations,
-            rules.maximum
+            rules.maximum,
+            clanAbilityGrants
           )}
         </div>
 
@@ -215,7 +229,8 @@ export function appendCharacterCreationAbilityRow(
       1,
       "",
       maximum,
-      true
+      true,
+      0
     );
 
 
