@@ -242,3 +242,52 @@ test(
     );
   }
 );
+
+
+test(
+  "Background sheet displays Free Trait spending notice",
+  () => {
+    const backgrounds =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/view/sheet/characterSheetBackgrounds.js"
+      );
+
+
+    const creation =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/view/sheet/characterSheetCreation.js"
+      );
+
+
+    assert.equal(
+      backgrounds.includes(
+        "createBackgroundCostNotice"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      backgrounds.includes(
+        "character-free-trait-inline-cost"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      backgrounds.includes(
+        "backgroundFreeTraitCost"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      creation.includes(
+        ".backgrounds"
+      ),
+      true
+    );
+  }
+);

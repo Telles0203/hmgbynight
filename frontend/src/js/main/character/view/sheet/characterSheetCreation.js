@@ -589,6 +589,10 @@ export function createCharacterCreationSections(
                 progress:
                   sections.backgrounds,
 
+                backgroundFreeTraitCost:
+                  freeTraitSpending
+                    .backgrounds,
+
                 showFreeTraitMarkers,
               }),
           })}

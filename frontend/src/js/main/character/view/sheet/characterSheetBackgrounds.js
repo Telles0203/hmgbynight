@@ -128,6 +128,35 @@ function createBackgroundProgress(
 }
 
 
+function createBackgroundCostNotice(
+  cost
+) {
+  const normalized =
+    Number(
+      cost
+    );
+
+
+  if (
+    !Number.isFinite(
+      normalized
+    ) ||
+    normalized <=
+      0
+  ) {
+    return "";
+  }
+
+
+  return `
+    <small class="character-free-trait-inline-cost">
+      Extra da criação:
+      -${normalized} Free Trait${normalized === 1 ? "" : "s"}
+    </small>
+  `;
+}
+
+
 function createBackgroundList(
   state,
   progress,
@@ -281,6 +310,7 @@ function createBackgroundList(
 export function createCharacterBackgroundContent({
   state,
   progress,
+  backgroundFreeTraitCost = 0,
   showFreeTraitMarkers = true,
 }) {
   return `
@@ -293,6 +323,12 @@ export function createCharacterBackgroundContent({
       state,
       progress,
       showFreeTraitMarkers
+    )}
+
+    ${createBackgroundCostNotice(
+      showFreeTraitMarkers
+        ? backgroundFreeTraitCost
+        : 0
     )}
   `;
 }
