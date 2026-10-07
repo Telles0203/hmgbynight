@@ -91,6 +91,12 @@ test(
       );
 
 
+    const outside =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/discipline/characterCreationDisciplineOutside.js"
+      );
+
+
     assert.equal(
       form.includes(
         "./discipline/characterCreationDisciplineCatalog.js"
@@ -142,6 +148,22 @@ test(
     assert.equal(
       progress.includes(
         "adjustCharacterCreationDisciplineLevel"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      outside.includes(
+        "createOutsideDisciplinePicker"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      outside.includes(
+        "addOutsideDiscipline"
       ),
       true
     );

@@ -1120,3 +1120,27 @@
   align-items: center;
   gap: 5px;
 }
+
+
+.character-creation-outside-discipline-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-creation-outside-discipline-note {
+  font-size: 0.64rem;
+}
+
+.character-discipline-approval-warning {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.character-creation-discipline-controls {
+  flex-wrap: nowrap;
+}

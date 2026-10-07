@@ -7,22 +7,55 @@ import {
 } from "../../data/clanRuleCatalog.js";
 
 
+export const OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE =
+  "Esta Disciplina está fora do clã do personagem e requer aprovação da Narração.";
+
+
+function createOutsideClanWarning() {
+  return `
+    <span
+      class="
+        character-sheet-warning-inline
+        character-discipline-approval-warning
+      "
+      title="${escapeSheetHtml(
+        OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE
+      )}"
+      aria-label="${escapeSheetHtml(
+        OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE
+      )}"
+    >
+      !
+    </span>
+  `;
+}
+
+
 export function createDisciplineRow(
   entry,
   maximum
 ) {
   const level =
     Number.isInteger(
-      entry.level
+      Number(
+        entry?.level
+      )
     )
       ? Math.max(
           0,
           Math.min(
             maximum,
-            entry.level
+            Number(
+              entry.level
+            )
           )
         )
       : 0;
+
+
+  const clan =
+    entry?.clan ===
+    true;
 
 
   return `
@@ -32,9 +65,10 @@ export function createDisciplineRow(
       "
       data-creation-discipline-row
       data-creation-discipline-key="${escapeSheetHtml(
-        entry.discipline
+        entry?.discipline ||
+        ""
       )}"
-      data-creation-discipline-clan="${entry.clan
+      data-creation-discipline-clan="${clan
         ? "true"
         : "false"}"
     >
@@ -48,16 +82,24 @@ export function createDisciplineRow(
         <span>
           ${escapeSheetHtml(
             getDisciplineLabel(
-              entry.discipline
+              entry?.discipline
             )
           )}
         </span>
 
-        <small>
-          ${entry.clan
+        <small
+          class="${clan
+            ? "character-discipline-clan-badge"
+            : "character-discipline-outside-badge"}"
+        >
+          ${clan
             ? "Clã"
             : "Fora do clã"}
         </small>
+
+        ${clan
+          ? ""
+          : createOutsideClanWarning()}
 
       </div>
 
@@ -110,6 +152,26 @@ export function createDisciplineRow(
         >
           +
         </button>
+
+        ${clan
+          ? ""
+          : `
+            <button
+              type="button"
+              class="
+                btn
+                btn-outline-danger
+                btn-sm
+                py-0
+                px-2
+              "
+              data-character-creation-remove-outside-discipline
+              aria-label="Remover Disciplina"
+              title="Remover Disciplina"
+            >
+              ×
+            </button>
+          `}
 
       </div>
 

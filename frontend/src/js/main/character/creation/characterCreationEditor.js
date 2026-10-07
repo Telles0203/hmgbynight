@@ -26,8 +26,8 @@ import {
 } from "./form/characterCreationWillpowerForm.js";
 
 import {
-  adjustCharacterCreationDisciplineLevel,
-} from "./form/characterCreationDisciplineForm.js";
+  handleCharacterCreationDisciplineActionClick,
+} from "./actions/characterCreationDisciplineActions.js";
 
 import {
   adjustMoralityCreation,
@@ -209,21 +209,12 @@ function handleDocumentClick(
   }
 
 
-  const disciplineButton =
-    target.closest(
-      "[data-character-creation-discipline-action]"
-    );
-
-
   if (
-    disciplineButton
+    handleCharacterCreationDisciplineActionClick(
+      target
+    )
   ) {
     event.preventDefault();
-
-
-    adjustCharacterCreationDisciplineLevel(
-      disciplineButton
-    );
 
 
     return;

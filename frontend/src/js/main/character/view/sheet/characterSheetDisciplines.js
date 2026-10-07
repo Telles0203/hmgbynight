@@ -7,6 +7,10 @@ import {
   getFixedClanDisciplines,
 } from "../../creation/data/clanRuleCatalog.js";
 
+import {
+  OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE,
+} from "../../creation/form/discipline/characterCreationDisciplineRows.js";
+
 
 function getDisciplineEntries(
   character,
@@ -89,6 +93,36 @@ function getDisciplineEntries(
 }
 
 
+function createApprovalWarning() {
+  return `
+    <button
+      type="button"
+      class="
+        character-sheet-warning-inline
+        border-0
+        character-discipline-approval-warning
+      "
+      title="${escapeSheetHtml(
+        OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE
+      )}"
+      aria-label="${escapeSheetHtml(
+        OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE
+      )}"
+      data-bs-toggle="popover"
+      data-bs-trigger="focus"
+      data-bs-placement="top"
+      data-bs-container="body"
+      data-bs-title="Aprovação da Narração"
+      data-bs-content="${escapeSheetHtml(
+        OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE
+      )}"
+    >
+      !
+    </button>
+  `;
+}
+
+
 export function createCharacterDisciplineContent({
   character,
   state,
@@ -165,6 +199,8 @@ export function createCharacterDisciplineContent({
                     >
                       Fora do clã
                     </small>
+
+                    ${createApprovalWarning()}
                   `
                 }
 

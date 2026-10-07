@@ -22,6 +22,12 @@ import {
   adjustCharacterCreationDisciplineLevel,
 } from "./discipline/characterCreationDisciplineProgress.js";
 
+import {
+  createOutsideDisciplinePicker,
+  addOutsideDiscipline,
+  removeOutsideDiscipline,
+} from "./discipline/characterCreationDisciplineOutside.js";
+
 
 function createFixedDisciplineEditor(
   character,
@@ -124,12 +130,17 @@ function createFixedDisciplineEditor(
         class="
           character-creation-discipline-list
         "
+        data-creation-discipline-list
       >
         ${createDisciplineRows(
           entries,
           rules.maximum
         )}
       </div>
+
+      ${createOutsideDisciplinePicker(
+        entries
+      )}
 
       <small
         class="
@@ -267,4 +278,6 @@ export function readDisciplineCreationSection(
 
 export {
   adjustCharacterCreationDisciplineLevel,
+  addOutsideDiscipline,
+  removeOutsideDiscipline,
 };
