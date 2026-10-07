@@ -180,10 +180,87 @@ function createInfluenceList(
       .influences;
 
 
+  const purchased =
+    Object.fromEntries(
+      getInfluenceEntries(
+        state
+      ).map(
+        (
+          entry
+        ) => [
+          entry.influence,
+          entry.level,
+        ]
+      )
+    );
+
+
+  const granted =
+    progress
+      ?.grantedInfluences ||
+    {};
+
+
   const entries =
-    getInfluenceEntries(
-      state
+    Array.from(
+      new Set([
+        ...Object.keys(
+          purchased
+        ),
+
+        ...Object.keys(
+          granted
+        ),
+      ])
     )
+      .map(
+        (
+          influence
+        ) => {
+          const purchasedLevel =
+            Math.max(
+              0,
+              Number(
+                purchased[
+                  influence
+                ]
+              ) ||
+              0
+            );
+
+
+          const grantedLevel =
+            Math.max(
+              0,
+              Number(
+                granted[
+                  influence
+                ]
+              ) ||
+              0
+            );
+
+
+          return {
+            influence,
+
+            purchasedLevel,
+
+            grantedLevel,
+
+            level:
+              purchasedLevel +
+              grantedLevel,
+          };
+        }
+      )
+      .filter(
+        (
+          entry
+        ) =>
+          entry.level >
+          0
+      )
       .sort(
         (
           first,
@@ -250,6 +327,18 @@ function createInfluenceList(
                     entry.influence
                   )
                 )}
+
+                ${entry.grantedLevel > 0
+                  ? `
+                    <small
+                      class="
+                        character-creation-clan-grant-badge
+                      "
+                    >
+                      Clã +${entry.grantedLevel}
+                    </small>
+                  `
+                  : ""}
               </span>
 
               <span
@@ -257,9 +346,7 @@ function createInfluenceList(
                   character-sheet-value
                 "
               >
-                ${Number(
-                  entry.level
-                )}
+                ${entry.level}
               </span>
 
             </div>

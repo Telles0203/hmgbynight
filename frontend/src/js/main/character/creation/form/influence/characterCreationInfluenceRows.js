@@ -7,20 +7,125 @@ import {
 } from "./characterCreationInfluenceCatalog.js";
 
 
+function normalizeLevel(
+  value
+) {
+  const level =
+    Number(
+      value
+    );
+
+
+  return (
+    Number.isInteger(
+      level
+    ) &&
+    level >
+      0
+      ? level
+      : 0
+  );
+}
+
+
+function createEffectiveEntries(
+  entries,
+  grants
+) {
+  const purchased =
+    {};
+
+
+  (
+    Array.isArray(
+      entries
+    )
+      ? entries
+      : []
+  ).forEach(
+    (
+      entry
+    ) => {
+      purchased[
+        entry.influence
+      ] =
+        normalizeLevel(
+          entry.level
+        );
+    }
+  );
+
+
+  const keys =
+    new Set([
+      ...Object.keys(
+        purchased
+      ),
+
+      ...Object.keys(
+        grants ||
+        {}
+      ),
+    ]);
+
+
+  return Array.from(
+    keys
+  ).map(
+    (
+      influence
+    ) => {
+      const purchasedLevel =
+        normalizeLevel(
+          purchased[
+            influence
+          ]
+        );
+
+
+      const grantedLevel =
+        normalizeLevel(
+          grants?.[
+            influence
+          ]
+        );
+
+
+      return {
+        influence,
+
+        purchasedLevel,
+
+        grantedLevel,
+
+        level:
+          purchasedLevel +
+          grantedLevel,
+      };
+    }
+  );
+}
+
+
 export function createInfluenceRow(
   entry,
   maximum,
   freeTraitLevel = 0
 ) {
+  const grantedLevel =
+    normalizeLevel(
+      entry?.grantedLevel
+    );
+
+
   const level =
     Math.max(
-      0,
+      grantedLevel,
       Math.min(
         maximum,
-        Number(
+        normalizeLevel(
           entry?.level
-        ) ||
-        0
+        )
       )
     );
 
@@ -38,6 +143,7 @@ export function createInfluenceRow(
         entry?.influence ||
         ""
       )}"
+      data-creation-influence-grant="${grantedLevel}"
       data-creation-free-trait-level="${Math.max(
         0,
         Number(
@@ -52,11 +158,27 @@ export function createInfluenceRow(
           character-creation-influence-name
         "
       >
-        ${escapeSheetHtml(
-          getInfluenceLabel(
-            entry?.influence
-          )
-        )}
+
+        <span>
+          ${escapeSheetHtml(
+            getInfluenceLabel(
+              entry?.influence
+            )
+          )}
+        </span>
+
+        ${grantedLevel > 0
+          ? `
+            <small
+              class="
+                character-creation-clan-grant-badge
+              "
+            >
+              Clã +${grantedLevel}
+            </small>
+          `
+          : ""}
+
       </div>
 
       <div
@@ -75,7 +197,8 @@ export function createInfluenceRow(
             px-2
           "
           data-character-creation-influence-action="decrease"
-          ${level <= 0
+          ${level <=
+          grantedLevel
             ? "disabled"
             : ""}
         >
@@ -102,28 +225,33 @@ export function createInfluenceRow(
             px-2
           "
           data-character-creation-influence-action="increase"
-          ${level >= maximum
+          ${level >=
+          maximum
             ? "disabled"
             : ""}
         >
           +
         </button>
 
-        <button
-          type="button"
-          class="
-            btn
-            btn-outline-danger
-            btn-sm
-            py-0
-            px-2
-          "
-          data-character-creation-remove-influence
-          aria-label="Remover Influência"
-          title="Remover Influência"
-        >
-          ×
-        </button>
+        ${grantedLevel > 0
+          ? ""
+          : `
+            <button
+              type="button"
+              class="
+                btn
+                btn-outline-danger
+                btn-sm
+                py-0
+                px-2
+              "
+              data-character-creation-remove-influence
+              aria-label="Remover Influência"
+              title="Remover Influência"
+            >
+              ×
+            </button>
+          `}
 
       </div>
 
@@ -135,22 +263,20 @@ export function createInfluenceRow(
 export function createInfluenceRows(
   entries,
   maximum,
-  freeTraitPurchases = {}
+  freeTraitPurchases = {},
+  grants = {}
 ) {
-  if (
-    !Array.isArray(
-      entries
-    ) ||
-    entries.length ===
-      0
-  ) {
-    return "";
-  }
-
-
-  return [
-    ...entries,
-  ]
+  return createEffectiveEntries(
+    entries,
+    grants
+  )
+    .filter(
+      (
+        entry
+      ) =>
+        entry.level >
+        0
+    )
     .sort(
       (
         first,
@@ -206,7 +332,7 @@ export function readInfluences(
             .toLowerCase();
 
 
-        const level =
+        const effectiveLevel =
           Number(
             row.querySelector(
               "[data-creation-influence-level]"
@@ -214,18 +340,31 @@ export function readInfluences(
           );
 
 
+        const grantedLevel =
+          Number(
+            row.dataset
+              .creationInfluenceGrant
+          ) ||
+          0;
+
+
+        const purchasedLevel =
+          effectiveLevel -
+          grantedLevel;
+
+
         if (
           key &&
           Number.isInteger(
-            level
+            purchasedLevel
           ) &&
-          level >
+          purchasedLevel >
             0
         ) {
           influences[
             key
           ] =
-            level;
+            purchasedLevel;
         }
       }
     );

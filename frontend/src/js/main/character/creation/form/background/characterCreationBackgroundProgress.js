@@ -37,12 +37,25 @@ function getBackgroundValues(
             .toLowerCase();
 
 
-        const level =
+        const effectiveLevel =
           Number(
             row.querySelector(
               "[data-creation-background-level]"
             )?.textContent
           );
+
+
+        const grantedLevel =
+          Number(
+            row.dataset
+              .creationBackgroundGrant
+          ) ||
+          0;
+
+
+        const level =
+          effectiveLevel -
+          grantedLevel;
 
 
         if (
@@ -213,6 +226,14 @@ function refreshBackgroundRows(
           0;
 
 
+        const grantedLevel =
+          Number(
+            row.dataset
+              .creationBackgroundGrant
+          ) ||
+          0;
+
+
         row.dataset
           .creationFreeTraitLevel =
           String(
@@ -242,7 +263,7 @@ function refreshBackgroundRows(
         if (decrease) {
           decrease.disabled =
             level <=
-            0;
+            grantedLevel;
         }
 
 
@@ -445,6 +466,14 @@ export function adjustCharacterCreationBackgroundLevel(
     0;
 
 
+  const grantedLevel =
+    Number(
+      row.dataset
+        .creationBackgroundGrant
+    ) ||
+    0;
+
+
   const maximum =
     Number(
       form.dataset
@@ -485,7 +514,7 @@ export function adjustCharacterCreationBackgroundLevel(
 
   if (
     next <
-      0 ||
+      grantedLevel ||
     next >
       maximum
   ) {

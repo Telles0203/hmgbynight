@@ -30,6 +30,10 @@ import {
 } from "./background/characterCreationBackgroundAllocation.js";
 
 import {
+  resolveCharacterClanResourceGrants,
+} from "../data/clanRuleCatalog.js";
+
+import {
   createFreeTraitPurchaseInput,
   getStateFreeTraitPurchaseOrder,
   isInitialCreationLifecycle,
@@ -107,6 +111,13 @@ export function createBackgroundCreationEditor(
 
   const entries =
     getBackgroundEntries(
+      state
+    );
+
+
+  const clanGrants =
+    resolveCharacterClanResourceGrants(
+      character,
       state
     );
 
@@ -228,12 +239,16 @@ export function createBackgroundCreationEditor(
         ${createBackgroundRows(
           entries,
           rules.maximum,
-          freeTraitPurchases
+          freeTraitPurchases,
+          clanGrants.backgrounds
         )}
       </div>
 
       ${createBackgroundPicker(
-        entries
+        entries,
+        Object.keys(
+          clanGrants.backgrounds
+        )
       )}
 
       <small

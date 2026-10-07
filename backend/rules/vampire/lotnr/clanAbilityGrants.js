@@ -76,6 +76,9 @@ const CLAN_ABILITY_CHOICE_GRANTS =
           id:
             "revolution_field",
 
+          choiceId:
+            "revolution_influence",
+
           total:
             1,
 

@@ -5,17 +5,11 @@ const {
 );
 
 const {
-  getFixedClanAbilityGrants,
-  getClanAbilityChoiceGrants,
-  getClanAbilityGrantStatus,
+  createClanGrants,
+  cloneClanGrants,
+  getClanGrantImplementation,
 } = require(
-  "./clanAbilityGrants"
-);
-
-const {
-  getFixedClanNegativeTraitGrants,
-} = require(
-  "./clanNegativeTraitGrants"
+  "./clanRuleGrants"
 );
 
 
@@ -218,104 +212,6 @@ function normalizeClanKey(
 }
 
 
-function createEmptyGrants(
-  clan
-) {
-  const abilities =
-    getFixedClanAbilityGrants(
-      clan
-    );
-
-
-  const abilityChoices =
-    getClanAbilityChoiceGrants(
-      clan
-    );
-
-
-  const negativeTraits =
-    getFixedClanNegativeTraitGrants(
-      clan
-    );
-
-
-  return Object.freeze({
-    abilities:
-      Object.freeze({
-        ...abilities,
-      }),
-
-    abilityChoices:
-      Object.freeze(
-        abilityChoices.map(
-          (
-            group
-          ) =>
-            Object.freeze({
-              ...group,
-
-              options:
-                Object.freeze([
-                  ...group.options,
-                ]),
-            })
-        )
-      ),
-
-    backgrounds:
-      Object.freeze({}),
-
-    influences:
-      Object.freeze({}),
-
-    negativeTraits:
-      Object.freeze({
-        physical:
-          Object.freeze(
-            negativeTraits
-              .physical
-              .map(
-                (
-                  entry
-                ) =>
-                  Object.freeze({
-                    ...entry,
-                  })
-              )
-          ),
-
-        social:
-          Object.freeze(
-            negativeTraits
-              .social
-              .map(
-                (
-                  entry
-                ) =>
-                  Object.freeze({
-                    ...entry,
-                  })
-              )
-          ),
-
-        mental:
-          Object.freeze(
-            negativeTraits
-              .mental
-              .map(
-                (
-                  entry
-                ) =>
-                  Object.freeze({
-                    ...entry,
-                  })
-              )
-          ),
-      }),
-  });
-}
-
-
 function createClanRule(
   clan
 ) {
@@ -341,6 +237,12 @@ function createClanRule(
     0;
 
 
+  const grantImplementation =
+    getClanGrantImplementation(
+      clan.value
+    );
+
+
   return Object.freeze({
     clan:
       clan.value,
@@ -364,7 +266,7 @@ function createClanRule(
       }),
 
     grants:
-      createEmptyGrants(
+      createClanGrants(
         clan.value
       ),
 
@@ -376,14 +278,7 @@ function createClanRule(
         disciplines:
           disciplinesConfigured,
 
-        grants:
-          false,
-
-        abilityGrants:
-          getClanAbilityGrantStatus(
-            clan.value
-          ) !==
-          "pending",
+        ...grantImplementation,
 
         restrictions:
           false,
@@ -454,119 +349,52 @@ function getClanRule(
 }
 
 
+function cloneClanRule(
+  rule
+) {
+  return {
+    clan:
+      rule.clan,
+
+    label:
+      rule.label,
+
+    disciplines: {
+      mode:
+        rule
+          .disciplines
+          .mode,
+
+      values: [
+        ...rule
+          .disciplines
+          .values,
+      ],
+    },
+
+    grants:
+      cloneClanGrants(
+        rule.grants
+      ),
+
+    restrictions: [
+      ...rule
+        .restrictions,
+    ],
+
+    implementation: {
+      ...rule
+        .implementation,
+    },
+  };
+}
+
+
 function getAllClanRules() {
   return Object.values(
     CLAN_RULES
   ).map(
-    (
-      rule
-    ) => ({
-      clan:
-        rule.clan,
-
-      label:
-        rule.label,
-
-      disciplines: {
-        mode:
-          rule
-            .disciplines
-            .mode,
-
-        values: [
-          ...rule
-            .disciplines
-            .values,
-        ],
-      },
-
-      grants: {
-        abilities: {
-          ...rule
-            .grants
-            .abilities,
-        },
-
-        abilityChoices:
-          rule
-            .grants
-            .abilityChoices
-            .map(
-              (
-                group
-              ) => ({
-                ...group,
-
-                options: [
-                  ...group.options,
-                ],
-              })
-            ),
-
-        backgrounds: {
-          ...rule
-            .grants
-            .backgrounds,
-        },
-
-        influences: {
-          ...rule
-            .grants
-            .influences,
-        },
-
-        negativeTraits: {
-          physical:
-            rule
-              .grants
-              .negativeTraits
-              .physical
-              .map(
-                (
-                  entry
-                ) => ({
-                  ...entry,
-                })
-              ),
-
-          social:
-            rule
-              .grants
-              .negativeTraits
-              .social
-              .map(
-                (
-                  entry
-                ) => ({
-                  ...entry,
-                })
-              ),
-
-          mental:
-            rule
-              .grants
-              .negativeTraits
-              .mental
-              .map(
-                (
-                  entry
-                ) => ({
-                  ...entry,
-                })
-              ),
-        },
-      },
-
-      restrictions: [
-        ...rule
-          .restrictions,
-      ],
-
-      implementation: {
-        ...rule
-          .implementation,
-      },
-    })
+    cloneClanRule
   );
 }
 
@@ -654,6 +482,17 @@ function getClanRuleCoverage() {
           true
       ).length,
 
+    backgroundInfluenceGrantsConfigured:
+      rules.filter(
+        (
+          rule
+        ) =>
+          rule
+            .implementation
+            .backgroundInfluenceGrants ===
+          true
+      ).length,
+
     abilityGrantsConfigured:
       rules.filter(
         (
@@ -674,6 +513,24 @@ function getClanRuleCoverage() {
             rule
               .implementation
               .abilityGrants !==
+            true
+        )
+        .map(
+          (
+            rule
+          ) =>
+            rule.clan
+        ),
+
+    pendingBackgroundInfluenceGrants:
+      rules
+        .filter(
+          (
+            rule
+          ) =>
+            rule
+              .implementation
+              .backgroundInfluenceGrants !==
             true
         )
         .map(

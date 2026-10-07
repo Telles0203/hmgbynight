@@ -1,22 +1,42 @@
 import {
-  getFixedClanAbilityGrants,
   getClanAbilityChoiceGrants,
+  getResolvedClanAbilityGrants,
+  resolveCharacterClanResourceGrants,
 } from "../../data/clanRuleCatalog.js";
 
 
 export function createClanAbilityGrantSummary(
-  character
+  character,
+  state
 ) {
   const fixed =
-    getFixedClanAbilityGrants(
-      character
+    getResolvedClanAbilityGrants(
+      character,
+      state
+    );
+
+
+  const resourceGrants =
+    resolveCharacterClanResourceGrants(
+      character,
+      state
     );
 
 
   const choices =
     getClanAbilityChoiceGrants(
       character
-    );
+    )
+      .filter(
+        (
+          group
+        ) =>
+          !group.choiceId ||
+          !resourceGrants
+            .selections[
+              group.choiceId
+            ]
+      );
 
 
   const hasFixed =
@@ -56,7 +76,7 @@ export function createClanAbilityGrantSummary(
               character-creation-clan-choice-pending
             "
           >
-            Habilidades de clã já aparecem abaixo com o nível gratuito aplicado. Apenas os níveis adquiridos além desse mínimo contam nos pontos de criação.
+            Habilidades concedidas pelo clã aparecem abaixo com o nível gratuito aplicado. Apenas níveis adquiridos além desse mínimo contam no pool da criação.
           </small>
         `
         : ""}
@@ -69,7 +89,7 @@ export function createClanAbilityGrantSummary(
                 character-creation-clan-choice-pending
               "
             >
-              Este clã possui uma escolha de Habilidade gratuita que será configurada em um bloco específico.
+              Este clã ainda possui uma escolha de Habilidade gratuita pendente.
             </small>
           `
           : ""}

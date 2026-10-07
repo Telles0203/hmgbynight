@@ -16,6 +16,33 @@ import {
 } from "./characterCreationInfluenceProgress.js";
 
 
+function normalizeKeys(
+  values
+) {
+  return (
+    Array.isArray(
+      values
+    )
+      ? values
+      : []
+  )
+    .map(
+      (
+        value
+      ) =>
+        String(
+          value ||
+          ""
+        )
+          .trim()
+          .toLowerCase()
+    )
+    .filter(
+      Boolean
+    );
+}
+
+
 function getUsedInfluenceKeys(
   form
 ) {
@@ -72,32 +99,34 @@ function getAvailableInfluences(
 
 
 export function createInfluencePicker(
-  entries
+  entries,
+  blockedKeys = []
 ) {
   const used =
-    new Set(
-      (
+    new Set([
+      ...(
         Array.isArray(
           entries
         )
           ? entries
+              .map(
+                (
+                  entry
+                ) =>
+                  String(
+                    entry?.influence ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase()
+              )
           : []
-      )
-        .map(
-          (
-            entry
-          ) =>
-            String(
-              entry?.influence ||
-              ""
-            )
-              .trim()
-              .toLowerCase()
-        )
-        .filter(
-          Boolean
-        )
-    );
+      ),
+
+      ...normalizeKeys(
+        blockedKeys
+      ),
+    ]);
 
 
   const available =
@@ -441,7 +470,12 @@ export function removeInfluence(
 
   if (
     !row ||
-    !form
+    !form ||
+    Number(
+      row.dataset
+        .creationInfluenceGrant
+    ) >
+      0
   ) {
     return;
   }

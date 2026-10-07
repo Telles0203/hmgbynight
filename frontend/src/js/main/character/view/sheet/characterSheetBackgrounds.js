@@ -179,32 +179,87 @@ function createBackgroundList(
       .backgrounds;
 
 
+  const purchased =
+    state?.backgrounds ||
+    {};
+
+
+  const granted =
+    progress
+      ?.grantedBackgrounds ||
+    {};
+
+
   const entries =
-    Object.entries(
-      state?.backgrounds ||
-      {}
+    Array.from(
+      new Set([
+        ...Object.keys(
+          purchased
+        ),
+
+        ...Object.keys(
+          granted
+        ),
+      ])
     )
+      .map(
+        (
+          background
+        ) => {
+          const purchasedLevel =
+            Math.max(
+              0,
+              Number(
+                purchased[
+                  background
+                ]
+              ) ||
+              0
+            );
+
+
+          const grantedLevel =
+            Math.max(
+              0,
+              Number(
+                granted[
+                  background
+                ]
+              ) ||
+              0
+            );
+
+
+          return {
+            background,
+
+            purchasedLevel,
+
+            grantedLevel,
+
+            level:
+              purchasedLevel +
+              grantedLevel,
+          };
+        }
+      )
       .filter(
-        ([
-          ,
-          level,
-        ]) =>
-          Number(
-            level
-          ) >
+        (
+          entry
+        ) =>
+          entry.level >
           0
       )
       .sort(
-        ([
+        (
           first,
-        ], [
-          second,
-        ]) =>
+          second
+        ) =>
           getBackgroundLabel(
-            first
+            first.background
           ).localeCompare(
             getBackgroundLabel(
-              second
+              second.background
             )
           )
       );
@@ -236,17 +291,16 @@ function createBackgroundList(
 
       ${entries
         .map(
-          ([
-            background,
-            level,
-          ]) => `
+          (
+            entry
+          ) => `
             <div
               class="
                 character-sheet-row
                 character-background-sheet-row
                 ${(
                   freeTraitPurchases[
-                    background
+                    entry.background
                   ] ||
                   0
                 ) > 0
@@ -263,9 +317,21 @@ function createBackgroundList(
               >
                 ${escapeSheetHtml(
                   getBackgroundLabel(
-                    background
+                    entry.background
                   )
                 )}
+
+                ${entry.grantedLevel > 0
+                  ? `
+                    <small
+                      class="
+                        character-creation-clan-grant-badge
+                      "
+                    >
+                      Clã +${entry.grantedLevel}
+                    </small>
+                  `
+                  : ""}
               </span>
 
               <span
@@ -273,9 +339,7 @@ function createBackgroundList(
                   character-sheet-value
                 "
               >
-                ${Number(
-                  level
-                )}
+                ${entry.level}
               </span>
 
             </div>

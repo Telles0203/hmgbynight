@@ -664,6 +664,11 @@ function createEmptyCharacterCreationState() {
         [],
     },
 
+    clanGrantChoices: {
+      backgroundInfluence:
+        {},
+    },
+
     moralityAdjustment:
       0,
 

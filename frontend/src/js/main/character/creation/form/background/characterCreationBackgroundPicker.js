@@ -12,6 +12,33 @@ import {
 } from "./characterCreationBackgroundProgress.js";
 
 
+function normalizeKeys(
+  values
+) {
+  return (
+    Array.isArray(
+      values
+    )
+      ? values
+      : []
+  )
+    .map(
+      (
+        value
+      ) =>
+        String(
+          value ||
+          ""
+        )
+          .trim()
+          .toLowerCase()
+    )
+    .filter(
+      Boolean
+    );
+}
+
+
 function getUsedBackgroundKeys(
   form
 ) {
@@ -68,32 +95,34 @@ function getAvailableBackgrounds(
 
 
 export function createBackgroundPicker(
-  entries
+  entries,
+  blockedKeys = []
 ) {
   const used =
-    new Set(
-      (
+    new Set([
+      ...(
         Array.isArray(
           entries
         )
           ? entries
+              .map(
+                (
+                  entry
+                ) =>
+                  String(
+                    entry?.background ||
+                    ""
+                  )
+                    .trim()
+                    .toLowerCase()
+              )
           : []
-      )
-        .map(
-          (
-            entry
-          ) =>
-            String(
-              entry?.background ||
-              ""
-            )
-              .trim()
-              .toLowerCase()
-        )
-        .filter(
-          Boolean
-        )
-    );
+      ),
+
+      ...normalizeKeys(
+        blockedKeys
+      ),
+    ]);
 
 
   const available =
@@ -456,7 +485,12 @@ export function removeBackground(
     !form ||
     row.dataset
       .creationBackgroundSpecialMode ===
-      "influence"
+      "influence" ||
+    Number(
+      row.dataset
+        .creationBackgroundGrant
+    ) >
+      0
   ) {
     return;
   }

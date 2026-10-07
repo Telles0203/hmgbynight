@@ -34,6 +34,12 @@ const {
   "../clanAbilityGrants"
 );
 
+const {
+  resolveClanResourceGrants,
+} = require(
+  "../clanBackgroundInfluenceGrants"
+);
+
 
 function validateAttributes(
   creation,
@@ -236,16 +242,58 @@ function validateAbilities(
     );
 
 
-  const grantedAbilities =
-    getFixedClanAbilityGrants(
-      character?.clan
+  const resolvedResourceGrants =
+    resolveClanResourceGrants(
+      character?.clan,
+      creation
+        ?.clanGrantChoices
+        ?.backgroundInfluence
     );
+
+
+  const grantedAbilities = {
+    ...getFixedClanAbilityGrants(
+      character?.clan
+    ),
+  };
+
+
+  Object.entries(
+    resolvedResourceGrants
+      .abilities
+  ).forEach(
+    ([
+      ability,
+      level,
+    ]) => {
+      grantedAbilities[
+        ability
+      ] =
+        (
+          grantedAbilities[
+            ability
+          ] ||
+          0
+        ) +
+        level;
+    }
+  );
 
 
   const pendingClanAbilityChoices =
     getClanAbilityChoiceGrants(
       character?.clan
-    );
+    )
+      .filter(
+        (
+          group
+        ) =>
+          !group.choiceId ||
+          !resolvedResourceGrants
+            .selections[
+              group.choiceId
+            ]
+      );
 
 
   const effectiveAbilities =

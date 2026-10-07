@@ -4,12 +4,35 @@ import {
 
 import {
   getBackgroundLabel,
+  getBackgroundOption,
 } from "./characterCreationBackgroundCatalog.js";
+
+
+function normalizeLevel(
+  value
+) {
+  const level =
+    Number(
+      value
+    );
+
+
+  return (
+    Number.isInteger(
+      level
+    ) &&
+    level >
+      0
+      ? level
+      : 0
+  );
+}
 
 
 function createStandardBackgroundControls(
   level,
-  maximum
+  maximum,
+  grantedLevel
 ) {
   return `
     <div
@@ -28,7 +51,8 @@ function createStandardBackgroundControls(
           px-2
         "
         data-character-creation-background-action="decrease"
-        ${level <= 0
+        ${level <=
+        grantedLevel
           ? "disabled"
           : ""}
       >
@@ -55,28 +79,33 @@ function createStandardBackgroundControls(
           px-2
         "
         data-character-creation-background-action="increase"
-        ${level >= maximum
+        ${level >=
+        maximum
           ? "disabled"
           : ""}
       >
         +
       </button>
 
-      <button
-        type="button"
-        class="
-          btn
-          btn-outline-danger
-          btn-sm
-          py-0
-          px-2
-        "
-        data-character-creation-remove-background
-        aria-label="Remover Antecedente"
-        title="Remover Antecedente"
-      >
-        ×
-      </button>
+      ${grantedLevel > 0
+        ? ""
+        : `
+          <button
+            type="button"
+            class="
+              btn
+              btn-outline-danger
+              btn-sm
+              py-0
+              px-2
+            "
+            data-character-creation-remove-background
+            aria-label="Remover Antecedente"
+            title="Remover Antecedente"
+          >
+            ×
+          </button>
+        `}
 
     </div>
   `;
@@ -106,20 +135,129 @@ function createInfluenceBackgroundControls(
 }
 
 
+function createEffectiveEntries(
+  entries,
+  grants
+) {
+  const purchased =
+    {};
+
+
+  (
+    Array.isArray(
+      entries
+    )
+      ? entries
+      : []
+  ).forEach(
+    (
+      entry
+    ) => {
+      purchased[
+        entry.background
+      ] =
+        {
+          ...entry,
+        };
+    }
+  );
+
+
+  const keys =
+    new Set([
+      ...Object.keys(
+        purchased
+      ),
+
+      ...Object.keys(
+        grants ||
+        {}
+      ),
+    ]);
+
+
+  return Array.from(
+    keys
+  ).map(
+    (
+      background
+    ) => {
+      const purchasedEntry =
+        purchased[
+          background
+        ] ||
+        {};
+
+
+      const purchasedLevel =
+        normalizeLevel(
+          purchasedEntry.level
+        );
+
+
+      const grantedLevel =
+        normalizeLevel(
+          grants?.[
+            background
+          ]
+        );
+
+
+      const option =
+        getBackgroundOption(
+          background
+        );
+
+
+      return {
+        background,
+
+        purchasedLevel,
+
+        grantedLevel,
+
+        level:
+          purchasedLevel +
+          grantedLevel,
+
+        specialMode:
+          purchasedEntry
+            .specialMode ||
+          option?.specialMode ||
+          "standard",
+
+        requiresNarratorApproval:
+          purchasedEntry
+            .requiresNarratorApproval ===
+            true ||
+          option
+            ?.requiresNarratorApproval ===
+            true,
+      };
+    }
+  );
+}
+
+
 export function createBackgroundRow(
   entry,
   maximum,
   freeTraitLevel = 0
 ) {
+  const grantedLevel =
+    normalizeLevel(
+      entry?.grantedLevel
+    );
+
+
   const level =
     Math.max(
-      0,
+      grantedLevel,
       Math.min(
         maximum,
-        Number(
+        normalizeLevel(
           entry?.level
-        ) ||
-        0
+        )
       )
     );
 
@@ -142,6 +280,7 @@ export function createBackgroundRow(
         entry?.background ||
         ""
       )}"
+      data-creation-background-grant="${grantedLevel}"
       data-creation-background-special-mode="${influence
         ? "influence"
         : "standard"}"
@@ -168,6 +307,18 @@ export function createBackgroundRow(
           )}
         </span>
 
+        ${grantedLevel > 0
+          ? `
+            <small
+              class="
+                character-creation-clan-grant-badge
+              "
+            >
+              Clã +${grantedLevel}
+            </small>
+          `
+          : ""}
+
         ${influence
           ? `
             <small
@@ -188,7 +339,8 @@ export function createBackgroundRow(
           )
         : createStandardBackgroundControls(
             level,
-            maximum
+            maximum,
+            grantedLevel
           )}
 
     </div>
@@ -199,22 +351,20 @@ export function createBackgroundRow(
 export function createBackgroundRows(
   entries,
   maximum,
-  freeTraitPurchases = {}
+  freeTraitPurchases = {},
+  grants = {}
 ) {
-  if (
-    !Array.isArray(
-      entries
-    ) ||
-    entries.length ===
-      0
-  ) {
-    return "";
-  }
-
-
-  return [
-    ...entries,
-  ]
+  return createEffectiveEntries(
+    entries,
+    grants
+  )
+    .filter(
+      (
+        entry
+      ) =>
+        entry.level >
+        0
+    )
     .sort(
       (
         first,
@@ -270,7 +420,7 @@ export function readBackgrounds(
             .toLowerCase();
 
 
-        const level =
+        const effectiveLevel =
           Number(
             row.querySelector(
               "[data-creation-background-level]"
@@ -278,18 +428,31 @@ export function readBackgrounds(
           );
 
 
+        const grantedLevel =
+          Number(
+            row.dataset
+              .creationBackgroundGrant
+          ) ||
+          0;
+
+
+        const purchasedLevel =
+          effectiveLevel -
+          grantedLevel;
+
+
         if (
           key &&
           Number.isInteger(
-            level
+            purchasedLevel
           ) &&
-          level >
-          0
+          purchasedLevel >
+            0
         ) {
           backgrounds[
             key
           ] =
-            level;
+            purchasedLevel;
         }
       }
     );

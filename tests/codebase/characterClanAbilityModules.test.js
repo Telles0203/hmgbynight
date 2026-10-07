@@ -54,7 +54,7 @@ function assertBelowEightHundredLines(
 
   assert.equal(
     lines <
-    800,
+      800,
     true,
     `${relativePath} possui ${lines} linhas.`
   );
@@ -130,6 +130,14 @@ test(
       ),
       true
     );
+
+
+    assert.equal(
+      source.includes(
+        "resolveClanResourceGrants"
+      ),
+      true
+    );
   }
 );
 
@@ -170,7 +178,7 @@ test(
 
 
 test(
-  "Ability editor uses clan grants as minimum effective levels",
+  "Ability editor uses resolved clan grants as minimum effective levels",
   () => {
     const form =
       assertBelowEightHundredLines(
@@ -210,7 +218,15 @@ test(
 
     assert.equal(
       form.includes(
-        "getFixedClanAbilityGrants"
+        "getResolvedClanAbilityGrants"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      form.includes(
+        "state"
       ),
       true
     );

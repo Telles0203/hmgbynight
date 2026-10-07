@@ -21,12 +21,81 @@ const {
 );
 
 const {
+  resolveClanResourceGrants,
+} = require(
+  "../clanBackgroundInfluenceGrants"
+);
+
+const {
   normalizeInteger,
   normalizeLevelMap,
   createPointProgress,
 } = require(
   "./allocationHelpers"
 );
+
+
+function addLevelMaps(
+  first,
+  second
+) {
+  const result = {
+    ...first,
+  };
+
+
+  Object.entries(
+    second
+  ).forEach(
+    ([
+      key,
+      level,
+    ]) => {
+      result[
+        key
+      ] =
+        (
+          result[
+            key
+          ] ||
+          0
+        ) +
+        Math.max(
+          0,
+          Number(
+            level
+          ) ||
+          0
+        );
+    }
+  );
+
+
+  return result;
+}
+
+
+function sumLevels(
+  values
+) {
+  return Object.values(
+    values
+  ).reduce(
+    (
+      total,
+      level
+    ) =>
+      total +
+      Math.max(
+        0,
+        Number(
+          level
+        ) ||
+        0
+      ),
+    0
+  );
+}
 
 
 function validateDisciplines(
@@ -171,20 +240,47 @@ function validateBackgrounds(
     );
 
 
+  const clanGrants =
+    resolveClanResourceGrants(
+      character?.clan,
+      creation
+        ?.clanGrantChoices
+        ?.backgroundInfluence
+    );
+
+
+  const grantedBackgrounds =
+    normalizeLevelMap(
+      clanGrants.backgrounds
+    );
+
+
+  const grantedInfluences =
+    normalizeLevelMap(
+      clanGrants.influences
+    );
+
+
+  const effectiveBackgrounds =
+    addLevelMaps(
+      grantedBackgrounds,
+      backgrounds
+    );
+
+
+  const effectiveInfluences =
+    addLevelMaps(
+      grantedInfluences,
+      influences
+    );
+
+
   const errors =
     [];
 
 
   const requiresApproval =
     [];
-
-
-  let backgroundLevels =
-    0;
-
-
-  let influenceLevels =
-    0;
 
 
   Object.entries(
@@ -196,14 +292,10 @@ function validateBackgrounds(
     ]) => {
       if (
         level <
-          0 ||
-        level >
-          CHARACTER_CREATION_RULES
-            .backgrounds
-            .maximumPerBackground
+          0
       ) {
         errors.push(
-          `${background} deve possuir entre 0 e ${CHARACTER_CREATION_RULES.backgrounds.maximumPerBackground} níveis.`
+          `${background} possui nível inválido.`
         );
       }
 
@@ -219,13 +311,6 @@ function validateBackgrounds(
           background
         );
       }
-
-
-      backgroundLevels +=
-        Math.max(
-          0,
-          level
-        );
     }
   );
 
@@ -250,30 +335,104 @@ function validateBackgrounds(
 
       if (
         level <
-          0 ||
+          0
+      ) {
+        errors.push(
+          `${influence} possui nível de Influência inválido.`
+        );
+      }
+    }
+  );
+
+
+  Object.entries(
+    effectiveBackgrounds
+  ).forEach(
+    ([
+      background,
+      level,
+    ]) => {
+      if (
         level >
           CHARACTER_CREATION_RULES
             .backgrounds
             .maximumPerBackground
       ) {
         errors.push(
-          `${influence} deve possuir entre 0 e ${CHARACTER_CREATION_RULES.backgrounds.maximumPerBackground} níveis de Influência.`
+          `${background} deve possuir no máximo ${CHARACTER_CREATION_RULES.backgrounds.maximumPerBackground} níveis após aplicar os bônus do clã.`
         );
+      }
+    }
+  );
+
+
+  Object.entries(
+    effectiveInfluences
+  ).forEach(
+    ([
+      influence,
+      level,
+    ]) => {
+      if (
+        !INFLUENCE_AREAS.includes(
+          influence
+        )
+      ) {
+        errors.push(
+          `${influence} concedida pelo clã não é uma área válida de Influência.`
+        );
+
+
+        return;
       }
 
 
-      influenceLevels +=
-        Math.max(
-          0,
-          level
+      if (
+        level >
+          CHARACTER_CREATION_RULES
+            .backgrounds
+            .maximumPerBackground
+      ) {
+        errors.push(
+          `${influence} deve possuir no máximo ${CHARACTER_CREATION_RULES.backgrounds.maximumPerBackground} níveis de Influência após aplicar os bônus do clã.`
         );
+      }
     }
   );
+
+
+  const backgroundLevels =
+    sumLevels(
+      backgrounds
+    );
+
+
+  const influenceLevels =
+    sumLevels(
+      influences
+    );
 
 
   const totalLevels =
     backgroundLevels +
     influenceLevels;
+
+
+  const effectiveBackgroundLevels =
+    sumLevels(
+      effectiveBackgrounds
+    );
+
+
+  const effectiveInfluenceLevels =
+    sumLevels(
+      effectiveInfluences
+    );
+
+
+  const effectiveTotalLevels =
+    effectiveBackgroundLevels +
+    effectiveInfluenceLevels;
 
 
   const initialTotal =
@@ -303,11 +462,31 @@ function validateBackgrounds(
 
     influences,
 
+    grantedBackgrounds,
+
+    grantedInfluences,
+
+    effectiveBackgrounds,
+
+    effectiveInfluences,
+
+    clanGrantSelections:
+      clanGrants.selections,
+
+    pendingClanGrantChoices:
+      clanGrants.pendingChoices,
+
     backgroundLevels,
 
     influenceLevels,
 
     totalLevels,
+
+    effectiveBackgroundLevels,
+
+    effectiveInfluenceLevels,
+
+    effectiveTotalLevels,
 
     initialTotal,
 
@@ -322,7 +501,8 @@ function validateBackgrounds(
       Math.max(
         0,
         normalizeInteger(
-          backgrounds.generation
+          effectiveBackgrounds
+            .generation
         )
       ),
 
@@ -339,6 +519,10 @@ function validateBackgrounds(
     complete:
       points.complete &&
       errors.length ===
+        0 &&
+      clanGrants
+        .pendingChoices
+        .length ===
         0,
   };
 }

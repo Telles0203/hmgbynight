@@ -35,7 +35,7 @@ import {
 } from "./ability/characterCreationAbilityGrants.js";
 
 import {
-  getFixedClanAbilityGrants,
+  getResolvedClanAbilityGrants,
 } from "../data/clanRuleCatalog.js";
 
 import {
@@ -60,8 +60,9 @@ export function createAbilitiesCreationEditor(
 
 
   const clanAbilityGrants =
-    getFixedClanAbilityGrants(
-      character
+    getResolvedClanAbilityGrants(
+      character,
+      state
     );
 
 
@@ -154,7 +155,8 @@ export function createAbilitiesCreationEditor(
       </div>
 
       ${createClanAbilityGrantSummary(
-        character
+        character,
+        state
       )}
 
       <div class="character-creation-map-editor">

@@ -33,6 +33,15 @@ import {
 } from "./influence/characterCreationInfluenceProgress.js";
 
 import {
+  createClanInfluenceChoiceEditor,
+  readClanInfluenceChoices,
+} from "./influence/characterCreationInfluenceClanGrants.js";
+
+import {
+  resolveCharacterClanResourceGrants,
+} from "../data/clanRuleCatalog.js";
+
+import {
   createFreeTraitPurchaseInput,
   getStateFreeTraitPurchaseOrder,
   isInitialCreationLifecycle,
@@ -110,6 +119,13 @@ export function createInfluenceCreationEditor(
 
   const entries =
     getInfluenceEntries(
+      state
+    );
+
+
+  const clanGrants =
+    resolveCharacterClanResourceGrants(
+      character,
       state
     );
 
@@ -222,6 +238,11 @@ export function createInfluenceCreationEditor(
         character
       )}
 
+      ${createClanInfluenceChoiceEditor(
+        character,
+        state
+      )}
+
       <div
         class="
           character-creation-influence-list
@@ -231,12 +252,16 @@ export function createInfluenceCreationEditor(
         ${createInfluenceRows(
           entries,
           rules.maximum,
-          freeTraitPurchases
+          freeTraitPurchases,
+          clanGrants.influences
         )}
       </div>
 
       ${createInfluencePicker(
-        entries
+        entries,
+        Object.keys(
+          clanGrants.influences
+        )
       )}
 
       <small
@@ -267,6 +292,12 @@ export function readInfluenceCreationSection(
   form,
   state
 ) {
+  readClanInfluenceChoices(
+    form,
+    state
+  );
+
+
   state.influences =
     readInfluences(
       form

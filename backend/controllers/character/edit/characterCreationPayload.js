@@ -481,6 +481,62 @@ function sanitizeFreeTraitPurchaseList(
 }
 
 
+function sanitizeChoiceMap(
+  value
+) {
+  const source =
+    ensurePlainObject(
+      value
+    );
+
+
+  const result =
+    {};
+
+
+  Object.entries(
+    source
+  )
+    .slice(
+      0,
+      30
+    )
+    .forEach(
+      ([
+        rawKey,
+        rawValue,
+      ]) => {
+        const key =
+          sanitizeMapKey(
+            rawKey,
+            100
+          );
+
+
+        const selected =
+          sanitizeMapKey(
+            rawValue,
+            120
+          );
+
+
+        if (
+          key &&
+          selected
+        ) {
+          result[
+            key
+          ] =
+            selected;
+        }
+      }
+    );
+
+
+  return result;
+}
+
+
 function sanitizePriority(
   value
 ) {
@@ -536,6 +592,12 @@ function sanitizeCharacterCreationPayload(
   const freeTraitPurchases =
     ensurePlainObject(
       source.freeTraitPurchases
+    );
+
+
+  const clanGrantChoices =
+    ensurePlainObject(
+      source.clanGrantChoices
     );
 
 
@@ -634,6 +696,14 @@ function sanitizeCharacterCreationPayload(
         sanitizeFreeTraitPurchaseList(
           freeTraitPurchases
             .backgrounds
+        ),
+    },
+
+    clanGrantChoices: {
+      backgroundInfluence:
+        sanitizeChoiceMap(
+          clanGrantChoices
+            .backgroundInfluence
         ),
     },
 

@@ -37,12 +37,25 @@ function getInfluenceValues(
             .toLowerCase();
 
 
-        const level =
+        const effectiveLevel =
           Number(
             row.querySelector(
               "[data-creation-influence-level]"
             )?.textContent
           );
+
+
+        const grantedLevel =
+          Number(
+            row.dataset
+              .creationInfluenceGrant
+          ) ||
+          0;
+
+
+        const level =
+          effectiveLevel -
+          grantedLevel;
 
 
         if (
@@ -204,6 +217,14 @@ function refreshInfluenceRows(
           0;
 
 
+        const grantedLevel =
+          Number(
+            row.dataset
+              .creationInfluenceGrant
+          ) ||
+          0;
+
+
         row.dataset
           .creationFreeTraitLevel =
           String(
@@ -233,7 +254,7 @@ function refreshInfluenceRows(
         if (decrease) {
           decrease.disabled =
             level <=
-            0;
+            grantedLevel;
         }
 
 
@@ -433,6 +454,14 @@ export function adjustCharacterCreationInfluenceLevel(
     0;
 
 
+  const grantedLevel =
+    Number(
+      row.dataset
+        .creationInfluenceGrant
+    ) ||
+    0;
+
+
   const maximum =
     Number(
       form.dataset
@@ -473,7 +502,7 @@ export function adjustCharacterCreationInfluenceLevel(
 
   if (
     next <
-      0 ||
+      grantedLevel ||
     next >
       maximum
   ) {

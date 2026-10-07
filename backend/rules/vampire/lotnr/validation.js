@@ -107,6 +107,30 @@ function normalizeCreationState(
       ),
     },
 
+    clanGrantChoices: {
+      ...defaults
+        .clanGrantChoices,
+
+      ...(
+        value
+          .clanGrantChoices ||
+        {}
+      ),
+
+      backgroundInfluence: {
+        ...defaults
+          .clanGrantChoices
+          .backgroundInfluence,
+
+        ...(
+          value
+            ?.clanGrantChoices
+            ?.backgroundInfluence ||
+          {}
+        ),
+      },
+    },
+
     negativeTraits: {
       ...defaults
         .negativeTraits,
