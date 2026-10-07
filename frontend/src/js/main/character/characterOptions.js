@@ -65,6 +65,13 @@ async function loadCharacterOptions() {
             ? data.clans
             : [],
 
+        clanRules:
+          Array.isArray(
+            data.clanRules
+          )
+            ? data.clanRules
+            : [],
+
         moralityPaths:
           Array.isArray(
             data.moralityPaths

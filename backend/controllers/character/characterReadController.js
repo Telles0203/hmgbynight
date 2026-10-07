@@ -50,6 +50,12 @@ const {
 );
 
 const {
+  getAllClanRules,
+} = require(
+  "../../rules/vampire/lotnr/clanRules"
+);
+
+const {
   RULESET_REFERENCE,
   CHARACTER_CREATION_RULES,
 } = require(
@@ -124,6 +130,9 @@ async function getCharacterOptions(
               clan.label,
           })
         ),
+
+      clanRules:
+        getAllClanRules(),
 
       moralityPaths:
         getCoreMoralityPaths()
