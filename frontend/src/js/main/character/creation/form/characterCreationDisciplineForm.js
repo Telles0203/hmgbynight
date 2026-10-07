@@ -29,6 +29,60 @@ import {
 } from "./discipline/characterCreationDisciplineOutside.js";
 
 
+function createDisciplineCreationLimitNotice(
+  maximum
+) {
+  const normalizedMaximum =
+    Number.isInteger(
+      Number(
+        maximum
+      )
+    )
+      ? Number(
+          maximum
+        )
+      : 2;
+
+
+  return `
+    <div
+      class="
+        small
+        rounded
+        px-2
+        py-2
+        character-creation-discipline-limit-notice
+      "
+    >
+      <div>
+        <strong class="character-creation-discipline-limit-highlight">
+          Limite na criação:
+        </strong>
+
+        cada Disciplina pode possuir no máximo
+
+        <strong class="character-creation-discipline-limit-highlight">
+          ${normalizedMaximum} níveis
+        </strong>.
+
+        Níveis Intermediate e Advanced são adquiridos após a criação.
+      </div>
+
+      <div
+        class="
+          mt-1
+          character-creation-discipline-limit-reference
+        "
+      >
+        <em>
+          Referência: Laws of the Night Revised, p. 67.
+        </em>
+      </div>
+    </div>
+  `;
+}
+
+
 function createFixedDisciplineEditor(
   character,
   state
@@ -126,6 +180,10 @@ function createFixedDisciplineEditor(
 
       </div>
 
+      ${createDisciplineCreationLimitNotice(
+        rules.maximum
+      )}
+
       <div
         class="
           character-creation-discipline-list
@@ -180,6 +238,12 @@ function createFallbackDisciplineEditor(
   character,
   state
 ) {
+  const rules =
+    getDisciplineCreationRules(
+      character
+    );
+
+
   return `
     <form
       class="
@@ -199,6 +263,10 @@ function createFallbackDisciplineEditor(
           Disciplinas
         </strong>
       </div>
+
+      ${createDisciplineCreationLimitNotice(
+        rules.maximum
+      )}
 
       ${createCreationMapEditor({
         mapName:

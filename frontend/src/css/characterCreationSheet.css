@@ -1144,3 +1144,20 @@
 .character-creation-discipline-controls {
   flex-wrap: nowrap;
 }
+
+
+.character-creation-discipline-limit-notice {
+  border: 1px solid rgba(185, 0, 25, 0.34);
+  background: rgba(185, 0, 25, 0.07);
+  color: #cfd8e4;
+}
+
+.character-creation-discipline-limit-highlight {
+  color: #f1c7cd;
+  font-weight: 700;
+}
+
+.character-creation-discipline-limit-reference {
+  color: #9faab8;
+  font-size: 0.64rem;
+}
