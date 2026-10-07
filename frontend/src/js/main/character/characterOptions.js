@@ -79,6 +79,19 @@ async function loadCharacterOptions() {
             ? data.abilities
             : [],
 
+        abilityRules:
+          data.abilityRules &&
+          typeof data.abilityRules ===
+            "object"
+            ? data.abilityRules
+            : {
+                total:
+                  5,
+
+                freeTraitCost:
+                  1,
+              },
+
         disciplines:
           Array.isArray(
             data.disciplines

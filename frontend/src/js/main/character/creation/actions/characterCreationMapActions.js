@@ -4,6 +4,7 @@ import {
 
 import {
   appendCharacterCreationAbilityRow,
+  refreshCharacterCreationAbilityEditor,
 } from "../form/characterCreationAbilityForm.js";
 
 
@@ -82,6 +83,12 @@ export function removeCharacterCreationMapRow(
     row?.parentElement;
 
 
+  const form =
+    button.closest(
+      "[data-character-creation-inline-form]"
+    );
+
+
   if (
     !row ||
     !container
@@ -108,10 +115,27 @@ export function removeCharacterCreationMapRow(
 
 
   if (
-    container.children.length !==
-    0
+    container.children.length ===
+      0
   ) {
-    return;
+    if (
+      type ===
+      "ability"
+    ) {
+      appendCharacterCreationAbilityRow(
+        container
+      );
+
+
+      return;
+    }
+
+
+    appendCharacterCreationMapRow(
+      container,
+      mapName,
+      type
+    );
   }
 
 
@@ -119,18 +143,8 @@ export function removeCharacterCreationMapRow(
     type ===
     "ability"
   ) {
-    appendCharacterCreationAbilityRow(
-      container
+    refreshCharacterCreationAbilityEditor(
+      form
     );
-
-
-    return;
   }
-
-
-  appendCharacterCreationMapRow(
-    container,
-    mapName,
-    type
-  );
 }

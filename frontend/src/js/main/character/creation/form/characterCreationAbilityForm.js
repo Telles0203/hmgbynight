@@ -1,208 +1,86 @@
 import {
-  escapeSheetHtml,
-} from "../../view/sheet/characterSheetCommon.js";
-
-import {
   createCreationActions,
 } from "./characterCreationFormCommon.js";
 
+import {
+  getAbilityCreationRules,
+} from "./ability/characterCreationAbilityCatalog.js";
 
-function getAbilityOptions() {
-  const options =
-    window.ByNightMain
-      ?.character
-      ?.options
-      ?.abilities;
+import {
+  createAbilityRow,
+  createAbilityRows,
+  readAbilityMap,
+} from "./ability/characterCreationAbilityRows.js";
 
-
-  return Array.isArray(
-    options
-  )
-    ? options
-    : [];
-}
-
-
-function createAbilityOptions(
-  selectedValue = ""
-) {
-  const selected =
-    String(
-      selectedValue ||
-      ""
-    );
-
-
-  return [
-    `
-      <option value="">
-        Selecione uma Habilidade
-      </option>
-    `,
-
-    ...getAbilityOptions()
-      .map(
-        (
-          ability
-        ) => {
-          const value =
-            String(
-              ability?.value ||
-              ""
-            );
-
-
-          const label =
-            String(
-              ability?.label ||
-              value
-            );
-
-
-          return `
-            <option
-              value="${escapeSheetHtml(
-                value
-              )}"
-              ${value === selected
-                ? "selected"
-                : ""}
-            >
-              ${escapeSheetHtml(
-                label
-              )}
-            </option>
-          `;
-        }
-      ),
-  ].join("");
-}
-
-
-function createAbilityRow(
-  ability = "",
-  level = 1
-) {
-  const normalizedLevel =
-    Number.isInteger(
-      Number(
-        level
-      )
-    )
-      ? Math.max(
-          1,
-          Number(
-            level
-          )
-        )
-      : 1;
-
-
-  return `
-    <div
-      class="character-creation-map-row"
-      data-creation-map="abilities"
-      data-creation-map-type="ability"
-    >
-
-      <select
-        class="
-          form-select
-          form-select-sm
-          bg-black
-          text-light
-          border-secondary
-        "
-        data-creation-ability-key
-      >
-        ${createAbilityOptions(
-          ability
-        )}
-      </select>
-
-      <input
-        type="number"
-        class="
-          form-control
-          form-control-sm
-          bg-black
-          text-light
-          border-secondary
-          character-creation-map-level
-        "
-        data-creation-ability-level
-        min="1"
-        max="20"
-        step="1"
-        value="${escapeSheetHtml(
-          normalizedLevel
-        )}"
-        aria-label="Nível da Habilidade"
-      >
-
-      <button
-        type="button"
-        class="btn btn-outline-danger btn-sm"
-        data-character-creation-remove-row
-        aria-label="Remover Habilidade"
-        title="Remover Habilidade"
-      >
-        ×
-      </button>
-
-    </div>
-  `;
-}
-
-
-function createAbilityRows(
-  values
-) {
-  const entries =
-    Object.entries(
-      values ||
-      {}
-    );
-
-
-  if (
-    entries.length ===
-    0
-  ) {
-    return createAbilityRow();
-  }
-
-
-  return entries
-    .map(
-      ([
-        ability,
-        level,
-      ]) =>
-        createAbilityRow(
-          ability,
-          level
-        )
-    )
-    .join("");
-}
+import {
+  getStateAbilityProgress,
+  refreshCharacterCreationAbilityEditor,
+  adjustCharacterCreationAbilityLevel,
+} from "./ability/characterCreationAbilityProgress.js";
 
 
 export function createAbilitiesCreationEditor(
   character,
   state
 ) {
+  const rules =
+    getAbilityCreationRules(
+      character
+    );
+
+
+  const progress =
+    getStateAbilityProgress(
+      state,
+      rules.total,
+      rules.freeTraitCost
+    );
+
+
+  const highlight =
+    progress.spent >
+    progress.total;
+
+
   return `
     <form
       class="character-creation-inline-editor"
       data-character-creation-inline-form
       data-character-creation-section="abilities"
+      data-ability-creation-total="${rules.total}"
+      data-ability-free-trait-cost="${rules.freeTraitCost}"
+      data-ability-maximum="${rules.maximum}"
     >
 
-      <div class="character-creation-inline-heading">
+      <div
+        class="
+          character-creation-inline-heading
+          d-flex
+          justify-content-between
+          align-items-center
+          gap-2
+        "
+      >
+
         <strong>
           Habilidades
         </strong>
+
+        <span
+          class="
+            badge
+            rounded-pill
+            border
+            bg-transparent
+            ${highlight
+              ? "border-danger text-danger"
+              : "border-secondary text-secondary"}
+          "
+          data-creation-ability-points
+        >
+          ${progress.spent}/${progress.total}
+        </span>
+
       </div>
 
       <div class="character-creation-map-editor">
@@ -229,11 +107,27 @@ export function createAbilitiesCreationEditor(
           data-character-creation-map-container="abilities"
         >
           ${createAbilityRows(
-            state?.abilities
+            state?.abilities,
+            rules.maximum
           )}
         </div>
 
       </div>
+
+      <small
+        class="
+          character-free-trait-inline-cost
+          mt-2
+          ${progress.freeTraitCost > 0
+            ? ""
+            : "d-none"}
+        "
+        data-creation-ability-free-trait-cost
+      >
+        ${progress.freeTraitCost > 0
+          ? `Extra da criação: -${progress.freeTraitCost} Free Trait${progress.freeTraitCost === 1 ? "" : "s"}`
+          : ""}
+      </small>
 
       <div class="small text-secondary mt-2">
         Focos e Especializações serão configurados nas próximas etapas.
@@ -251,6 +145,21 @@ export function createAbilitiesCreationEditor(
 export function appendCharacterCreationAbilityRow(
   container
 ) {
+  const form =
+    container.closest(
+      "[data-character-creation-inline-form]"
+    );
+
+
+  const maximum =
+    Number(
+      form
+        ?.dataset
+        ?.abilityMaximum
+    ) ||
+    5;
+
+
   const wrapper =
     document.createElement(
       "div"
@@ -258,7 +167,11 @@ export function appendCharacterCreationAbilityRow(
 
 
   wrapper.innerHTML =
-    createAbilityRow();
+    createAbilityRow(
+      "",
+      1,
+      maximum
+    );
 
 
   const row =
@@ -278,61 +191,11 @@ export function appendCharacterCreationAbilityRow(
   row.querySelector(
     "[data-creation-ability-key]"
   )?.focus();
-}
 
 
-function readAbilityMap(
-  form
-) {
-  const abilities =
-    {};
-
-
-  form
-    .querySelectorAll(
-      '.character-creation-map-row[data-creation-map="abilities"]'
-    )
-    .forEach(
-      (
-        row
-      ) => {
-        const ability =
-          String(
-            row.querySelector(
-              "[data-creation-ability-key]"
-            )?.value ||
-            ""
-          )
-            .trim()
-            .toLowerCase();
-
-
-        const level =
-          Number(
-            row.querySelector(
-              "[data-creation-ability-level]"
-            )?.value
-          );
-
-
-        if (
-          ability &&
-          Number.isInteger(
-            level
-          ) &&
-          level >
-          0
-        ) {
-          abilities[
-            ability
-          ] =
-            level;
-        }
-      }
-    );
-
-
-  return abilities;
+  refreshCharacterCreationAbilityEditor(
+    form
+  );
 }
 
 
@@ -381,3 +244,9 @@ export function readAbilitiesCreationSection(
 
   return state;
 }
+
+
+export {
+  refreshCharacterCreationAbilityEditor,
+  adjustCharacterCreationAbilityLevel,
+};

@@ -16,6 +16,11 @@ import {
 } from "./characterCreationForm.js";
 
 import {
+  adjustCharacterCreationAbilityLevel,
+  refreshCharacterCreationAbilityEditor,
+} from "./form/characterCreationAbilityForm.js";
+
+import {
   adjustWillpowerCreation,
 } from "./form/characterCreationWillpowerForm.js";
 
@@ -199,6 +204,27 @@ function handleDocumentClick(
   }
 
 
+  const abilityButton =
+    target.closest(
+      "[data-character-creation-ability-action]"
+    );
+
+
+  if (
+    abilityButton
+  ) {
+    event.preventDefault();
+
+
+    adjustCharacterCreationAbilityLevel(
+      abilityButton
+    );
+
+
+    return;
+  }
+
+
   const removeButton =
     target.closest(
       "[data-character-creation-remove-row]"
@@ -263,6 +289,19 @@ function handleDocumentChange(
   ) {
     handleAttributePriorityChange(
       target
+    );
+  }
+
+
+  if (
+    target.matches(
+      "[data-creation-ability-key]"
+    )
+  ) {
+    refreshCharacterCreationAbilityEditor(
+      target.closest(
+        "[data-character-creation-inline-form]"
+      )
     );
   }
 }

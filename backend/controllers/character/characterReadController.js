@@ -51,6 +51,7 @@ const {
 
 const {
   RULESET_REFERENCE,
+  CHARACTER_CREATION_RULES,
 } = require(
   "../../rules/vampire/lotnr/ruleset"
 );
@@ -145,6 +146,19 @@ async function getCharacterOptions(
 
       abilities:
         getCoreAbilities(),
+
+      abilityRules: {
+        total:
+          CHARACTER_CREATION_RULES
+            .abilities
+            .total,
+
+        freeTraitCost:
+          CHARACTER_CREATION_RULES
+            .freeTraits
+            .costs
+            .ability,
+      },
 
 
       disciplines:

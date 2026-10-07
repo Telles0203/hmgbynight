@@ -35,12 +35,57 @@ function readFile(
 }
 
 
+function assertBelowEightHundredLines(
+  relativePath
+) {
+  const source =
+    readFile(
+      relativePath
+    );
+
+
+  const lines =
+    source.split(
+      /\r?\n/
+    ).length;
+
+
+  assert.equal(
+    lines <
+      800,
+    true,
+    `${relativePath} possui ${lines} linhas.`
+  );
+
+
+  return source;
+}
+
+
 test(
-  "Ability editor uses a focused catalog-backed module",
+  "Ability editor uses focused catalog-backed modules",
   () => {
     const abilityForm =
-      readFile(
+      assertBelowEightHundredLines(
         "frontend/src/js/main/character/creation/form/characterCreationAbilityForm.js"
+      );
+
+
+    const catalog =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityCatalog.js"
+      );
+
+
+    const rows =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityRows.js"
+      );
+
+
+    const progress =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityProgress.js"
       );
 
 
@@ -51,18 +96,23 @@ test(
 
 
     assert.equal(
-      abilityForm
-        .split(
-          /\r?\n/
-        )
-        .length <
-        800,
+      abilityForm.includes(
+        "./ability/characterCreationAbilityCatalog.js"
+      ),
       true
     );
 
 
     assert.equal(
-      abilityForm.includes(
+      catalog.includes(
+        "getAbilityCreationRules"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      rows.includes(
         "data-creation-ability-key"
       ),
       true
@@ -70,10 +120,18 @@ test(
 
 
     assert.equal(
-      abilityForm.includes(
-        "form-select"
+      progress.includes(
+        "data-creation-ability-points"
       ),
       true
+    );
+
+
+    assert.equal(
+      rows.includes(
+        'type="number"'
+      ),
+      false
     );
 
 
@@ -88,7 +146,34 @@ test(
 
 
 test(
-  "Ability options come from the backend catalog",
+  "Ability sheet exposes creation progress and Free Trait spending",
+  () => {
+    const source =
+      readFile(
+        "frontend/src/js/main/character/view/sheet/characterSheetAbilities.js"
+      );
+
+
+    assert.equal(
+      source.includes(
+        "createCharacterAbilityContent"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      source.includes(
+        "createFreeTraitCostNotice"
+      ),
+      true
+    );
+  }
+);
+
+
+test(
+  "Ability options and creation rules come from the backend",
   () => {
     const readController =
       readFile(
@@ -111,8 +196,24 @@ test(
 
 
     assert.equal(
+      readController.includes(
+        "abilityRules"
+      ),
+      true
+    );
+
+
+    assert.equal(
       frontendOptions.includes(
         "data.abilities"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      frontendOptions.includes(
+        "data.abilityRules"
       ),
       true
     );

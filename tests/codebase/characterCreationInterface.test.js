@@ -167,6 +167,11 @@ test(
         "characterSheetCreationLists.js"
       ),
 
+      path.join(
+        sheetDirectory,
+        "characterSheetAbilities.js"
+      ),
+
       creationResourcesPath,
 
       editorPath,

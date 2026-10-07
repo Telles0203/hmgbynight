@@ -8,6 +8,10 @@ import {
   } from "./characterSheetCreationLists.js";
 
 import {
+  createCharacterAbilityContent,
+} from "./characterSheetAbilities.js";
+
+import {
   createCreationSectionTitle,
   createAttributeSection,
   } from "./characterSheetCreationAttributes.js";
@@ -474,12 +478,19 @@ export function createCharacterCreationSections(
             editable,
 
             content:
-              createCreationMapList(
-                state.abilities,
-                "Nenhuma habilidade cadastrada.",
-                state.specializations,
-                abilityLabels
-              ),
+              createCharacterAbilityContent({
+                state,
+
+                progress:
+                  sections.abilities,
+
+                freeTraitCost:
+                  freeTraitSpending
+                    .abilities,
+
+                labels:
+                  abilityLabels,
+              }),
           })}
 
           ${createStaticGroup(
