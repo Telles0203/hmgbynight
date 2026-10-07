@@ -92,6 +92,17 @@ function normalizeCreationState(
       value.backgrounds ||
       {},
 
+    freeTraitPurchases: {
+      ...defaults
+        .freeTraitPurchases,
+
+      ...(
+        value
+          .freeTraitPurchases ||
+        {}
+      ),
+    },
+
     negativeTraits: {
       ...defaults
         .negativeTraits,

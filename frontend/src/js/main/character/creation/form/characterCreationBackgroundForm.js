@@ -22,6 +22,16 @@ import {
   adjustCharacterCreationBackgroundLevel,
 } from "./background/characterCreationBackgroundProgress.js";
 
+import {
+  createFreeTraitPurchaseInput,
+  getFreeTraitPurchaseCounts,
+  getStateFreeTraitPurchaseOrder,
+  isInitialCreationLifecycle,
+  normalizeFreeTraitPurchaseOrder,
+  readFreeTraitPurchaseOrder,
+  setStateFreeTraitPurchaseOrder,
+} from "../freeTraits/characterCreationFreeTraitPurchases.js";
+
 
 function createBackgroundRuleNotice(
   rules,
@@ -127,6 +137,32 @@ export function createBackgroundCreationEditor(
     rules.freeTraitCost;
 
 
+  const freeTraitOrder =
+    isInitialCreationLifecycle(
+      character
+    )
+      ? normalizeFreeTraitPurchaseOrder({
+          order:
+            getStateFreeTraitPurchaseOrder(
+              state,
+              "backgrounds"
+            ),
+
+          values:
+            state?.backgrounds,
+
+          total:
+            rules.total,
+        })
+      : [];
+
+
+  const freeTraitPurchases =
+    getFreeTraitPurchaseCounts(
+      freeTraitOrder
+    );
+
+
   return `
     <form
       class="
@@ -138,6 +174,11 @@ export function createBackgroundCreationEditor(
       data-background-free-trait-cost="${rules.freeTraitCost}"
       data-background-maximum="${rules.maximum}"
     >
+
+      ${createFreeTraitPurchaseInput(
+        "backgrounds",
+        freeTraitOrder
+      )}
 
       <div
         class="
@@ -183,7 +224,8 @@ export function createBackgroundCreationEditor(
       >
         ${createBackgroundRows(
           entries,
-          rules.maximum
+          rules.maximum,
+          freeTraitPurchases
         )}
       </div>
 
@@ -223,6 +265,29 @@ export function readBackgroundCreationSection(
     readBackgrounds(
       form
     );
+
+
+  setStateFreeTraitPurchaseOrder(
+    state,
+    "backgrounds",
+    normalizeFreeTraitPurchaseOrder({
+      order:
+        readFreeTraitPurchaseOrder(
+          form,
+          "backgrounds"
+        ),
+
+      values:
+        state.backgrounds,
+
+      total:
+        Number(
+          form.dataset
+            .backgroundCreationTotal
+        ) ||
+        5,
+    })
+  );
 
 
   return state;

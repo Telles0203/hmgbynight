@@ -28,6 +28,16 @@ import {
   removeOutsideDiscipline,
 } from "./discipline/characterCreationDisciplineOutside.js";
 
+import {
+  createFreeTraitPurchaseInput,
+  getFreeTraitPurchaseCounts,
+  getStateFreeTraitPurchaseOrder,
+  isInitialCreationLifecycle,
+  normalizeFreeTraitPurchaseOrder,
+  readFreeTraitPurchaseOrder,
+  setStateFreeTraitPurchaseOrder,
+} from "../freeTraits/characterCreationFreeTraitPurchases.js";
+
 
 function createDisciplineCreationLimitNotice(
   maximum
@@ -136,6 +146,32 @@ function createFixedDisciplineEditor(
     rules.total;
 
 
+  const freeTraitOrder =
+    isInitialCreationLifecycle(
+      character
+    )
+      ? normalizeFreeTraitPurchaseOrder({
+          order:
+            getStateFreeTraitPurchaseOrder(
+              state,
+              "disciplines"
+            ),
+
+          values:
+            state?.disciplines,
+
+          total:
+            rules.total,
+        })
+      : [];
+
+
+  const freeTraitPurchases =
+    getFreeTraitPurchaseCounts(
+      freeTraitOrder
+    );
+
+
   return `
     <form
       class="
@@ -148,6 +184,11 @@ function createFixedDisciplineEditor(
       data-discipline-free-trait-cost="${rules.freeTraitCost}"
       data-discipline-maximum="${rules.maximum}"
     >
+
+      ${createFreeTraitPurchaseInput(
+        "disciplines",
+        freeTraitOrder
+      )}
 
       <div
         class="
@@ -192,7 +233,8 @@ function createFixedDisciplineEditor(
       >
         ${createDisciplineRows(
           entries,
-          rules.maximum
+          rules.maximum,
+          freeTraitPurchases
         )}
       </div>
 
@@ -338,6 +380,34 @@ export function readDisciplineCreationSection(
           form,
           "disciplines"
         );
+
+
+  if (
+    mode ===
+    "fixed"
+  ) {
+    setStateFreeTraitPurchaseOrder(
+      state,
+      "disciplines",
+      normalizeFreeTraitPurchaseOrder({
+        order:
+          readFreeTraitPurchaseOrder(
+            form,
+            "disciplines"
+          ),
+
+        values:
+          state.disciplines,
+
+        total:
+          Number(
+            form.dataset
+              .disciplineCreationTotal
+          ) ||
+          3,
+      })
+    );
+  }
 
 
   return state;

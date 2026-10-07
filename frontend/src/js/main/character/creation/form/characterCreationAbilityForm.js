@@ -38,6 +38,16 @@ import {
   getFixedClanAbilityGrants,
 } from "../data/clanRuleCatalog.js";
 
+import {
+  createFreeTraitPurchaseInput,
+  getFreeTraitPurchaseCounts,
+  getStateFreeTraitPurchaseOrder,
+  isInitialCreationLifecycle,
+  normalizeFreeTraitPurchaseOrder,
+  readFreeTraitPurchaseOrder,
+  setStateFreeTraitPurchaseOrder,
+} from "../freeTraits/characterCreationFreeTraitPurchases.js";
+
 
 export function createAbilitiesCreationEditor(
   character,
@@ -70,6 +80,32 @@ export function createAbilitiesCreationEditor(
     progress.total;
 
 
+  const freeTraitOrder =
+    isInitialCreationLifecycle(
+      character
+    )
+      ? normalizeFreeTraitPurchaseOrder({
+          order:
+            getStateFreeTraitPurchaseOrder(
+              state,
+              "abilities"
+            ),
+
+          values:
+            state?.abilities,
+
+          total:
+            rules.total,
+        })
+      : [];
+
+
+  const freeTraitPurchases =
+    getFreeTraitPurchaseCounts(
+      freeTraitOrder
+    );
+
+
   return `
     <form
       class="character-creation-inline-editor"
@@ -80,6 +116,11 @@ export function createAbilitiesCreationEditor(
       data-ability-specialization-free-trait-cost="${rules.specializationFreeTraitCost}"
       data-ability-maximum="${rules.maximum}"
     >
+
+      ${createFreeTraitPurchaseInput(
+        "abilities",
+        freeTraitOrder
+      )}
 
       <div
         class="
@@ -143,7 +184,8 @@ export function createAbilitiesCreationEditor(
             state?.abilities,
             state?.specializations,
             rules.maximum,
-            clanAbilityGrants
+            clanAbilityGrants,
+            freeTraitPurchases
           )}
         </div>
 
@@ -254,7 +296,11 @@ export function appendCharacterCreationAbilityRow(
 
 
   refreshCharacterCreationAbilityEditor(
-    form
+    form,
+    {
+      preferredRow:
+        row,
+    }
   );
 }
 
@@ -277,6 +323,29 @@ export function readAbilitiesCreationSection(
     readAbilitySpecializations(
       form
     );
+
+
+  setStateFreeTraitPurchaseOrder(
+    state,
+    "abilities",
+    normalizeFreeTraitPurchaseOrder({
+      order:
+        readFreeTraitPurchaseOrder(
+          form,
+          "abilities"
+        ),
+
+      values:
+        abilities,
+
+      total:
+        Number(
+          form.dataset
+            .abilityCreationTotal
+        ) ||
+        5,
+    })
+  );
 
 
   return state;

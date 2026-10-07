@@ -141,3 +141,56 @@
       0.35
     );
 }
+
+.character-creation-ability-row.is-free-trait-spend
+.character-creation-ability-summary-name,
+.character-creation-ability-row.is-free-trait-spend
+.character-creation-ability-summary-level,
+.character-creation-ability-row.is-free-trait-spend
+[data-creation-ability-level],
+.character-creation-discipline-row.is-free-trait-spend
+.character-creation-discipline-name,
+.character-creation-discipline-row.is-free-trait-spend
+[data-creation-discipline-level],
+.character-creation-background-row.is-free-trait-spend
+.character-creation-background-name,
+.character-creation-background-row.is-free-trait-spend
+[data-creation-background-level],
+.character-ability-sheet-row.is-free-trait-spend
+.character-sheet-label,
+.character-ability-sheet-row.is-free-trait-spend
+.character-sheet-value,
+.character-discipline-sheet-row.is-free-trait-spend
+.character-sheet-label,
+.character-discipline-sheet-row.is-free-trait-spend
+.character-sheet-value,
+.character-background-sheet-row.is-free-trait-spend
+.character-sheet-label,
+.character-background-sheet-row.is-free-trait-spend
+.character-sheet-value {
+  color: #ff6b6b !important;
+  font-weight: 700;
+}
+
+.character-creation-ability-row.is-free-trait-spend,
+.character-creation-discipline-row.is-free-trait-spend,
+.character-creation-background-row.is-free-trait-spend {
+  border-color: rgba(
+    220,
+    53,
+    69,
+    0.55
+  );
+}
+
+.character-creation-ability-row.is-free-trait-spend::selection,
+.character-creation-discipline-row.is-free-trait-spend::selection,
+.character-creation-background-row.is-free-trait-spend::selection {
+  background:
+    rgba(
+      220,
+      53,
+      69,
+      0.35
+    );
+}

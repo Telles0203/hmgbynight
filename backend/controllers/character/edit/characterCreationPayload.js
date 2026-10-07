@@ -452,6 +452,35 @@ function sanitizeSpecializationMap(
 }
 
 
+function sanitizeFreeTraitPurchaseList(
+  value
+) {
+  return sanitizeStringArray(
+    value,
+    {
+      maxItems:
+        60,
+
+      maxLength:
+        100,
+    }
+  )
+    .map(
+      (
+        item
+      ) =>
+        String(
+          item
+        )
+          .trim()
+          .toLowerCase()
+    )
+    .filter(
+      Boolean
+    );
+}
+
+
 function sanitizePriority(
   value
 ) {
@@ -501,6 +530,12 @@ function sanitizeCharacterCreationPayload(
   const negativeTraits =
     ensurePlainObject(
       source.negativeTraits
+    );
+
+
+  const freeTraitPurchases =
+    ensurePlainObject(
+      source.freeTraitPurchases
     );
 
 
@@ -572,6 +607,26 @@ function sanitizeCharacterCreationPayload(
             10,
         }
       ),
+
+    freeTraitPurchases: {
+      abilities:
+        sanitizeFreeTraitPurchaseList(
+          freeTraitPurchases
+            .abilities
+        ),
+
+      disciplines:
+        sanitizeFreeTraitPurchaseList(
+          freeTraitPurchases
+            .disciplines
+        ),
+
+      backgrounds:
+        sanitizeFreeTraitPurchaseList(
+          freeTraitPurchases
+            .backgrounds
+        ),
+    },
 
     moralityAdjustment:
       sanitizeInteger(

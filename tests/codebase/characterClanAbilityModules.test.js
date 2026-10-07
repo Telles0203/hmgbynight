@@ -196,6 +196,12 @@ test(
       );
 
 
+    const freeTraits =
+      assertBelowEightHundredLines(
+        "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityFreeTraits.js"
+      );
+
+
     const effective =
       assertBelowEightHundredLines(
         "frontend/src/js/main/character/creation/form/ability/characterCreationAbilityEffective.js"
@@ -236,7 +242,23 @@ test(
 
     assert.equal(
       progress.includes(
+        "getAbilityRowGrantLevel"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      freeTraits.includes(
         "creationAbilityGrant"
+      ),
+      true
+    );
+
+
+    assert.equal(
+      freeTraits.includes(
+        "getAbilityRowGrantLevel"
       ),
       true
     );

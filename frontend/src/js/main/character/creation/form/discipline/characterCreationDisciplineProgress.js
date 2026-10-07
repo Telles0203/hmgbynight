@@ -1,3 +1,9 @@
+import {
+  getFreeTraitPurchaseCounts,
+  reconcileFormFreeTraitPurchases,
+} from "../../freeTraits/characterCreationFreeTraitPurchases.js";
+
+
 function getDisciplineEditorProgress(
   form
 ) {
@@ -130,8 +136,123 @@ function refreshDisciplineRowControls(
 }
 
 
-export function refreshCharacterCreationDisciplineEditor(
+function getDisciplineValues(
   form
+) {
+  const values =
+    {};
+
+
+  form
+    .querySelectorAll(
+      "[data-creation-discipline-row]"
+    )
+    .forEach(
+      (
+        row
+      ) => {
+        const key =
+          String(
+            row.dataset
+              .creationDisciplineKey ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+
+        const level =
+          Number(
+            row.querySelector(
+              "[data-creation-discipline-level]"
+            )?.textContent
+          );
+
+
+        if (
+          key &&
+          Number.isInteger(
+            level
+          ) &&
+          level >
+            0
+        ) {
+          values[
+            key
+          ] =
+            level;
+        }
+      }
+    );
+
+
+  return values;
+}
+
+
+function getDisciplineRowKey(
+  row
+) {
+  return String(
+    row?.dataset
+      ?.creationDisciplineKey ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+}
+
+
+function refreshDisciplineFreeTraitRows(
+  form,
+  order
+) {
+  const counts =
+    getFreeTraitPurchaseCounts(
+      order
+    );
+
+
+  form
+    .querySelectorAll(
+      "[data-creation-discipline-row]"
+    )
+    .forEach(
+      (
+        row
+      ) => {
+        const count =
+          counts[
+            getDisciplineRowKey(
+              row
+            )
+          ] ||
+          0;
+
+
+        row.dataset
+          .creationFreeTraitLevel =
+          String(
+            count
+          );
+
+
+        row.classList.toggle(
+          "is-free-trait-spend",
+          count >
+            0
+        );
+      }
+    );
+}
+
+
+export function refreshCharacterCreationDisciplineEditor(
+  form,
+  {
+    preferredRow = null,
+    reductionRow = null,
+  } = {}
 ) {
   if (!form) {
     return;
@@ -142,6 +263,39 @@ export function refreshCharacterCreationDisciplineEditor(
     getDisciplineEditorProgress(
       form
     );
+
+
+  const order =
+    reconcileFormFreeTraitPurchases({
+      form,
+
+      section:
+        "disciplines",
+
+      values:
+        getDisciplineValues(
+          form
+        ),
+
+      total:
+        progress.total,
+
+      preferredKey:
+        getDisciplineRowKey(
+          preferredRow
+        ),
+
+      reductionKey:
+        getDisciplineRowKey(
+          reductionRow
+        ),
+    });
+
+
+  refreshDisciplineFreeTraitRows(
+    form,
+    order
+  );
 
 
   const counter =
@@ -316,6 +470,16 @@ export function adjustCharacterCreationDisciplineLevel(
 
 
   refreshCharacterCreationDisciplineEditor(
-    form
+    form,
+    direction >
+      0
+      ? {
+          preferredRow:
+            row,
+        }
+      : {
+          reductionRow:
+            row,
+        }
   );
 }

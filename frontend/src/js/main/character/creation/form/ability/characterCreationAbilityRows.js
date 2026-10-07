@@ -366,7 +366,8 @@ export function createAbilityRow(
   specialization = "",
   maximum = 5,
   expanded = !entryKey,
-  grantedLevel = 0
+  grantedLevel = 0,
+  freeTraitLevel = 0
 ) {
   const parsed =
     parseAbilityEntryKey(
@@ -413,6 +414,9 @@ export function createAbilityRow(
         ${expanded
           ? "is-expanded"
           : ""}
+        ${freeTraitLevel > 0
+          ? "is-free-trait-spend"
+          : ""}
       "
       data-creation-map="abilities"
       data-creation-map-type="ability"
@@ -420,6 +424,13 @@ export function createAbilityRow(
         parsed.ability
       )}"
       data-creation-ability-grant="${normalizedGrant}"
+      data-creation-free-trait-level="${Math.max(
+        0,
+        Number(
+          freeTraitLevel
+        ) ||
+        0
+      )}"
     >
 
       ${createAbilitySummary(
@@ -448,7 +459,8 @@ export function createAbilityRows(
   values,
   specializations,
   maximum,
-  grants = {}
+  grants = {},
+  freeTraitPurchases = {}
 ) {
   const entries =
     createEffectiveAbilityRows(
@@ -484,7 +496,11 @@ export function createAbilityRows(
           entry.specialization,
           maximum,
           false,
-          entry.grantedLevel
+          entry.grantedLevel,
+          freeTraitPurchases[
+            entry.entryKey
+          ] ||
+          0
         )
     )
     .join("");

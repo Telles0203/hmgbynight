@@ -1,3 +1,9 @@
+import {
+  getFreeTraitPurchaseCounts,
+  reconcileFormFreeTraitPurchases,
+} from "../../freeTraits/characterCreationFreeTraitPurchases.js";
+
+
 export function getBackgroundEditorProgress(
   form
 ) {
@@ -154,8 +160,123 @@ function refreshBackgroundRowControls(
 }
 
 
-export function refreshCharacterCreationBackgroundEditor(
+function getBackgroundValues(
   form
+) {
+  const values =
+    {};
+
+
+  form
+    .querySelectorAll(
+      "[data-creation-background-row]"
+    )
+    .forEach(
+      (
+        row
+      ) => {
+        const key =
+          String(
+            row.dataset
+              .creationBackgroundKey ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+
+        const level =
+          Number(
+            row.querySelector(
+              "[data-creation-background-level]"
+            )?.textContent
+          );
+
+
+        if (
+          key &&
+          Number.isInteger(
+            level
+          ) &&
+          level >
+            0
+        ) {
+          values[
+            key
+          ] =
+            level;
+        }
+      }
+    );
+
+
+  return values;
+}
+
+
+function getBackgroundRowKey(
+  row
+) {
+  return String(
+    row?.dataset
+      ?.creationBackgroundKey ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+}
+
+
+function refreshBackgroundFreeTraitRows(
+  form,
+  order
+) {
+  const counts =
+    getFreeTraitPurchaseCounts(
+      order
+    );
+
+
+  form
+    .querySelectorAll(
+      "[data-creation-background-row]"
+    )
+    .forEach(
+      (
+        row
+      ) => {
+        const count =
+          counts[
+            getBackgroundRowKey(
+              row
+            )
+          ] ||
+          0;
+
+
+        row.dataset
+          .creationFreeTraitLevel =
+          String(
+            count
+          );
+
+
+        row.classList.toggle(
+          "is-free-trait-spend",
+          count >
+            0
+        );
+      }
+    );
+}
+
+
+export function refreshCharacterCreationBackgroundEditor(
+  form,
+  {
+    preferredRow = null,
+    reductionRow = null,
+  } = {}
 ) {
   if (!form) {
     return;
@@ -166,6 +287,39 @@ export function refreshCharacterCreationBackgroundEditor(
     getBackgroundEditorProgress(
       form
     );
+
+
+  const order =
+    reconcileFormFreeTraitPurchases({
+      form,
+
+      section:
+        "backgrounds",
+
+      values:
+        getBackgroundValues(
+          form
+        ),
+
+      total:
+        progress.total,
+
+      preferredKey:
+        getBackgroundRowKey(
+          preferredRow
+        ),
+
+      reductionKey:
+        getBackgroundRowKey(
+          reductionRow
+        ),
+    });
+
+
+  refreshBackgroundFreeTraitRows(
+    form,
+    order
+  );
 
 
   const counter =
@@ -343,6 +497,16 @@ export function adjustCharacterCreationBackgroundLevel(
 
 
   refreshCharacterCreationBackgroundEditor(
-    form
+    form,
+    direction >
+      0
+      ? {
+          preferredRow:
+            row,
+        }
+      : {
+          reductionRow:
+            row,
+        }
   );
 }

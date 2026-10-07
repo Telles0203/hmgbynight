@@ -11,6 +11,12 @@ import {
   OUT_OF_CLAN_DISCIPLINE_APPROVAL_MESSAGE,
 } from "../../creation/form/discipline/characterCreationDisciplineRows.js";
 
+import {
+  getFreeTraitPurchaseCounts,
+  getStateFreeTraitPurchaseOrder,
+  normalizeFreeTraitPurchaseOrder,
+} from "../../creation/freeTraits/characterCreationFreeTraitPurchases.js";
+
 
 function normalizeDisciplineProgress(
   progress,
@@ -240,12 +246,62 @@ function createApprovalWarning() {
 
 function createDisciplineList(
   character,
-  state
+  state,
+  progress,
+  showFreeTraitMarkers
 ) {
+  const total =
+    Number(
+      progress
+        ?.points
+        ?.total
+    );
+
+
+  const freeTraitOrder =
+    showFreeTraitMarkers
+      ? normalizeFreeTraitPurchaseOrder({
+          order:
+            getStateFreeTraitPurchaseOrder(
+              state,
+              "disciplines"
+            ),
+
+          values:
+            state?.disciplines,
+
+          total:
+            Number.isInteger(
+              total
+            )
+              ? total
+              : 3,
+        })
+      : [];
+
+
+  const freeTraitPurchases =
+    getFreeTraitPurchaseCounts(
+      freeTraitOrder
+    );
+
+
   const entries =
     getDisciplineEntries(
       character,
       state
+    ).map(
+      (
+        entry
+      ) => ({
+        ...entry,
+
+        freeTraitLevel:
+          freeTraitPurchases[
+            entry.discipline
+          ] ||
+          0,
+      })
     );
 
 
@@ -278,6 +334,9 @@ function createDisciplineList(
               class="
                 character-sheet-row
                 character-discipline-sheet-row
+                ${entry.freeTraitLevel > 0
+                  ? "is-free-trait-spend"
+                  : ""}
               "
             >
 
@@ -347,6 +406,7 @@ export function createCharacterDisciplineContent({
   character,
   state,
   progress,
+  showFreeTraitMarkers = true,
 }) {
   return `
     ${createDisciplineProgress(
@@ -356,7 +416,9 @@ export function createCharacterDisciplineContent({
 
     ${createDisciplineList(
       character,
-      state
+      state,
+      progress,
+      showFreeTraitMarkers
     )}
   `;
 }

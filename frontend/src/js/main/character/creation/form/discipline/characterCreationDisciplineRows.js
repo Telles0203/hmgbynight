@@ -33,7 +33,8 @@ function createOutsideClanWarning() {
 
 export function createDisciplineRow(
   entry,
-  maximum
+  maximum,
+  freeTraitLevel = 0
 ) {
   const level =
     Number.isInteger(
@@ -62,6 +63,9 @@ export function createDisciplineRow(
     <div
       class="
         character-creation-discipline-row
+        ${freeTraitLevel > 0
+          ? "is-free-trait-spend"
+          : ""}
       "
       data-creation-discipline-row
       data-creation-discipline-key="${escapeSheetHtml(
@@ -71,6 +75,13 @@ export function createDisciplineRow(
       data-creation-discipline-clan="${clan
         ? "true"
         : "false"}"
+      data-creation-free-trait-level="${Math.max(
+        0,
+        Number(
+          freeTraitLevel
+        ) ||
+        0
+      )}"
     >
 
       <div
@@ -182,7 +193,8 @@ export function createDisciplineRow(
 
 export function createDisciplineRows(
   entries,
-  maximum
+  maximum,
+  freeTraitPurchases = {}
 ) {
   return entries
     .map(
@@ -191,7 +203,11 @@ export function createDisciplineRows(
       ) =>
         createDisciplineRow(
           entry,
-          maximum
+          maximum,
+          freeTraitPurchases[
+            entry.discipline
+          ] ||
+          0
         )
     )
     .join("");

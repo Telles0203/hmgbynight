@@ -6,6 +6,12 @@ import {
   getAbilityDisplayLabel,
 } from "../../creation/data/abilityCatalog.js";
 
+import {
+  getFreeTraitPurchaseCounts,
+  getStateFreeTraitPurchaseOrder,
+  normalizeFreeTraitPurchaseOrder,
+} from "../../creation/freeTraits/characterCreationFreeTraitPurchases.js";
+
 
 function normalizeAbilityProgress(
   progress,
@@ -110,7 +116,8 @@ function createCostNotice(
 
 function getEffectiveAbilityEntries(
   state,
-  progress
+  progress,
+  freeTraitPurchases = {}
 ) {
   const purchased =
     state?.abilities ||
@@ -180,6 +187,12 @@ function getEffectiveAbilityEntries(
           level:
             purchasedLevel +
             grantedLevel,
+
+          freeTraitLevel:
+            freeTraitPurchases[
+              entryKey
+            ] ||
+            0,
         };
       }
     )
@@ -208,17 +221,51 @@ function getEffectiveAbilityEntries(
 
 function createAbilityList(
   state,
-  progress
+  progress,
+  showFreeTraitMarkers
 ) {
   const specializations =
     state?.specializations ||
     {};
 
 
+  const total =
+    Number(
+      progress
+        ?.points
+        ?.total
+    );
+
+
+  const freeTraitOrder =
+    showFreeTraitMarkers
+      ? normalizeFreeTraitPurchaseOrder({
+          order:
+            getStateFreeTraitPurchaseOrder(
+              state,
+              "abilities"
+            ),
+
+          values:
+            state?.abilities,
+
+          total:
+            Number.isInteger(
+              total
+            )
+              ? total
+              : 5,
+        })
+      : [];
+
+
   const entries =
     getEffectiveAbilityEntries(
       state,
-      progress
+      progress,
+      getFreeTraitPurchaseCounts(
+        freeTraitOrder
+      )
     );
 
 
@@ -252,7 +299,15 @@ function createAbilityList(
 
 
             return `
-              <div class="character-sheet-row">
+              <div
+                class="
+                  character-sheet-row
+                  character-ability-sheet-row
+                  ${entry.freeTraitLevel > 0
+                    ? "is-free-trait-spend"
+                    : ""}
+                "
+              >
 
                 <span class="character-sheet-label">
 
@@ -307,6 +362,7 @@ export function createCharacterAbilityContent({
   progress,
   abilityFreeTraitCost,
   specializationFreeTraitCost,
+  showFreeTraitMarkers = true,
 }) {
   const normalized =
     normalizeAbilityProgress(
@@ -349,7 +405,8 @@ export function createCharacterAbilityContent({
 
     ${createAbilityList(
       state,
-      progress
+      progress,
+      showFreeTraitMarkers
     )}
 
     ${createCostNotice(

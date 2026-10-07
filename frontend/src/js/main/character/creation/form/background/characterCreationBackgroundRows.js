@@ -108,7 +108,8 @@ function createInfluenceBackgroundControls(
 
 export function createBackgroundRow(
   entry,
-  maximum
+  maximum,
+  freeTraitLevel = 0
 ) {
   const level =
     Math.max(
@@ -132,6 +133,9 @@ export function createBackgroundRow(
     <div
       class="
         character-creation-background-row
+        ${freeTraitLevel > 0
+          ? "is-free-trait-spend"
+          : ""}
       "
       data-creation-background-row
       data-creation-background-key="${escapeSheetHtml(
@@ -141,6 +145,13 @@ export function createBackgroundRow(
       data-creation-background-special-mode="${influence
         ? "influence"
         : "standard"}"
+      data-creation-free-trait-level="${Math.max(
+        0,
+        Number(
+          freeTraitLevel
+        ) ||
+        0
+      )}"
     >
 
       <div
@@ -187,7 +198,8 @@ export function createBackgroundRow(
 
 export function createBackgroundRows(
   entries,
-  maximum
+  maximum,
+  freeTraitPurchases = {}
 ) {
   if (
     !Array.isArray(
@@ -207,7 +219,11 @@ export function createBackgroundRows(
       ) =>
         createBackgroundRow(
           entry,
-          maximum
+          maximum,
+          freeTraitPurchases[
+            entry.background
+          ] ||
+          0
         )
     )
     .join("");

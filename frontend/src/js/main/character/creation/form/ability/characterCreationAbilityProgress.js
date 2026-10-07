@@ -1,21 +1,22 @@
-function getRowGrantLevel(
-  row
-) {
-  const level =
-    Number(
-      row?.dataset
-        ?.creationAbilityGrant
-    );
+import {
+  abilityRequiresFocus,
+  createAbilityEntryKey,
+} from "../../data/abilityCatalog.js";
+
+import {
+  readAbilityFocus,
+} from "./characterCreationAbilityRead.js";
+
+import {
+  getFreeTraitPurchaseCounts,
+  reconcileFormFreeTraitPurchases,
+} from "../../freeTraits/characterCreationFreeTraitPurchases.js";
 
 
-  return Number.isInteger(
-    level
-  ) &&
-  level >
-    0
-    ? level
-    : 0;
-}
+import {
+  getAbilityRowGrantLevel,
+  reconcileAbilityFreeTraitRows,
+} from "./characterCreationAbilityFreeTraits.js";
 
 
 function getAbilityEditorProgress(
@@ -81,7 +82,7 @@ function getAbilityEditorProgress(
 
 
         const grantedLevel =
-          getRowGrantLevel(
+          getAbilityRowGrantLevel(
             row
           );
 
@@ -214,7 +215,7 @@ function refreshAbilityRowControls(
 
 
         const grantedLevel =
-          getRowGrantLevel(
+          getAbilityRowGrantLevel(
             row
           );
 
@@ -305,7 +306,11 @@ function updateCostNotice(
 
 
 export function refreshCharacterCreationAbilityEditor(
-  form
+  form,
+  {
+    preferredRow = null,
+    reductionRow = null,
+  } = {}
 ) {
   if (!form) {
     return;
@@ -316,6 +321,17 @@ export function refreshCharacterCreationAbilityEditor(
     getAbilityEditorProgress(
       form
     );
+
+
+  reconcileAbilityFreeTraitRows({
+    form,
+
+    total:
+      progress.total,
+
+    preferredRow,
+    reductionRow,
+  });
 
 
   const counter =
@@ -448,7 +464,7 @@ export function adjustCharacterCreationAbilityLevel(
 
 
   const grantedLevel =
-    getRowGrantLevel(
+    getAbilityRowGrantLevel(
       row
     );
 
@@ -507,7 +523,17 @@ export function adjustCharacterCreationAbilityLevel(
 
 
   refreshCharacterCreationAbilityEditor(
-    form
+    form,
+    direction >
+      0
+      ? {
+          preferredRow:
+            row,
+        }
+      : {
+          reductionRow:
+            row,
+        }
   );
 }
 

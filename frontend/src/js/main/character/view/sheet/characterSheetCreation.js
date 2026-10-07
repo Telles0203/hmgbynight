@@ -266,6 +266,15 @@ export function createCharacterCreationSections(
     {};
 
 
+  const showFreeTraitMarkers =
+    String(
+      character
+        ?.sheetLifecycle ||
+      ""
+    ) !==
+    "active";
+
+
   const abilityLabels =
     Object.fromEntries(
       (
@@ -495,6 +504,8 @@ export function createCharacterCreationSections(
                 specializationFreeTraitCost:
                   freeTraitSpending
                     .specializations,
+
+                showFreeTraitMarkers,
               }),
           })}
 
@@ -531,6 +542,8 @@ export function createCharacterCreationSections(
 
                 progress:
                   sections.disciplines,
+
+                showFreeTraitMarkers,
               }),
           })}
 
@@ -571,6 +584,8 @@ export function createCharacterCreationSections(
 
                 progress:
                   sections.backgrounds,
+
+                showFreeTraitMarkers,
               }),
           })}
 

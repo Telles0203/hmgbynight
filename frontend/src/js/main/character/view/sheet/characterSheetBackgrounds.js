@@ -6,6 +6,12 @@ import {
   getBackgroundLabel,
 } from "../../creation/form/background/characterCreationBackgroundCatalog.js";
 
+import {
+  getFreeTraitPurchaseCounts,
+  getStateFreeTraitPurchaseOrder,
+  normalizeFreeTraitPurchaseOrder,
+} from "../../creation/freeTraits/characterCreationFreeTraitPurchases.js";
+
 
 function normalizeBackgroundProgress(
   progress,
@@ -123,8 +129,46 @@ function createBackgroundProgress(
 
 
 function createBackgroundList(
-  state
+  state,
+  progress,
+  showFreeTraitMarkers
 ) {
+  const total =
+    Number(
+      progress
+        ?.points
+        ?.total
+    );
+
+
+  const freeTraitOrder =
+    showFreeTraitMarkers
+      ? normalizeFreeTraitPurchaseOrder({
+          order:
+            getStateFreeTraitPurchaseOrder(
+              state,
+              "backgrounds"
+            ),
+
+          values:
+            state?.backgrounds,
+
+          total:
+            Number.isInteger(
+              total
+            )
+              ? total
+              : 5,
+        })
+      : [];
+
+
+  const freeTraitPurchases =
+    getFreeTraitPurchaseCounts(
+      freeTraitOrder
+    );
+
+
   const entries =
     Object.entries(
       state?.backgrounds ||
@@ -189,6 +233,15 @@ function createBackgroundList(
             <div
               class="
                 character-sheet-row
+                character-background-sheet-row
+                ${(
+                  freeTraitPurchases[
+                    background
+                  ] ||
+                  0
+                ) > 0
+                  ? "is-free-trait-spend"
+                  : ""}
               "
             >
 
@@ -228,6 +281,7 @@ function createBackgroundList(
 export function createCharacterBackgroundContent({
   state,
   progress,
+  showFreeTraitMarkers = true,
 }) {
   return `
     ${createBackgroundProgress(
@@ -236,7 +290,9 @@ export function createCharacterBackgroundContent({
     )}
 
     ${createBackgroundList(
-      state
+      state,
+      progress,
+      showFreeTraitMarkers
     )}
   `;
 }
