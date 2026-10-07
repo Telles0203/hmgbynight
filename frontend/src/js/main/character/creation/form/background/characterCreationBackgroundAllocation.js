@@ -125,7 +125,7 @@ export function getBackgroundAllocationValues(
 
   Object.entries(
     normalizeLevelMap(
-      backgrounds
+      influences
     )
   ).forEach(
     ([
@@ -133,7 +133,7 @@ export function getBackgroundAllocationValues(
       level,
     ]) => {
       result[
-        createBackgroundAllocationKey(
+        createInfluenceAllocationKey(
           key
         )
       ] =
@@ -144,7 +144,7 @@ export function getBackgroundAllocationValues(
 
   Object.entries(
     normalizeLevelMap(
-      influences
+      backgrounds
     )
   ).forEach(
     ([
@@ -152,7 +152,7 @@ export function getBackgroundAllocationValues(
       level,
     ]) => {
       result[
-        createInfluenceAllocationKey(
+        createBackgroundAllocationKey(
           key
         )
       ] =
