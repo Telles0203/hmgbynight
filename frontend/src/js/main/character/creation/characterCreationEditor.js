@@ -26,6 +26,10 @@ import {
 } from "./form/characterCreationWillpowerForm.js";
 
 import {
+  adjustCharacterCreationDisciplineLevel,
+} from "./form/characterCreationDisciplineForm.js";
+
+import {
   adjustMoralityCreation,
 } from "./form/characterCreationMoralityForm.js";
 
@@ -198,6 +202,27 @@ function handleDocumentClick(
 
     removeAttributeTraitSelection(
       removeAttributeTraitButton
+    );
+
+
+    return;
+  }
+
+
+  const disciplineButton =
+    target.closest(
+      "[data-character-creation-discipline-action]"
+    );
+
+
+  if (
+    disciplineButton
+  ) {
+    event.preventDefault();
+
+
+    adjustCharacterCreationDisciplineLevel(
+      disciplineButton
     );
 
 

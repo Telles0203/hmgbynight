@@ -26,6 +26,11 @@ import {
 } from "./form/characterCreationMapForm.js";
 
 import {
+  createDisciplineCreationEditor,
+  readDisciplineCreationSection,
+} from "./form/characterCreationDisciplineForm.js";
+
+import {
   createMeritsFlawsCreationEditor,
   readMeritsFlawsCreationSection,
 } from "./form/characterCreationAdjustmentForm.js";
@@ -80,19 +85,9 @@ export function createCharacterCreationSectionEditor(
     section ===
     "disciplines"
   ) {
-    return createSingleMapCreationEditor(
+    return createDisciplineCreationEditor(
       character,
-      state,
-      {
-        section:
-          "disciplines",
-
-        mapName:
-          "disciplines",
-
-        title:
-          "Disciplinas",
-      }
+      state
     );
   }
 
@@ -200,10 +195,9 @@ export function readCharacterCreationSection(
     section ===
     "disciplines"
   ) {
-    return readSingleMapCreationSection(
+    return readDisciplineCreationSection(
       form,
-      state,
-      "disciplines"
+      state
     );
   }
 

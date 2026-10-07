@@ -176,6 +176,29 @@ async function getCharacterOptions(
       },
 
 
+      disciplineRules: {
+        defaultTotal:
+          CHARACTER_CREATION_RULES
+            .disciplines
+            .default,
+
+        sabbatTotal:
+          CHARACTER_CREATION_RULES
+            .disciplines
+            .sabbat,
+
+        maximumLevelDuringCreation:
+          CHARACTER_CREATION_RULES
+            .disciplines
+            .maximumLevelDuringCreation,
+
+        freeTraitCost:
+          CHARACTER_CREATION_RULES
+            .freeTraits
+            .costs
+            .discipline,
+      },
+
       disciplines:
         CORE_DISCIPLINES.map(
           (

@@ -811,6 +811,84 @@
   text-align: center;
 }
 
+.character-creation-discipline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.character-creation-discipline-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 32px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.character-creation-discipline-row:last-child {
+  border-bottom: 0;
+}
+
+.character-creation-discipline-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #eef3fb;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.character-creation-discipline-name small {
+  padding: 1px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #d7dfeb;
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+.character-creation-discipline-controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.character-creation-discipline-controls
+[data-creation-discipline-level] {
+  min-width: 20px;
+}
+
+.character-discipline-sheet-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.character-discipline-clan-badge,
+.character-discipline-outside-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #d7dfeb;
+  font-size: 0.6rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.character-discipline-outside-badge {
+  border-color: rgba(185, 0, 25, 0.55);
+  color: #efc2c8;
+}
+
 .character-sheet-section ul,
 .character-sheet-section ol {
   list-style-position: inside;

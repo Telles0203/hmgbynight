@@ -12,6 +12,10 @@ import {
 } from "./characterSheetAbilities.js";
 
 import {
+  createCharacterDisciplineContent,
+} from "./characterSheetDisciplines.js";
+
+import {
   createCreationSectionTitle,
   createAttributeSection,
   } from "./characterSheetCreationAttributes.js";
@@ -521,10 +525,10 @@ export function createCharacterCreationSections(
             editable,
 
             content:
-              createCreationMapList(
-                state.disciplines,
-                "Nenhuma disciplina cadastrada."
-              ),
+              createCharacterDisciplineContent({
+                character,
+                state,
+              }),
           })}
 
           ${createStaticGroup(

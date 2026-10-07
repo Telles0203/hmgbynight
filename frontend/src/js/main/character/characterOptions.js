@@ -102,6 +102,25 @@ async function loadCharacterOptions() {
                   1,
               },
 
+        disciplineRules:
+          data.disciplineRules &&
+          typeof data.disciplineRules ===
+            "object"
+            ? data.disciplineRules
+            : {
+                defaultTotal:
+                  3,
+
+                sabbatTotal:
+                  4,
+
+                maximumLevelDuringCreation:
+                  2,
+
+                freeTraitCost:
+                  3,
+              },
+
         disciplines:
           Array.isArray(
             data.disciplines
